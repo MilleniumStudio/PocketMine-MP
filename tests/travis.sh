@@ -1,14 +1,20 @@
 #!/bin/bash
 
 PHP_BINARY="php"
+COMPOSER="composer"
 
 while getopts "p:" OPTION 2> /dev/null; do
 	case ${OPTION} in
 		p)
 			PHP_BINARY="$OPTARG"
 			;;
+		c)
+			COMPOSER="$OPTARG"
+			;;
 	esac
 done
+
+"$COMPOSER" install
 
 ./tests/lint.sh -p "$PHP_BINARY"
 
