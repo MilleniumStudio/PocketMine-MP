@@ -3,7 +3,7 @@
 PHP_BINARY="php"
 COMPOSER="composer"
 
-while getopts "p:" OPTION 2> /dev/null; do
+while getopts "p:c:" OPTION 2> /dev/null; do
 	case ${OPTION} in
 		p)
 			PHP_BINARY="$OPTARG"
