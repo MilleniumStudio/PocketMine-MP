@@ -1855,7 +1855,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 		$pk->seed = -1;
 		$pk->dimension = 0; //TODO: implement this properly
 		$pk->worldGamemode = Player::getClientFriendlyGamemode($this->server->getGamemode());
-		$pk->difficulty = $this->server->getDifficulty();
+		$pk->difficulty = $this->level->getDifficulty();
 		$pk->spawnX = $spawnPosition->getFloorX();
 		$pk->spawnY = $spawnPosition->getFloorY();
 		$pk->spawnZ = $spawnPosition->getFloorZ();
@@ -2347,7 +2347,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 					}elseif($target instanceof Player){
 						if(($target->getGamemode() & 0x01) > 0){
 							break;
-						}elseif($this->server->getConfigBoolean("pvp") !== true or $this->server->getDifficulty() === 0){
+						}elseif($this->server->getConfigBoolean("pvp") !== true or $this->level->getDifficulty() === Level::DIFFICULTY_PEACEFUL){
 							$cancelled = true;
 						}
 
