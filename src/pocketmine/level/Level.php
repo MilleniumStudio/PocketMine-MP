@@ -501,12 +501,12 @@ class Level implements ChunkManager, Metadatable{
 	 * @param int $evid
 	 * @param int $data
 	 */
-	public function broadcastLevelEvent(Vector3 $pos, int $evid, int $data = 0){
+	public function broadcastLevelEvent(Vector3 $pos, int $evid, int $data = 0, int $radius = 0){
 		$pk = new LevelEventPacket();
 		$pk->evid = $evid;
 		$pk->data = $data;
 		list($pk->x, $pk->y, $pk->z) = [$pos->x, $pos->y, $pos->z];
-		$this->addChunkPacket($pos->x >> 4, $pos->z >> 4, $pk);
+		$this->addChunkPacket($pos->x >> 4, $pos->z >> 4, $pk, $radius);
 	}
 
 	/**
@@ -602,12 +602,8 @@ class Level implements ChunkManager, Metadatable{
 		return $this->chunkLoaders[Level::chunkHash($chunkX, $chunkZ)] ?? [];
 	}
 
-	public function addChunkPacket(int $chunkX, int $chunkZ, DataPacket $packet){
-		if(!isset($this->chunkPackets[$index = Level::chunkHash($chunkX, $chunkZ)])){
-			$this->chunkPackets[$index] = [$packet];
-		}else{
-			$this->chunkPackets[$index][] = $packet;
-		}
+	public function addChunkPacket(int $chunkX, int $chunkZ, DataPacket $packet, int $radius = 0){
+		$this->chunkPackets[Level::chunkHash($chunkX, $chunkZ)][$radius][] = $packet;
 	}
 
 	public function registerChunkLoader(ChunkLoader $loader, int $chunkX, int $chunkZ, bool $autoLoad = true){
@@ -785,9 +781,25 @@ class Level implements ChunkManager, Metadatable{
 		foreach($this->chunkPackets as $index => $entries){
 			Level::getXZ($index, $chunkX, $chunkZ);
 			$chunkPlayers = $this->getChunkPlayers($chunkX, $chunkZ);
-			if(count($chunkPlayers) > 0){
-				foreach($entries as $pk){
-					$this->server->broadcastPacket($chunkPlayers, $pk);
+			if(count($chunkPlayers) === 0){
+				continue;
+			}
+			foreach($entries as $radius => $list){
+				if($radius !== 0){
+					$radSquared = $radius ** 2;
+					$players = array_filter($chunkPlayers, function(Player $player) use ($radSquared, $chunkX, $chunkZ){
+						return (($player->x >> 4) - $chunkX) ** 2 <= $radSquared and (($player->z >> 4) - $chunkZ) ** 2 <= $radSquared;
+					});
+
+					if(count($players) > 0){
+						foreach($list as $pk){
+							$this->server->broadcastPacket($players, $pk);
+						}
+					}
+				}else{
+					foreach($list as $pk){
+						$this->server->broadcastPacket($chunkPlayers, $pk);
+					}
 				}
 			}
 		}
