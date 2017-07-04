@@ -60,30 +60,42 @@ class GamemodeCommand extends VanillaCommand{
 			return true;
 		}
 
-		$target = $sender;
 		if(isset($args[1])){
-			$target = $sender->getServer()->getPlayer($args[1]);
-			if($target === null){
+			$targets = array_values($this->getCommandTargets($sender, $args[1]));
+			if(count($targets) === 0){
 				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
 
 				return true;
 			}
-		}elseif(!($sender instanceof Player)){
+		}elseif($sender instanceof Player){
+			$targets = [$sender];
+		}else{
 			$sender->sendMessage(new TranslationContainer("commands.generic.usage", [$this->usageMessage]));
 
 			return true;
 		}
 
-		$target->setGamemode($gameMode);
-		if($gameMode !== $target->getGamemode()){
-			$sender->sendMessage("Game mode change for " . $target->getName() . " failed!");
-		}else{
-			if($target === $sender){
-				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.gamemode.success.self", ['blame', 'mojang', Server::getGamemodeString($gameMode)]));
-			}else{
-				$target->sendMessage(new TranslationContainer("gameMode.changed"));
-				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.gamemode.success.other", ['blame mojang', $target->getName(), Server::getGamemodeString($gameMode)]));
+		$success = [];
+		foreach($targets as $target){
+			if(!($target instanceof Player)){
+				continue;
 			}
+
+			$target->setGamemode($gameMode);
+			if($gameMode !== $target->getGamemode()){
+				$sender->sendMessage("Game mode change for " . $target->getName() . " failed!");
+			}else{
+				$success[] = $target->getName();
+				if($target !== $sender){
+					$target->sendMessage(new TranslationContainer("gameMode.changed"));
+				}
+			}
+		}
+
+		if(count($targets) === 1 and $targets[0] === $sender){
+			Command::broadcastCommandMessage($sender, new TranslationContainer("commands.gamemode.success.self", ['blame', 'mojang', Server::getGamemodeString($gameMode)]));
+		}else{
+			Command::broadcastCommandMessage($sender, new TranslationContainer("commands.gamemode.success.other", ['blame mojang', implode(", ", $success), Server::getGamemodeString($gameMode)]));
 		}
 
 		return true;

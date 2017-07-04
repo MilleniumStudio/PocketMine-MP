@@ -25,10 +25,15 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\level\Position;
+use pocketmine\math\Vector3;
+use pocketmine\Player;
 
 abstract class VanillaCommand extends Command{
 	const MAX_COORD = 30000000;
 	const MIN_COORD = -30000000;
+
+	const COMMAND_SELECTOR_CHAR = "@";
 
 	public function __construct($name, $description = "", $usageMessage = null, array $aliases = []){
 		parent::__construct($name, $description, $usageMessage, $aliases);
@@ -66,5 +71,58 @@ abstract class VanillaCommand extends Command{
 		}
 
 		return $i;
+	}
+
+	protected function getCommandTargets(CommandSender $sender, string $arg) : array{
+		if($arg{0} === self::COMMAND_SELECTOR_CHAR){
+			$type = $arg{1};
+
+			switch($type){
+				case "a":
+					//TODO: check extra args
+					return $sender->getServer()->getOnlinePlayers();
+				case "e":
+					if($sender instanceof Player){
+						return $sender->getLevel()->getEntities();
+					}else{
+						return $sender->getServer()->getDefaultLevel()->getEntities();
+					}
+				case "p":
+					$pos = $sender instanceof Player ? $sender->asPosition() : new Position(0, 0, 0, $sender->getServer()->getDefaultLevel());
+
+					$players = $pos->getLevel()->getPlayers();
+					uasort($players, function(Player $a, Player $b) use ($pos){
+						$aDist = $a->distanceSquared($pos);
+						$bDist = $b->distanceSquared($pos);
+
+						if($aDist === $bDist){
+							return 0;
+						}elseif($aDist < $bDist){
+							return -1;
+						}else{
+							return 1;
+						}
+					});
+
+					$count = 1; //TODO check count argument
+
+					return array_slice($players, $count < 0 ? -$count : 0, $count);
+				case "r":
+					$level = $sender instanceof Player ? $sender->getLevel() : $sender->getServer()->getDefaultLevel();
+
+					$count = 1;
+					$results = [];
+
+					for($i = 0; $i < $count; ++$i){
+						$results[] = $level->getEntities()[array_rand($level->getEntities())];
+					}
+
+					return $results;
+				default:
+					return [];
+			}
+		}else{
+			return [$sender->getServer()->getPlayer($arg)];
+		}
 	}
 }

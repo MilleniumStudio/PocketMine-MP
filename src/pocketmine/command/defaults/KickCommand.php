@@ -54,17 +54,30 @@ class KickCommand extends VanillaCommand{
 		$name = array_shift($args);
 		$reason = trim(implode(" ", $args));
 
-		if(($player = $sender->getServer()->getPlayer($name)) instanceof Player){
-			$player->kick($reason);
-			if(strlen($reason) >= 1){
-				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kick.success.reason", [$player->getName(), $reason]));
-			}else{
-				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kick.success", [$player->getName()]));
-			}
-		}else{
+		$targets = $this->getCommandTargets($sender, $name);
+		if(count($targets) === 0){
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
+
+			return true;
 		}
 
+		$success = [];
+
+		foreach($targets as $target){
+			if(!($target instanceof Player)){
+				continue;
+			}
+
+			if($target->kick($reason)){
+				$success[] = $target->getName();
+			}
+		}
+
+		if(strlen($reason) >= 1){
+			Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kick.success.reason", [implode(", ", $success), $reason]));
+		}else{
+			Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kick.success", [implode(", ", $success)]));
+		}
 
 		return true;
 	}

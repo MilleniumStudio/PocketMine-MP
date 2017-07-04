@@ -25,6 +25,7 @@ namespace pocketmine\command\defaults;
 
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\entity\Entity;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\TranslationContainer;
 use pocketmine\Player;
@@ -60,21 +61,31 @@ class KillCommand extends VanillaCommand{
 				return true;
 			}
 
-			$player = $sender->getServer()->getPlayer($args[0]);
+			$targets = $this->getCommandTargets($sender, $args[0]);
+			if(count($targets) === 0){
+				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
 
-			if($player instanceof Player){
-				$sender->getServer()->getPluginManager()->callEvent($ev = new EntityDamageEvent($player, EntityDamageEvent::CAUSE_SUICIDE, 1000));
+				return true;
+			}
+
+			$success = [];
+
+			/** @var Entity $entity */
+			foreach($targets as $entity){
+				$sender->getServer()->getPluginManager()->callEvent($ev = new EntityDamageEvent($entity, EntityDamageEvent::CAUSE_SUICIDE, 1000));
 
 				if($ev->isCancelled()){
-					return true;
+					continue;
 				}
 
-				$player->setLastDamageCause($ev);
-				$player->setHealth(0);
+				$entity->setLastDamageCause($ev);
+				$entity->setHealth(0);
 
-				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kill.successful", [$player->getName()]));
-			}else{
-				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
+				$success[] = $entity->getNameTag();
+			}
+
+			if(count($success) > 0){
+				Command::broadcastCommandMessage($sender, new TranslationContainer("commands.kill.successful", [implode(", ", $success)]));
 			}
 
 			return true;

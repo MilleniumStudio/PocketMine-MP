@@ -54,7 +54,6 @@ class GiveCommand extends VanillaCommand{
 			return true;
 		}
 
-		$player = $sender->getServer()->getPlayer($args[0]);
 		$item = Item::fromString($args[1]);
 
 		if(!isset($args[2])){
@@ -80,25 +79,29 @@ class GiveCommand extends VanillaCommand{
 			$item->setNamedTag($tags);
 		}
 
-		if($player instanceof Player){
-			if($item->getId() === 0){
-				$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.give.item.notFound", [$args[1]]));
-
-				return true;
-			}
-
-			//TODO: overflow
-			$player->getInventory()->addItem(clone $item);
-		}else{
+		$targets = $this->getCommandTargets($sender, $args[0]);
+		if(count($targets) === 0){
 			$sender->sendMessage(new TranslationContainer(TextFormat::RED . "%commands.generic.player.notFound"));
 
 			return true;
 		}
 
+		$success = [];
+
+		foreach($targets as $target){
+			if(!($target instanceof Player)){
+				continue;
+			}
+
+			//TODO: overflow
+			$target->getInventory()->addItem(clone $item);
+			$success[] = $target->getName();
+		}
+
 		Command::broadcastCommandMessage($sender, new TranslationContainer("%commands.give.success", [
 			$item->getName() . " (" . $item->getId() . ":" . $item->getDamage() . ")",
 			(string) $item->getCount(),
-			$player->getName()
+			implode(", ", $success)
 		]));
 		return true;
 	}
