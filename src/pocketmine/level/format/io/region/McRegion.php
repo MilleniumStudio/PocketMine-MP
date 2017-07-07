@@ -248,7 +248,8 @@ class McRegion extends BaseLevelProvider{
 		}
 		//TODO, add extra details
 		$levelData = new CompoundTag("Data", [
-			new ByteTag("hardcore", 0),
+			new ByteTag("hardcore", isset($options["hardcore"]) && $options["hardcore"] === true ? 1 : 0),
+			new ByteTag("Difficulty", Level::getDifficultyFromString((string) ($options["difficulty"] ?? "normal"))),
 			new ByteTag("initialized", 1),
 			new IntTag("GameType", 0),
 			new IntTag("generatorVersion", 1), //2 in MCPE
@@ -262,7 +263,7 @@ class McRegion extends BaseLevelProvider{
 			new LongTag("SizeOnDisk", 0),
 			new LongTag("Time", 0),
 			new StringTag("generatorName", Generator::getGeneratorName($generator)),
-			new StringTag("generatorOptions", isset($options["preset"]) ? $options["preset"] : ""),
+			new StringTag("generatorOptions", $options["preset"] ?? ""),
 			new StringTag("LevelName", $name),
 			new CompoundTag("GameRules", [])
 		]);
