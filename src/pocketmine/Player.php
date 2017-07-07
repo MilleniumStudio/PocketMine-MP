@@ -765,6 +765,7 @@ class Player extends Human implements CommandSender, InventoryHolder, ChunkLoade
 
 			$this->usedChunks = [];
 			$this->level->sendTime($this);
+			$this->level->sendDifficulty($this);
 		}
 	}
 
