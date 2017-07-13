@@ -23,8 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\event\block;
 
-use pocketmine\event\Cancellable;
-
-class BlockFormEvent extends BlockGrowEvent implements Cancellable{
+class BlockFormEvent extends BlockGrowEvent{
 	public static $handlerList = null;
+
 }
