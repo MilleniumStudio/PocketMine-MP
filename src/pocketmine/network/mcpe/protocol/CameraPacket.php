@@ -21,37 +21,31 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\scheduler;
+namespace pocketmine\network\mcpe\protocol;
 
-use pocketmine\utils\MainLogger;
-use pocketmine\Worker;
+#include <rules/DataPacket.h>
 
-class AsyncWorker extends Worker{
+use pocketmine\network\mcpe\NetworkSession;
 
-	private $logger;
-	private $id;
+class CameraPacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::CAMERA_PACKET;
 
-	public function __construct(MainLogger $logger, $id){
-		$this->logger = $logger;
-		$this->id = $id;
+	/** @var int */
+	public $cameraUniqueId;
+	/** @var int */
+	public $playerUniqueId;
+
+	public function decodePayload(){
+		$this->cameraUniqueId = $this->getEntityUniqueId();
+		$this->playerUniqueId = $this->getEntityUniqueId();
 	}
 
-	public function run(){
-		$this->registerClassLoader();
-		$this->logger->registerStatic();
-
-		gc_enable();
-		ini_set("memory_limit", '-1');
-
-		global $store;
-		$store = [];
+	public function encodePayload(){
+		$this->putEntityUniqueId($this->cameraUniqueId);
+		$this->putEntityUniqueId($this->playerUniqueId);
 	}
 
-	public function handleException(\Throwable $e){
-		$this->logger->logException($e);
-	}
-
-	public function getThreadName(){
-		return "Asynchronous Worker #" . $this->id;
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleCamera($this);
 	}
 }

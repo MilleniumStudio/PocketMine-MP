@@ -21,37 +21,24 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\scheduler;
+namespace pocketmine\network\mcpe\protocol;
 
-use pocketmine\utils\MainLogger;
-use pocketmine\Worker;
+#include <rules/DataPacket.h>
 
-class AsyncWorker extends Worker{
+use pocketmine\network\mcpe\NetworkSession;
 
-	private $logger;
-	private $id;
+class StructureBlockUpdatePacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::STRUCTURE_BLOCK_UPDATE_PACKET;
 
-	public function __construct(MainLogger $logger, $id){
-		$this->logger = $logger;
-		$this->id = $id;
+	public function decodePayload(){
+		//TODO
 	}
 
-	public function run(){
-		$this->registerClassLoader();
-		$this->logger->registerStatic();
-
-		gc_enable();
-		ini_set("memory_limit", '-1');
-
-		global $store;
-		$store = [];
+	public function encodePayload(){
+		//TODO
 	}
 
-	public function handleException(\Throwable $e){
-		$this->logger->logException($e);
-	}
-
-	public function getThreadName(){
-		return "Asynchronous Worker #" . $this->id;
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleStructureBlockUpdate($this);
 	}
 }

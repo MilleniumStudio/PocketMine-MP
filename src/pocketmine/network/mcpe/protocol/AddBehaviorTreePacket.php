@@ -21,37 +21,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\scheduler;
+namespace pocketmine\network\mcpe\protocol;
 
-use pocketmine\utils\MainLogger;
-use pocketmine\Worker;
+#include <rules/DataPacket.h>
 
-class AsyncWorker extends Worker{
+use pocketmine\network\mcpe\NetworkSession;
 
-	private $logger;
-	private $id;
+class AddBehaviorTreePacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::ADD_BEHAVIOR_TREE_PACKET;
 
-	public function __construct(MainLogger $logger, $id){
-		$this->logger = $logger;
-		$this->id = $id;
+	/** @var string */
+	public $unknownString1;
+
+	public function decodePayload(){
+		$this->unknownString1 = $this->getString();
 	}
 
-	public function run(){
-		$this->registerClassLoader();
-		$this->logger->registerStatic();
-
-		gc_enable();
-		ini_set("memory_limit", '-1');
-
-		global $store;
-		$store = [];
+	public function encodePayload(){
+		$this->putString($this->unknownString1);
 	}
 
-	public function handleException(\Throwable $e){
-		$this->logger->logException($e);
-	}
-
-	public function getThreadName(){
-		return "Asynchronous Worker #" . $this->id;
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleAddBehaviorTree($this);
 	}
 }

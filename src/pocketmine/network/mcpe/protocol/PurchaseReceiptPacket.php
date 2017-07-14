@@ -21,37 +21,33 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\scheduler;
+namespace pocketmine\network\mcpe\protocol;
 
-use pocketmine\utils\MainLogger;
-use pocketmine\Worker;
+#include <rules/DataPacket.h>
 
-class AsyncWorker extends Worker{
+use pocketmine\network\mcpe\NetworkSession;
 
-	private $logger;
-	private $id;
+class PurchaseReceiptPacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::PURCHASE_RECEIPT_PACKET;
 
-	public function __construct(MainLogger $logger, $id){
-		$this->logger = $logger;
-		$this->id = $id;
+	/** @var string[] */
+	public $entries = [];
+
+	public function decodePayload(){
+		$count = $this->getUnsignedVarInt();
+		for($i = 0; $i < $count; ++$i){
+			$this->entries[] = $this->getString();
+		}
 	}
 
-	public function run(){
-		$this->registerClassLoader();
-		$this->logger->registerStatic();
-
-		gc_enable();
-		ini_set("memory_limit", '-1');
-
-		global $store;
-		$store = [];
+	public function encodePayload(){
+		$this->putUnsignedVarInt(count($this->entries));
+		foreach($this->entries as $entry){
+			$this->putString($entry);
+		}
 	}
 
-	public function handleException(\Throwable $e){
-		$this->logger->logException($e);
-	}
-
-	public function getThreadName(){
-		return "Asynchronous Worker #" . $this->id;
+	public function handle(NetworkSession $session) : bool{
+		return $session->handlePurchaseReceipt($this);
 	}
 }

@@ -21,37 +21,18 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\scheduler;
+namespace pocketmine\network\mcpe\protocol\types;
 
-use pocketmine\utils\MainLogger;
-use pocketmine\Worker;
+interface ContainerIds{
 
-class AsyncWorker extends Worker{
+	const NONE = -1;
+	const INVENTORY = 0;
+	const FIRST = 1;
+	const LAST = 100;
+	const OFFHAND = 119;
+	const ARMOR = 120;
+	const CREATIVE = 121;
+	const HOTBAR = 122;
+	const FIXED_INVENTORY = 123;
 
-	private $logger;
-	private $id;
-
-	public function __construct(MainLogger $logger, $id){
-		$this->logger = $logger;
-		$this->id = $id;
-	}
-
-	public function run(){
-		$this->registerClassLoader();
-		$this->logger->registerStatic();
-
-		gc_enable();
-		ini_set("memory_limit", '-1');
-
-		global $store;
-		$store = [];
-	}
-
-	public function handleException(\Throwable $e){
-		$this->logger->logException($e);
-	}
-
-	public function getThreadName(){
-		return "Asynchronous Worker #" . $this->id;
-	}
 }
