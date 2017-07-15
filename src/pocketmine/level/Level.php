@@ -1741,12 +1741,7 @@ class Level implements ChunkManager, Metadatable{
 			return false;
 		}
 
-		//TODO: remove this hack
-		if(!($block->canBeReplaced() === true or ($hand->getId() === Block::WOODEN_SLAB and $block->getId() === Block::WOODEN_SLAB) or ($hand->getId() === Block::STONE_SLAB and $block->getId() === Block::STONE_SLAB))){
-			return false;
-		}
-
-		if($target->canBeReplaced() === true){
+		if($target->canBeReplaced($hand)){
 			$block = $target;
 			$hand->position($block);
 			//$face = -1;
@@ -1792,7 +1787,7 @@ class Level implements ChunkManager, Metadatable{
 			}
 		}
 
-		if($hand->place($item, $block, $target, $face, $fx, $fy, $fz, $player) === false){
+		if(!$hand->place($item, $block, $target, $face, $fx, $fy, $fz, $player)){
 			return false;
 		}
 
