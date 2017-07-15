@@ -25,6 +25,7 @@ namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
 use pocketmine\level\Level;
+use pocketmine\level\Position;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
@@ -62,5 +63,14 @@ abstract class Fallable extends Solid{
 				$fall->spawnToAll();
 			}
 		}
+	}
+
+	/**
+	 * @param Position $fallingBlock
+	 *
+	 * @return Block|null
+	 */
+	public function tickFalling(Position $fallingBlock){
+		return null;
 	}
 }
