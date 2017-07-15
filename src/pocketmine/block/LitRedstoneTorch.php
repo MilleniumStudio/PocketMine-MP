@@ -30,4 +30,8 @@ class LitRedstoneTorch extends RedstoneTorch{
 	public function getName() : string{
 		return "Lit Redstone Torch";
 	}
+
+	public function getLightLevel() : int{
+		return 7;
+	}
 }

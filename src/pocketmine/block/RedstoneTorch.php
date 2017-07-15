@@ -25,13 +25,9 @@ namespace pocketmine\block;
 
 class RedstoneTorch extends Torch{
 
-	protected $id = Block::REDSTONE_TORCH;
+	protected $id = Block::UNLIT_REDSTONE_TORCH;
 
 	public function getName() : string{
 		return "Redstone Torch";
-	}
-
-	public function getLightLevel() : int{
-		return 7;
 	}
 }
