@@ -88,8 +88,8 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::registerBlock(new StillLava());
 			self::registerBlock(new Sand());
 			self::registerBlock(new Gravel());
-			self::registerBlock(new GoldOre());
-			self::registerBlock(new IronOre());
+			self::registerBlock((new Block(Block::GOLD_ORE))->setName("Gold Ore")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_IRON)->setHardness(3));
+			self::registerBlock((new Block(Block::IRON_ORE))->setName("Iron Ore")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_STONE)->setHardness(3));
 			self::registerBlock(new CoalOre());
 			self::registerBlock(new Wood());
 			self::registerBlock(new Leaves());
@@ -240,7 +240,7 @@ class Block extends Position implements BlockIds, Metadatable{
 			self::registerBlock(new HayBale());
 			self::registerBlock(new Carpet());
 			self::registerBlock((new Block(Block::HARDENED_CLAY))->setName("Hardened Clay")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(1.25)->setBlastResistance(21));
-			self::registerBlock(new Coal());
+			self::registerBlock((new Block(Block::COAL_BLOCK))->setName("Block of Coal")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(5));
 			self::registerBlock(new PackedIce());
 			self::registerBlock(new DoublePlant());
 
