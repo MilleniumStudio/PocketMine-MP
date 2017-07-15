@@ -29,10 +29,6 @@ class WoodenPressurePlate extends StonePressurePlate{
 
 	protected $id = Block::WOODEN_PRESSURE_PLATE;
 
-	public function __construct(int $meta = 0){
-		$this->meta = $meta;
-	}
-
 	public function getName() : string{
 		return "Wooden Pressure Plate";
 	}

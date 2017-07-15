@@ -27,10 +27,6 @@ class HeavyWeightedPressurePlate extends LightWeightedPressurePlate{
 
 	protected $id = Block::HEAVY_WEIGHTED_PRESSURE_PLATE;
 
-	public function __construct(int $meta = 0){
-		$this->meta = $meta;
-	}
-
 	public function getName() : string{
 		return "Heavy Weighted Pressure Plate";
 	}

@@ -27,10 +27,6 @@ class LitRedstoneLamp extends RedstoneLamp{
 
 	protected $id = Block::LIT_REDSTONE_LAMP;
 
-	public function __construct(int $meta = 0){
-		$this->meta = $meta;
-	}
-
 	public function getName() : string{
 		return "Lit Redstone Lamp";
 	}

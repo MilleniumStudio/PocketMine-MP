@@ -27,10 +27,6 @@ class RedstoneTorch extends Torch{
 
 	protected $id = Block::REDSTONE_TORCH;
 
-	public function __construct(int $meta = 0){
-		$this->meta = $meta;
-	}
-
 	public function getName() : string{
 		return "Redstone Torch";
 	}

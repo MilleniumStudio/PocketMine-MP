@@ -40,10 +40,6 @@ class StoneSlab extends WoodenSlab{
 
 	protected $doubleId = Block::DOUBLE_STONE_SLAB;
 
-	public function __construct(int $meta = 0){
-		$this->meta = $meta;
-	}
-
 	public function getHardness() : float{
 		return 2;
 	}
@@ -70,7 +66,4 @@ class StoneSlab extends WoodenSlab{
 		return TieredTool::TIER_WOODEN;
 	}
 
-	public function getVariantBitmask() : int{
-		return 0x07;
-	}
 }

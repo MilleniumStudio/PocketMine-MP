@@ -27,10 +27,6 @@ class ActivatorRail extends Rail{
 
 	protected $id = Block::ACTIVATOR_RAIL;
 
-	public function __construct(int $meta = 0){
-		$this->meta = $meta;
-	}
-
 	public function getName() : string{
 		return "Activator Rail";
 	}
