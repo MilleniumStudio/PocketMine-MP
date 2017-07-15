@@ -147,11 +147,11 @@ class Color{
 	 *
 	 * @return Color
 	 */
-	public static function fromRGB(int $code){
+	public static function fromRGB(int $code) : Color{
 		return new Color(($code >> 16) & 0xff, ($code >> 8) & 0xff, $code & 0xff);
 	}
 
-	public static function fromHtmlRGB(string $code){
+	public static function fromHtmlRGB(string $code) : Color{
 		if(strlen($code) < 6){
 			throw new \InvalidArgumentException("Expected a HTML RGB color code representation, for example #FF8844");
 		}
@@ -170,7 +170,7 @@ class Color{
 	 *
 	 * @return Color
 	 */
-	public static function fromARGB(int $code){
+	public static function fromARGB(int $code) : Color{
 		return new Color(($code >> 16) & 0xff, ($code >> 8) & 0xff, $code & 0xff, ($code >> 24) & 0xff);
 	}
 
@@ -189,7 +189,7 @@ class Color{
 	 *
 	 * @return Color
 	 */
-	public static function fromRGBA(int $code){
+	public static function fromRGBA(int $code) : Color{
 		return new Color(
 			($code >> 24) & 0xff,
 			($code >> 16) & 0xff,
@@ -212,7 +212,7 @@ class Color{
 	 *
 	 * @return Color
 	 */
-	public static function fromLittleEndianRGBA(int $code){
+	public static function fromLittleEndianRGBA(int $code) : Color{
 		return new Color($code & 0xff, ($code >> 8) & 0xff, ($code >> 16) & 0xff, ($code >> 24) & 0xff);
 	}
 
