@@ -1734,18 +1734,19 @@ class Level implements ChunkManager, Metadatable{
 			return true;
 		}
 
-		if($item->canBePlaced()){
-			$hand = $item->getBlock();
-			$hand->position($block);
-		}else{
+		if(!$item->canBePlaced()){
 			return false;
 		}
 
+		$hand = $item->getBlock();
+
 		if($target->canBeReplaced($hand)){
 			$block = $target;
-			$hand->position($block);
-			//$face = -1;
+		}elseif(!$block->canBeReplaced($hand)){
+			return false;
 		}
+
+		$hand->position($block);
 
 		if($hand->isSolid() === true and $hand->getBoundingBox() !== null){
 			$entities = $this->getCollidingEntities($hand->getBoundingBox());
