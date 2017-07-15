@@ -68,7 +68,7 @@ class Flat extends Generator{
 				new OreType(Block::get(Block::GOLD_ORE), 2, 8, 0, 32),
 				new OreType(Block::get(Block::DIAMOND_ORE), 1, 7, 0, 16),
 				new OreType(Block::get(Block::DIRT), 20, 32, 0, 128),
-				new OreType(Block::get(Block::GRAVEL), 10, 16, 0, 128),
+				new OreType(Block::get(Block::GRAVEL), 10, 16, 0, 128)
 			]);
 			$this->populators[] = $ores;
 		}
@@ -84,7 +84,7 @@ class Flat extends Generator{
 		$y = 0;
 		foreach($matches[3] as $i => $b){
 			$b = Item::fromString($b . $matches[4][$i]);
-			$cnt = $matches[2][$i] === "" ? 1 : (int) ($matches[2][$i]);
+			$cnt = $matches[2][$i] === "" ? 1 : (int) $matches[2][$i];
 			for($cY = $y, $y += $cnt; $cY < $y; ++$cY){
 				$result[$cY] = [$b->getId(), $b->getDamage()];
 			}
