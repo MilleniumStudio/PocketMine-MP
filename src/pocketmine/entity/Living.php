@@ -430,7 +430,7 @@ abstract class Living extends Entity implements Damageable{
 	/**
 	 * @return ItemItem[]
 	 */
-	public function getDrops(){
+	public function getDrops() : array{
 		return [];
 	}
 

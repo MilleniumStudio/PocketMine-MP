@@ -143,7 +143,7 @@ class Squid extends WaterAnimal{
 		return $hasUpdate or !$this->onGround or abs($this->motionX) > 0.00001 or abs($this->motionY) > 0.00001 or abs($this->motionZ) > 0.00001;
 	}
 
-	public function getDrops(){
+	public function getDrops() : array{
 		return [
 			ItemItem::get(ItemItem::DYE, 0, mt_rand(1, 3))
 		];

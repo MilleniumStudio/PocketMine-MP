@@ -38,7 +38,7 @@ class Zombie extends Monster{
 		return "Zombie";
 	}
 
-	public function getDrops(){
+	public function getDrops() : array{
 		$drops = [
 			ItemItem::get(ItemItem::FEATHER, 0, 1)
 		];
