@@ -48,7 +48,7 @@ class Bed extends Spawnable{
 		$this->onChanged();
 	}
 
-	public function getSpawnCompound(){
+	public function getSpawnCompound() : CompoundTag{
 		return new CompoundTag("", [
 			new StringTag("id", Tile::BED),
 			new IntTag("x", (int) $this->x),
