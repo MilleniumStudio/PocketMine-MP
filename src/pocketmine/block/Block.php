@@ -146,7 +146,7 @@ class Block extends Position implements BlockIds, Metadatable{
 
 			self::registerBlock((new Stair(Block::COBBLESTONE_STAIRS))->setName("Cobblestone Stairs")->setToolType(Tool::TYPE_PICKAXE)->setRequiredHarvestLevel(TieredTool::TIER_WOODEN)->setHardness(2)->setBlastResistance(30));
 			self::registerBlock(new WallSign());
-			self::registerBlock(new Lever());
+			self::registerBlock((new Lever(Block::LEVER))->setName("Lever")->setHardness(0.5));
 			self::registerBlock(new StonePressurePlate());
 			self::registerBlock(new IronDoor());
 			self::registerBlock(new WoodenPressurePlate());
