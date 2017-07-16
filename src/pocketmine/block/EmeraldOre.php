@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\item\Item;
 use pocketmine\item\TieredTool;
 use pocketmine\item\Tool;
 
@@ -46,11 +47,17 @@ class EmeraldOre extends Solid{
 		return TieredTool::TIER_IRON;
 	}
 
-	public function getVariantBitmask() : int{
-		return 0;
-	}
-
 	public function getHardness() : float{
 		return 3;
+	}
+
+	public function getDrops(Item $item) : array{
+		if($this->canBeBrokenWith($item)){
+			return [
+				Item::get(Item::EMERALD, 0, 1)
+			];
+		}
+
+		return [];
 	}
 }
