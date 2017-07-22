@@ -60,7 +60,7 @@ class CraftingManager{
 					$result = new ShapelessRecipe(Item::get($first["id"], $first["damage"], $first["count"], $first["nbt"]));
 
 					foreach($recipe["input"] as $ingredient){
-						$result->addIngredient(Item::get($ingredient["id"], $ingredient["damage"], 1, $first["nbt"]));
+						$result->addIngredient(Item::get($ingredient["id"], $ingredient["damage"], $ingredient["count"], $first["nbt"]));
 					}
 					$this->registerRecipe($result);
 					break;
@@ -72,7 +72,7 @@ class CraftingManager{
 					$shape = array_chunk($recipe["input"], $recipe["width"]);
 					foreach($shape as $y => $row){
 						foreach($row as $x => $ingredient){
-							$result->addIngredient($x, $y, Item::get($ingredient["id"], ($ingredient["damage"] < 0 ? -1 : $ingredient["damage"]), 1, $ingredient["nbt"]));
+							$result->addIngredient($x, $y, Item::get($ingredient["id"], ($ingredient["damage"] < 0 ? -1 : $ingredient["damage"]), $ingredient["count"], $ingredient["nbt"]));
 						}
 					}
 					$this->registerRecipe($result);
