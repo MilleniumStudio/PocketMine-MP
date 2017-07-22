@@ -54,6 +54,7 @@ use pocketmine\event\player\PlayerGameModeChangeEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerItemConsumeEvent;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerJumpEvent;
 use pocketmine\event\player\PlayerKickEvent;
 use pocketmine\event\player\PlayerLoginEvent;
 use pocketmine\event\player\PlayerMapInfoRequestEvent;
@@ -704,6 +705,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if($this->spawned){
 			$this->server->updatePlayerListData($this->getUniqueId(), $this->getId(), $this->getDisplayName(), $skinId, $str);
 		}
+	}
+
+	public function jump(){
+		$this->server->getPluginManager()->callEvent(new PlayerJumpEvent($this));
+		parent::jump();
 	}
 
 	/**
@@ -2768,7 +2774,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if(!$canCraft or !$recipe->getResult()->equals($result)){
 			$this->server->getLogger()->debug("Unmatched recipe " . $recipe->getId() . " from player " . $this->getName() . ": expected " . $recipe->getResult() . ", got " . $result . ", using: " . implode(", ", $ingredients));
 			$this->inventory->sendContents($this);
-			return true;
+			return false;
 		}
 
 		$used = array_fill(0, $this->inventory->getSize(), 0);
@@ -2792,7 +2798,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if(!$canCraft){
 			$this->server->getLogger()->debug("Unmatched recipe " . $recipe->getId() . " from player " . $this->getName() . ": client does not have enough items, using: " . implode(", ", $ingredients));
 			$this->inventory->sendContents($this);
-			return true;
+			return false;
 		}
 
 		$this->server->getPluginManager()->callEvent($ev = new CraftItemEvent($this, $ingredients, $recipe));
