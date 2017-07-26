@@ -267,7 +267,6 @@ class PluginManager{
 								}
 							}
 
-
 							$plugins[$name] = $file;
 
 							$softDependencies[$name] = (array) $description->getSoftDepend();
