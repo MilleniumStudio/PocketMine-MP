@@ -1602,14 +1602,13 @@ class Server{
 
 			register_shutdown_function([$this, "crashDump"]);
 
+			$this->pluginManager->loadPlugins($this->pluginPath);
+			$this->enablePlugins(PluginLoadOrder::STARTUP);
+
 			$this->queryRegenerateTask = new QueryRegenerateEvent($this, 5);
 			$this->network->registerInterface(new RakLibInterface($this));
 
-			$this->pluginManager->loadPlugins($this->pluginPath);
-
 			$this->updater = new AutoUpdater($this, $this->getProperty("auto-updater.host", "www.pocketmine.net"));
-
-			$this->enablePlugins(PluginLoadOrder::STARTUP);
 
 			LevelProviderManager::addProvider(Anvil::class);
 			LevelProviderManager::addProvider(McRegion::class);
