@@ -79,7 +79,7 @@ class PluginDescription{
 			throw new PluginException("Invalid PluginDescription main, cannot start within the PocketMine namespace");
 		}
 
-		$this->compatibleMcpeProtocols = array_map(function($v){ return (int) $v; }, $plugin["mcpe-protocol"] ?? $plugin["mcpe-protocols"] ?? []);
+		$this->compatibleMcpeProtocols = array_map("intval", $plugin["mcpe-protocol"] ?? $plugin["mcpe-protocols"] ?? []);
 
 		if(isset($plugin["commands"]) and is_array($plugin["commands"])){
 			$this->commands = $plugin["commands"];
