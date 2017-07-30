@@ -294,10 +294,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	/** @var int|null */
 	protected $lineHeight = null;
 
+	/**
+	 * @return TranslationContainer|string
+	 */
 	public function getLeaveMessage(){
-		return new TranslationContainer(TextFormat::YELLOW . "%multiplayer.player.left", [
-			$this->getDisplayName()
-		]);
+		if($this->joined){
+			return new TranslationContainer(TextFormat::YELLOW . "%multiplayer.player.left", [
+				$this->getDisplayName()
+			]);
+		}
+
+		return "";
 	}
 
 	/**
@@ -1666,7 +1673,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->sendAttributes();
 
 		if(!$this->isAlive() and $this->spawned){
-			++$this->deadTicks;
+			$this->deadTicks += $tickDiff;
 			if($this->deadTicks >= 10){
 				$this->despawnFromAll();
 			}
@@ -1704,7 +1711,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							}
 						}
 
-						++$this->inAirTicks;
+						$this->inAirTicks += $tickDiff;
 					}
 				}
 			}
@@ -3301,12 +3308,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->usedChunks = [];
 				$this->loadQueue = [];
 
-				foreach($this->server->getOnlinePlayers() as $player){
-					if(!$player->canSee($this)){
-						$player->showPlayer($this);
+				if($this->loggedIn){
+					foreach($this->server->getOnlinePlayers() as $player){
+						if(!$player->canSee($this)){
+							$player->showPlayer($this);
+						}
 					}
+					$this->hiddenPlayers = [];
 				}
-				$this->hiddenPlayers = [];
 
 				foreach($this->windowIndex as $window){
 					$this->removeWindow($window);
@@ -3317,9 +3326,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				parent::close();
 				$this->spawned = false;
 
-				$this->interface->close($this, $notify ? $reason : "");
-
-				$this->loggedIn = false;
+				if($this->loggedIn){
+					$this->loggedIn = false;
+					$this->server->removeOnlinePlayer($this);
+				}
 
 				$this->server->getLogger()->info($this->getServer()->getLanguage()->translateString("pocketmine.player.logOut", [
 					TextFormat::AQUA . $this->getName() . TextFormat::WHITE,
@@ -3343,7 +3353,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			}catch(\Throwable $e){
 				$this->server->getLogger()->logException($e);
 			}finally{
-				$this->server->removeOnlinePlayer($this);
+				$this->interface->close($this, $notify ? $reason : "");
 				$this->server->removePlayer($this);
 			}
 		}
