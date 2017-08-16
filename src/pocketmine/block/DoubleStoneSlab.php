@@ -23,11 +23,47 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-class JungleWoodStairs extends WoodStairs{
+use pocketmine\item\Item;
+use pocketmine\item\Tool;
 
-	protected $id = self::JUNGLE_WOOD_STAIRS;
+class DoubleStoneSlab extends Solid{
+
+	protected $id = self::DOUBLE_STONE_SLAB;
+
+	public function __construct($meta = 0){
+		$this->meta = $meta;
+	}
+
+	public function getHardness(){
+		return 2;
+	}
+
+	public function getToolType(){
+		return Tool::TYPE_PICKAXE;
+	}
 
 	public function getName(){
-		return "Jungle Wood Stairs";
+		static $names = [
+			0 => "Stone",
+			1 => "Sandstone",
+			2 => "Wooden",
+			3 => "Cobblestone",
+			4 => "Brick",
+			5 => "Stone Brick",
+			6 => "Quartz",
+			7 => "Nether Brick",
+		];
+		return "Double " . $names[$this->meta & 0x07] . " Slab";
 	}
+
+	public function getDrops(Item $item){
+		if($item->isPickaxe() >= Tool::TIER_WOODEN){
+			return [
+				[Item::STONE_SLAB, $this->meta & 0x07, 2],
+			];
+		}else{
+			return [];
+		}
+	}
+
 }

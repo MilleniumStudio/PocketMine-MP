@@ -24,7 +24,6 @@ declare(strict_types=1);
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
@@ -35,9 +34,9 @@ use pocketmine\tile\Skull as SkullTile;
 use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 
-class MobHead extends Flowable{
+class Skull extends Flowable{
 
-	protected $id = self::MOB_HEAD_BLOCK;
+	protected $id = self::SKULL_BLOCK;
 
 	public function __construct($meta = 0){
 		$this->meta = $meta;
@@ -48,10 +47,11 @@ class MobHead extends Flowable{
 	}
 
 	public function getName(){
-		return "Mob Head";
+		return "Mob Head Block";
 	}
 
 	protected function recalculateBoundingBox(){
+		//TODO: different bounds depending on attached face (meta)
 		return new AxisAlignedBB(
 			$this->x + 0.25,
 			$this->y,
@@ -89,30 +89,11 @@ class MobHead extends Flowable{
 		return false;
 	}
 
-	public function onUpdate($type){
-		$faces = [
-			1 => 0,
-			2 => 3,
-			3 => 2,
-			4 => 5,
-			5 => 4,
-		];
-		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide($faces[$this->meta])->getId() === self::AIR){
-				$this->getLevel()->useBreakOn($this);
-
-				return Level::BLOCK_UPDATE_NORMAL;
-			}
-		}
-
-		return parent::onUpdate($type);
-	}
-
 	public function getDrops(Item $item){
 		$tile = $this->level->getTile($this);
 		if($tile instanceof SkullTile){
 			return [
-				[Item::MOB_HEAD, $tile->getType(), 1]
+				[Item::SKULL, $tile->getType(), 1]
 			];
 		}
 

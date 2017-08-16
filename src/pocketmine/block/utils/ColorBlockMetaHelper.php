@@ -21,38 +21,30 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\block\utils;
 
-use pocketmine\item\Item;
-use pocketmine\item\Tool;
+class ColorBlockMetaHelper{
 
-class MossStone extends Solid{
+	public static function getColorFromMeta(int $meta) : string{
+		static $names = [
+			0 => "White",
+			1 => "Orange",
+			2 => "Magenta",
+			3 => "Light Blue",
+			4 => "Yellow",
+			5 => "Lime",
+			6 => "Pink",
+			7 => "Gray",
+			8 => "Light Gray",
+			9 => "Cyan",
+			10 => "Purple",
+			11 => "Blue",
+			12 => "Brown",
+			13 => "Green",
+			14 => "Red",
+			15 => "Black",
+		];
 
-	protected $id = self::MOSS_STONE;
-
-	public function __construct($meta = 0){
-		$this->meta = $meta;
-	}
-
-	public function getName(){
-		return "Moss Stone";
-	}
-
-	public function getHardness(){
-		return 2;
-	}
-
-	public function getToolType(){
-		return Tool::TYPE_PICKAXE;
-	}
-
-	public function getDrops(Item $item){
-		if($item->isPickaxe() >= Tool::TIER_WOODEN){
-			return [
-				[Item::MOSS_STONE, $this->meta, 1],
-			];
-		}else{
-			return [];
-		}
+		return $names[$meta] ?? "Unknown";
 	}
 }

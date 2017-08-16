@@ -21,12 +21,43 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\block;
 
-class Camera extends Item{
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::CAMERA, $meta, $count, "Camera");
+use pocketmine\item\Item;
+use pocketmine\item\Tool;
+
+class DoubleWoodenSlab extends Solid{
+
+	protected $id = self::DOUBLE_WOODEN_SLAB;
+
+	public function __construct($meta = 0){
+		$this->meta = $meta;
+	}
+
+	public function getHardness(){
+		return 2;
+	}
+
+	public function getToolType(){
+		return Tool::TYPE_AXE;
+	}
+
+	public function getName(){
+		static $names = [
+			0 => "Oak",
+			1 => "Spruce",
+			2 => "Birch",
+			3 => "Jungle",
+			4 => "Acacia",
+			5 => "Dark Oak"
+		];
+		return "Double " . ($names[$this->meta & 0x07] ?? "") . " Wooden Slab";
+	}
+
+	public function getDrops(Item $item){
+		return [
+			[Item::WOODEN_SLAB, $this->meta & 0x07, 2],
+		];
 	}
 
 }
-

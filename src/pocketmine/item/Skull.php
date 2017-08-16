@@ -21,13 +21,13 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\item;
 
-class SpruceWoodStairs extends WoodStairs{
+use pocketmine\block\Block;
 
-	protected $id = self::SPRUCE_WOOD_STAIRS;
-
-	public function getName(){
-		return "Spruce Wood Stairs";
+class Skull extends Item{
+	public function __construct($meta = 0, $count = 1){
+		$this->block = Block::get(Block::SKULL_BLOCK);
+		parent::__construct(self::SKULL, $meta, $count, "Mob Head");
 	}
 }

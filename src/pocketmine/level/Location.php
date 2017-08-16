@@ -27,7 +27,9 @@ use pocketmine\math\Vector3;
 
 class Location extends Position{
 
+	/** @var float */
 	public $yaw;
+	/** @var float */
 	public $pitch;
 
 	/**
@@ -61,7 +63,7 @@ class Location extends Position{
 
 	/**
 	 * Return a Location instance
-	 * 
+	 *
 	 * @return Location
 	 */
 	public function asLocation() : Location{

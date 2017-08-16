@@ -21,14 +21,32 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\tile;
 
 
-class FenceGateBirch extends FenceGate{
+use pocketmine\level\Level;
+use pocketmine\nbt\tag\ByteTag;
+use pocketmine\nbt\tag\CompoundTag;
 
-	protected $id = self::FENCE_GATE_BIRCH;
+class Bed extends Spawnable{
 
-	public function getName(){
-		return "Birch Fence Gate";
+	public function __construct(Level $level, CompoundTag $nbt){
+		if(!isset($nbt->color) or !($nbt->color instanceof ByteTag)){
+			$nbt->color = new ByteTag("color", 14); //default to old red
+		}
+		parent::__construct($level, $nbt);
+	}
+
+	public function getColor() : int{
+		return $this->namedtag->color->getValue();
+	}
+
+	public function setColor(int $color){
+		$this->namedtag->color->setValue($color & 0x0f);
+		$this->onChanged();
+	}
+
+	public function addAdditionalSpawnData(CompoundTag $nbt){
+		$nbt->color = $this->namedtag->color;
 	}
 }

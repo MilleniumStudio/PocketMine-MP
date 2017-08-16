@@ -23,12 +23,26 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\item\Item;
+use pocketmine\item\Tool;
 
-class FenceGateAcacia extends FenceGate{
+class WoodenStairs extends Stair{
 
-	protected $id = self::FENCE_GATE_ACACIA;
+	public function getHardness(){
+		return 2;
+	}
 
-	public function getName(){
-		return "Acacia Fence Gate";
+	public function getResistance(){
+		return 15;
+	}
+
+	public function getToolType(){
+		return Tool::TYPE_AXE;
+	}
+
+	public function getDrops(Item $item){
+		return [
+			[$this->id, 0, 1],
+		];
 	}
 }
