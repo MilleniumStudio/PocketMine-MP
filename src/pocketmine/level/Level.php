@@ -1165,12 +1165,18 @@ class Level implements ChunkManager, Metadatable{
 			if($pos->isSolid()){
 				return true;
 			}
-			$bb = $pos->getBoundingBox();
+			$bbs = $pos->getBoundingBoxes();
 		}else{
-			$bb = $this->getBlock($pos)->getBoundingBox();
+			$bbs = $this->getBlock($pos)->getBoundingBoxes();
 		}
 
-		return $bb !== null and $bb->getAverageEdgeLength() >= 1;
+		foreach($bbs as $bb){
+			if($bb->getAverageEdgeLength() >= 1){
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -1195,7 +1201,9 @@ class Level implements ChunkManager, Metadatable{
 				for($y = $minY; $y <= $maxY; ++$y){
 					$block = $this->getBlock($this->temporalVector->setComponents($x, $y, $z));
 					if(!$block->canPassThrough() and $block->collidesWithBB($bb)){
-						$collides[] = $block->getBoundingBox();
+						foreach($block->getBoundingBoxes() as $blockBB){
+							$collides[] = $blockBB;
+						}
 					}
 				}
 			}
@@ -1792,27 +1800,29 @@ class Level implements ChunkManager, Metadatable{
 			//$face = -1;
 		}
 
-		if($hand->isSolid() === true and $hand->getBoundingBox() !== null){
-			$entities = $this->getCollidingEntities($hand->getBoundingBox());
-			$realCount = 0;
-			foreach($entities as $e){
-				if($e instanceof Arrow or $e instanceof DroppedItem){
-					continue;
+		if($hand->isSolid() === true){
+			foreach($hand->getBoundingBoxes() as $blockBB){
+				$entities = $this->getCollidingEntities($blockBB);
+				$realCount = 0;
+				foreach($entities as $e){
+					if($e instanceof Arrow or $e instanceof DroppedItem){
+						continue;
+					}
+					++$realCount;
 				}
-				++$realCount;
-			}
 
-			if($player !== null){
-				if(($diff = $player->getNextPosition()->subtract($player->getPosition())) and $diff->lengthSquared() > 0.00001){
-					$bb = $player->getBoundingBox()->getOffsetBoundingBox($diff->x, $diff->y, $diff->z);
-					if($hand->getBoundingBox()->intersectsWith($bb)){
-						++$realCount;
+				if($player !== null){
+					if(($diff = $player->getNextPosition()->subtract($player->getPosition())) and $diff->lengthSquared() > 0.00001){
+						$bb = $player->getBoundingBox()->getOffsetBoundingBox($diff->x, $diff->y, $diff->z);
+						if($blockBB->intersectsWith($bb)){
+							++$realCount;
+						}
 					}
 				}
-			}
 
-			if($realCount > 0){
-				return false; //Entity in block
+				if($realCount > 0){
+					return false; //Entity in block
+				}
 			}
 		}
 
