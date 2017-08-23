@@ -1784,7 +1784,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			return;
 		}
 
-		foreach($this->server->getOnlinePlayers() as $p){
+		foreach($this->server->getLoggedInPlayers() as $p){
 			if($p !== $this and $p->iusername === $this->iusername){
 				if($p->kick("logged in from another location") === false){
 					$this->close($this->getLeaveMessage(), "Logged in from another location");
@@ -1841,6 +1841,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->sendPlayStatus(PlayStatusPacket::LOGIN_SUCCESS);
 
 		$this->loggedIn = true;
+		$this->server->onPlayerLogin($this);
 
 		$pk = new ResourcePacksInfoPacket();
 		$manager = $this->server->getResourceManager();
@@ -1924,8 +1925,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		$this->server->addOnlinePlayer($this);
-
-		$this->server->onPlayerLogin($this);
+		$this->server->onPlayerCompleteLoginSequence($this);
 	}
 
 	public function handleLogin(LoginPacket $packet) : bool{
@@ -3309,6 +3309,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->loadQueue = [];
 
 				if($this->loggedIn){
+					$this->server->onPlayerLogout($this);
 					foreach($this->server->getOnlinePlayers() as $player){
 						if(!$player->canSee($this)){
 							$player->showPlayer($this);
