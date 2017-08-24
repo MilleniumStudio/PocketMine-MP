@@ -26,9 +26,8 @@ declare(strict_types=1);
 
 namespace pocketmine\level\format;
 
-use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\entity\Entity;
-use pocketmine\level\format\ChunkException;
 use pocketmine\level\Level;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\CompoundTag;
@@ -90,8 +89,9 @@ class Chunk{
 	 * @param CompoundTag[]       $tiles
 	 * @param string              $biomeIds
 	 * @param int[]               $heightMap
+	 * @param int[]               $extraData
 	 */
-	public function __construct(int $chunkX, int $chunkZ, array $subChunks = [], array $entities = [], array $tiles = [], string $biomeIds = "", array $heightMap = []){
+	public function __construct(int $chunkX, int $chunkZ, array $subChunks = [], array $entities = [], array $tiles = [], string $biomeIds = "", array $heightMap = [], array $extraData = []){
 		$this->x = $chunkX;
 		$this->z = $chunkZ;
 
@@ -127,9 +127,11 @@ class Chunk{
 		if(strlen($biomeIds) === 256){
 			$this->biomeIds = $biomeIds;
 		}else{
-			assert(strlen($biomeIds) === 0, "Wrong BiomeIds value count, expected 256, got " . strlen($biomeIds));
+			assert($biomeIds === "", "Wrong BiomeIds value count, expected 256, got " . strlen($biomeIds));
 			$this->biomeIds = str_repeat("\x00", 256);
 		}
+
+		$this->extraData = $extraData;
 
 		$this->NBTtiles = $tiles;
 		$this->NBTentities = $entities;
@@ -436,7 +438,7 @@ class Chunk{
 	public function recalculateHeightMapColumn(int $x, int $z) : int{
 		$max = $this->getHighestBlockAt($x, $z);
 		for($y = $max; $y >= 0; --$y){
-			if(Block::$lightFilter[$id = $this->getBlockId($x, $y, $z)] > 1 or Block::$diffusesSkyLight[$id]){
+			if(BlockFactory::$lightFilter[$id = $this->getBlockId($x, $y, $z)] > 1 or BlockFactory::$diffusesSkyLight[$id]){
 				break;
 			}
 		}
@@ -468,7 +470,7 @@ class Chunk{
 				$light = 15;
 				for(; $y >= 0; --$y){
 					if($light > 0){
-						$light -= Block::$lightFilter[$this->getBlockId($x, $y, $z)];
+						$light -= BlockFactory::$lightFilter[$this->getBlockId($x, $y, $z)];
 						if($light <= 0){
 							break;
 						}
@@ -609,7 +611,7 @@ class Chunk{
 	 * @param Entity $entity
 	 */
 	public function addEntity(Entity $entity){
-		if($entity->closed){
+		if($entity->isClosed()){
 			throw new \InvalidArgumentException("Attempted to add a garbage closed Entity to a chunk");
 		}
 		$this->entities[$entity->getId()] = $entity;
@@ -986,7 +988,7 @@ class Chunk{
 	 *
 	 * @return Chunk
 	 */
-	public static function fastDeserialize(string $data){
+	public static function fastDeserialize(string $data) : Chunk{
 		$stream = new BinaryStream();
 		$stream->setBuffer($data);
 		$data = null;

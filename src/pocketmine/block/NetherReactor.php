@@ -23,11 +23,43 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-class BirchWoodStairs extends WoodStairs{
+use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\Tool;
 
-	protected $id = self::BIRCH_WOOD_STAIRS;
+class NetherReactor extends Solid{
+	protected $id = Block::NETHER_REACTOR;
 
-	public function getName(){
-		return "Birch Wood Stairs";
+	public function __construct(int $meta = 0){
+		$this->meta = $meta;
 	}
+
+	public function getName() : string{
+		static $prefixes = [
+			"",
+			"Active ",
+			"Used "
+		];
+		return ($prefixes[$this->meta] ?? "") . "Nether Reactor Core";
+	}
+
+	public function getToolType() : int{
+		return Tool::TYPE_PICKAXE;
+	}
+
+	public function getHardness() : float{
+		return 3;
+	}
+
+	public function getDrops(Item $item) : array{
+		if($item->isPickaxe() >= Tool::TIER_WOODEN){
+			return [
+				ItemFactory::get(Item::IRON_INGOT, 0, 6),
+				ItemFactory::get(Item::DIAMOND, 0, 3)
+			];
+		}
+
+		return [];
+	}
+
 }

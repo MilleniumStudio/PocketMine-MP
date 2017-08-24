@@ -23,8 +23,12 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
+
 class NetherWart extends Item{
 	public function __construct($meta = 0, $count = 1){
+		$this->block = BlockFactory::get(Block::NETHER_WART_PLANT);
 		parent::__construct(self::NETHER_WART, $meta, $count, "Nether Wart");
 	}
 }

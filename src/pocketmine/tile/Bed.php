@@ -21,48 +21,32 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\tile;
 
-use pocketmine\item\Item;
-use pocketmine\item\Tool;
-use pocketmine\Player;
 
-//TODO: check orientation
-class Workbench extends Solid{
+use pocketmine\level\Level;
+use pocketmine\nbt\tag\ByteTag;
+use pocketmine\nbt\tag\CompoundTag;
 
-	protected $id = self::WORKBENCH;
+class Bed extends Spawnable{
 
-	public function __construct($meta = 0){
-		$this->meta = $meta;
-	}
-
-	public function canBeActivated(){
-		return true;
-	}
-
-	public function getHardness(){
-		return 2.5;
-	}
-
-	public function getName(){
-		return "Crafting Table";
-	}
-
-	public function getToolType(){
-		return Tool::TYPE_AXE;
-	}
-
-	public function onActivate(Item $item, Player $player = null){
-		if($player instanceof Player){
-			$player->craftingType = 1;
+	public function __construct(Level $level, CompoundTag $nbt){
+		if(!isset($nbt->color) or !($nbt->color instanceof ByteTag)){
+			$nbt->color = new ByteTag("color", 14); //default to old red
 		}
-
-		return true;
+		parent::__construct($level, $nbt);
 	}
 
-	public function getDrops(Item $item){
-		return [
-			[$this->id, 0, 1],
-		];
+	public function getColor() : int{
+		return $this->namedtag->color->getValue();
+	}
+
+	public function setColor(int $color){
+		$this->namedtag->color->setValue($color & 0x0f);
+		$this->onChanged();
+	}
+
+	public function addAdditionalSpawnData(CompoundTag $nbt){
+		$nbt->color = $this->namedtag->color;
 	}
 }

@@ -1,5 +1,6 @@
 <?php
 
+
 /*
  *
  *  ____            _        _   __  __ _                  __  __ ____
@@ -25,34 +26,42 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
+use pocketmine\math\Vector3;
+use pocketmine\Player;
 
-class WoodStairs extends Stair{
+class GlazedTerracotta extends Solid{
 
-	protected $id = self::WOOD_STAIRS;
-
-	public function __construct($meta = 0){
-		$this->meta = $meta;
+	public function getHardness() : float{
+		return 1.4;
 	}
 
-	public function getName(){
-		return "Wood Stairs";
+	public function getToolType() : int{
+		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getHardness(){
-		return 2;
+	public function place(Item $item, Block $block, Block $target, int $face, Vector3 $facePos, Player $player = null) : bool{
+		if($player !== null){
+			$faces = [
+				0 => 4,
+				1 => 3,
+				2 => 5,
+				3 => 2
+			];
+			$this->meta = $faces[(~($player->getDirection() - 1)) & 0x03];
+		}
+
+		return $this->getLevel()->setBlock($block, $this, true, true);
 	}
 
-	public function getResistance(){
-		return 15;
+	public function getVariantBitmask() : int{
+		return 0;
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_AXE;
-	}
+	public function getDrops(Item $item) : array{
+		if($item->isPickaxe() >= Tool::TIER_WOODEN){
+			return parent::getDrops($item);
+		}
 
-	public function getDrops(Item $item){
-		return [
-			[$this->id, 0, 1],
-		];
+		return [];
 	}
 }

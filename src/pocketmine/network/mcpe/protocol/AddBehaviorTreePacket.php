@@ -21,12 +21,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\network\mcpe\protocol;
 
-class Camera extends Item{
-	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::CAMERA, $meta, $count, "Camera");
+#include <rules/DataPacket.h>
+
+use pocketmine\network\mcpe\NetworkSession;
+
+class AddBehaviorTreePacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::ADD_BEHAVIOR_TREE_PACKET;
+
+	/** @var string */
+	public $unknownString1;
+
+	public function decodePayload(){
+		$this->unknownString1 = $this->getString();
 	}
 
-}
+	public function encodePayload(){
+		$this->putString($this->unknownString1);
+	}
 
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleAddBehaviorTree($this);
+	}
+}

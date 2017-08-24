@@ -32,7 +32,6 @@ class Arrow extends Projectile{
 	const NETWORK_ID = 80;
 
 	public $width = 0.5;
-	public $length = 0.5;
 	public $height = 0.5;
 
 	protected $gravity = 0.05;
@@ -46,11 +45,11 @@ class Arrow extends Projectile{
 	}
 
 	public function isCritical() : bool{
-		return $this->getDataFlag(self::DATA_FLAGS, self::DATA_FLAG_CRITICAL);
+		return $this->getGenericFlag(self::DATA_FLAG_CRITICAL);
 	}
 
 	public function setCritical(bool $value = true){
-		$this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_CRITICAL, $value);
+		$this->setGenericFlag(self::DATA_FLAG_CRITICAL, $value);
 	}
 
 	public function getResultDamage() : int{
@@ -62,14 +61,12 @@ class Arrow extends Projectile{
 		}
 	}
 
-	public function onUpdate($currentTick){
+	public function entityBaseTick(int $tickDiff = 1) : bool{
 		if($this->closed){
 			return false;
 		}
 
-		$this->timings->startTiming();
-
-		$hasUpdate = parent::onUpdate($currentTick);
+		$hasUpdate = parent::entityBaseTick($tickDiff);
 
 		if($this->onGround or $this->hadCollision){
 			$this->setCritical(false);
@@ -79,8 +76,6 @@ class Arrow extends Projectile{
 			$this->close();
 			$hasUpdate = true;
 		}
-
-		$this->timings->stopTiming();
 
 		return $hasUpdate;
 	}

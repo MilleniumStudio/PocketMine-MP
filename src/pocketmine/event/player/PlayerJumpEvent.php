@@ -21,13 +21,23 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\event\player;
 
-class JungleWoodStairs extends WoodStairs{
+use pocketmine\Player;
 
-	protected $id = self::JUNGLE_WOOD_STAIRS;
+/**
+ * Called when a player jumps
+ */
+class PlayerJumpEvent extends PlayerEvent{
+	public static $handlerList = null;
 
-	public function getName(){
-		return "Jungle Wood Stairs";
+	/**
+	 * PlayerJumpEvent constructor.
+	 *
+	 * @param Player $player
+	 */
+	public function __construct(Player $player){
+		$this->player = $player;
 	}
+
 }

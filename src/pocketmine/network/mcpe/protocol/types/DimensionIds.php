@@ -21,13 +21,12 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\network\mcpe\protocol\types;
 
-use pocketmine\block\Block;
+interface DimensionIds{
 
-class MobHead extends Item{
-	public function __construct($meta = 0, $count = 1){
-		$this->block = Block::get(Item::SKULL_BLOCK);
-		parent::__construct(self::MOB_HEAD, $meta, $count, "Mob Head");
-	}
+	const OVERWORLD = 0;
+	const NETHER = 1;
+	const THE_END = 2;
+
 }

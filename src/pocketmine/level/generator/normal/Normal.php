@@ -24,14 +24,7 @@ declare(strict_types=1);
 namespace pocketmine\level\generator\normal;
 
 use pocketmine\block\Block;
-use pocketmine\block\CoalOre;
-use pocketmine\block\DiamondOre;
-use pocketmine\block\Dirt;
-use pocketmine\block\GoldOre;
-use pocketmine\block\Gravel;
-use pocketmine\block\IronOre;
-use pocketmine\block\LapisOre;
-use pocketmine\block\RedstoneOre;
+use pocketmine\block\BlockFactory;
 use pocketmine\level\ChunkManager;
 use pocketmine\level\generator\biome\Biome;
 use pocketmine\level\generator\biome\BiomeSelector;
@@ -53,7 +46,9 @@ class Normal extends Generator{
 	private $level;
 	/** @var Random */
 	private $random;
+	/** @var int */
 	private $waterHeight = 62;
+	/** @var int */
 	private $bedrockDepth = 5;
 
 	/** @var Populator[] */
@@ -90,15 +85,15 @@ class Normal extends Generator{
 		}
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return "normal";
 	}
 
-	public function getSettings(){
+	public function getSettings() : array{
 		return [];
 	}
 
-	public function pickBiome($x, $z){
+	public function pickBiome(int $x, int $z){
 		$hash = $x * 2345803 ^ $z * 9236449 ^ $this->level->getSeed();
 		$hash *= $hash + 223;
 		$xNoise = $hash >> 20 & 3;
@@ -145,6 +140,9 @@ class Normal extends Generator{
 					return Biome::BIRCH_FOREST;
 				}
 			}else{
+				//FIXME: This will always cause River to be used since the rainfall is always greater than 0.8 if we
+				//reached this branch. However I don't think that substituting temperature for rainfall is correct given
+				//that mountain biomes are supposed to be pretty cold.
 				if($rainfall < 0.25){
 					return Biome::MOUNTAINS;
 				}elseif($rainfall < 0.70){
@@ -174,19 +172,19 @@ class Normal extends Generator{
 
 		$ores = new Ore();
 		$ores->setOreTypes([
-			new OreType(new CoalOre(), 20, 16, 0, 128),
-			new OreType(New IronOre(), 20, 8, 0, 64),
-			new OreType(new RedstoneOre(), 8, 7, 0, 16),
-			new OreType(new LapisOre(), 1, 6, 0, 32),
-			new OreType(new GoldOre(), 2, 8, 0, 32),
-			new OreType(new DiamondOre(), 1, 7, 0, 16),
-			new OreType(new Dirt(), 20, 32, 0, 128),
-			new OreType(new Gravel(), 10, 16, 0, 128)
+			new OreType(BlockFactory::get(Block::COAL_ORE), 20, 16, 0, 128),
+			new OreType(BlockFactory::get(Block::IRON_ORE), 20, 8, 0, 64),
+			new OreType(BlockFactory::get(Block::REDSTONE_ORE), 8, 7, 0, 16),
+			new OreType(BlockFactory::get(Block::LAPIS_ORE), 1, 6, 0, 32),
+			new OreType(BlockFactory::get(Block::GOLD_ORE), 2, 8, 0, 32),
+			new OreType(BlockFactory::get(Block::DIAMOND_ORE), 1, 7, 0, 16),
+			new OreType(BlockFactory::get(Block::DIRT), 20, 32, 0, 128),
+			new OreType(BlockFactory::get(Block::GRAVEL), 10, 16, 0, 128)
 		]);
 		$this->populators[] = $ores;
 	}
 
-	public function generateChunk($chunkX, $chunkZ){
+	public function generateChunk(int $chunkX, int $chunkZ){
 		$this->random->setSeed(0xdeadbeef ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
 
 		$noise = Generator::getFastNoise3D($this->noiseBase, 16, 128, 16, 4, 8, 4, $chunkX * 16, 0, $chunkZ * 16);
@@ -253,7 +251,7 @@ class Normal extends Generator{
 		}
 	}
 
-	public function populateChunk($chunkX, $chunkZ){
+	public function populateChunk(int $chunkX, int $chunkZ){
 		$this->random->setSeed(0xdeadbeef ^ ($chunkX << 8) ^ $chunkZ ^ $this->level->getSeed());
 		foreach($this->populators as $populator){
 			$populator->populate($this->level, $chunkX, $chunkZ, $this->random);
@@ -264,7 +262,7 @@ class Normal extends Generator{
 		$biome->populateChunk($this->level, $chunkX, $chunkZ, $this->random);
 	}
 
-	public function getSpawn(){
+	public function getSpawn() : Vector3{
 		return new Vector3(127.5, 128, 127.5);
 	}
 

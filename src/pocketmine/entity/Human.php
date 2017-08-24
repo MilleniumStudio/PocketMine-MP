@@ -59,7 +59,6 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 	protected $rawUUID;
 
 	public $width = 0.6;
-	public $length = 0.6;
 	public $height = 1.8;
 	public $eyeHeight = 1.62;
 
@@ -99,7 +98,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 	/**
 	 * @return string
 	 */
-	public function getRawUniqueId(){
+	public function getRawUniqueId() : string{
 		return $this->rawUUID;
 	}
 
@@ -107,7 +106,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 	 * @param string $str
 	 * @param string $skinId
 	 */
-	public function setSkin($str, $skinId){
+	public function setSkin(string $str, string $skinId){
 		if(!Player::isValidSkin($str)){
 			throw new \InvalidStateException("Specified skin is not valid, must be 8KiB or 16KiB");
 		}
@@ -141,13 +140,16 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		$attr = $this->attributeMap->getAttribute(Attribute::HUNGER);
 		$old = $attr->getValue();
 		$attr->setValue($new);
+
+		$reset = false;
 		// ranges: 18-20 (regen), 7-17 (none), 1-6 (no sprint), 0 (health depletion)
 		foreach([17, 6, 0] as $bound){
 			if(($old > $bound) !== ($new > $bound)){
 				$reset = true;
+				break;
 			}
 		}
-		if(isset($reset)){
+		if($reset){
 			$this->foodTickTimer = 0;
 		}
 
@@ -280,7 +282,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 
 	protected function initEntity(){
 
-		$this->setDataFlag(self::DATA_PLAYER_FLAGS, self::DATA_PLAYER_FLAG_SLEEP, false, self::DATA_TYPE_BYTE);
+		$this->setPlayerFlag(self::DATA_PLAYER_FLAG_SLEEP, false);
 		$this->setDataProperty(self::DATA_PLAYER_BED_POSITION, self::DATA_TYPE_POS, [0, 0, 0], false);
 
 		$this->inventory = new PlayerInventory($this);
@@ -375,7 +377,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		$this->attributeMap->addAttribute(Attribute::getAttribute(Attribute::EXPERIENCE));
 	}
 
-	public function entityBaseTick($tickDiff = 1){
+	public function entityBaseTick(int $tickDiff = 1) : bool{
 		$hasUpdate = parent::entityBaseTick($tickDiff);
 
 		$this->doFoodTick($tickDiff);
@@ -399,19 +401,19 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 					$this->addFood(1.0);
 				}
 				if($this->foodTickTimer % 20 === 0 and $health < $this->getMaxHealth()){
-					$this->heal(1, new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_SATURATION));
+					$this->heal(new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_SATURATION));
 				}
 			}
 
 			if($this->foodTickTimer === 0){
 				if($food >= 18){
 					if($health < $this->getMaxHealth()){
-						$this->heal(1, new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_SATURATION));
+						$this->heal(new EntityRegainHealthEvent($this, 1, EntityRegainHealthEvent::CAUSE_SATURATION));
 						$this->exhaust(3.0, PlayerExhaustEvent::CAUSE_HEALTH_REGEN);
 					}
 				}elseif($food <= 0){
 					if(($difficulty === 1 and $health > 10) or ($difficulty === 2 and $health > 1) or $difficulty === 3){
-						$this->attack(1, new EntityDamageEvent($this, EntityDamageEvent::CAUSE_STARVATION, 1));
+						$this->attack(new EntityDamageEvent($this, EntityDamageEvent::CAUSE_STARVATION, 1));
 					}
 				}
 			}
@@ -424,11 +426,11 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		}
 	}
 
-	public function getName(){
+	public function getName() : string{
 		return $this->getNameTag();
 	}
 
-	public function getDrops(){
+	public function getDrops() : array{
 		return $this->inventory !== null ? array_values($this->inventory->getContents()) : [];
 	}
 
@@ -461,7 +463,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 					new ShortTag("Damage", 0),
 					new ByteTag("Slot", $slot),
 					new ByteTag("TrueSlot", -1),
-					new ShortTag("id", 0),
+					new ShortTag("id", 0)
 				]);
 			}
 
@@ -538,5 +540,25 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 			}
 			parent::close();
 		}
+	}
+
+	/**
+	 * Wrapper around {@link Entity#getDataFlag} for player-specific data flag reading.
+	 *
+	 * @param int $flagId
+	 * @return bool
+	 */
+	public function getPlayerFlag(int $flagId){
+		return $this->getDataFlag(self::DATA_PLAYER_FLAGS, $flagId);
+	}
+
+	/**
+	 * Wrapper around {@link Entity#setDataFlag} for player-specific data flag setting.
+	 *
+	 * @param int  $flagId
+	 * @param bool $value
+	 */
+	public function setPlayerFlag(int $flagId, bool $value = true){
+		$this->setDataFlag(self::DATA_PLAYER_FLAGS, $flagId, $value, self::DATA_TYPE_BYTE);
 	}
 }

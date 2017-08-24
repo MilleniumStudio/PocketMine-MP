@@ -25,7 +25,6 @@ namespace pocketmine\level\format\io\leveldb;
 
 use pocketmine\entity\Entity;
 use pocketmine\level\format\Chunk;
-use pocketmine\level\format\ChunkException;
 use pocketmine\level\format\io\BaseLevelProvider;
 use pocketmine\level\format\io\ChunkUtils;
 use pocketmine\level\format\io\exception\UnsupportedChunkFormatException;
@@ -436,7 +435,8 @@ class LevelDB extends BaseLevelProvider{
 				$entities,
 				$tiles,
 				$biomeIds,
-				$heightMap
+				$heightMap,
+				$extraData
 			);
 
 			//TODO: tile ticks, biome states (?)
@@ -575,7 +575,7 @@ class LevelDB extends BaseLevelProvider{
 	/**
 	 * @return \LevelDB
 	 */
-	public function getDatabase(){
+	public function getDatabase() : \LevelDB{
 		return $this->db;
 	}
 
@@ -599,11 +599,7 @@ class LevelDB extends BaseLevelProvider{
 	}
 
 	public function isChunkGenerated(int $chunkX, int $chunkZ) : bool{
-		if($this->chunkExists($chunkX, $chunkZ) and ($chunk = $this->getChunk($chunkX, $chunkZ, false)) !== null){
-			return true;
-		}
-
-		return false;
+		return $this->chunkExists($chunkX, $chunkZ) and ($chunk = $this->getChunk($chunkX, $chunkZ, false)) !== null;
 	}
 
 	public function isChunkPopulated(int $chunkX, int $chunkZ) : bool{

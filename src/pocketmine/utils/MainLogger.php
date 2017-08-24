@@ -28,48 +28,52 @@ use pocketmine\Thread;
 use pocketmine\Worker;
 
 class MainLogger extends \AttachableThreadedLogger{
+
+	/** @var string */
 	protected $logFile;
+	/** @var \Threaded */
 	protected $logStream;
+	/** @var bool */
 	protected $shutdown;
+	/** @var bool */
 	protected $logDebug;
-	private $logResource;
 	/** @var MainLogger */
 	public static $logger = null;
 
 	/**
 	 * @param string $logFile
-	 * @param bool   $logDebug
+	 * @param bool $logDebug
 	 *
 	 * @throws \RuntimeException
 	 */
-	public function __construct($logFile, $logDebug = false){
+	public function __construct(string $logFile, bool $logDebug = false){
 		if(static::$logger instanceof MainLogger){
 			throw new \RuntimeException("MainLogger has been already created");
 		}
 		touch($logFile);
 		$this->logFile = $logFile;
-		$this->logDebug = (bool) $logDebug;
+		$this->logDebug = $logDebug;
 		$this->logStream = new \Threaded;
 		$this->start();
 	}
 
 	/**
-	 * @return MainLogger|null
+	 * @return MainLogger
 	 */
-	public static function getLogger(){
+	public static function getLogger() : MainLogger{
 		return static::$logger;
 	}
 
 	/**
-	 * Assigns the MainLogger instance to the {@link MainLogger#logger} static property. Because static properties are
-	 * thread-local, this must be called from the body of every Thread if you want the logger to be accessible via
-	 * {@link MainLogger#getLogger}.
+	 * Assigns the MainLogger instance to the {@link MainLogger#logger} static property.
+	 *
+	 * WARNING: Because static properties are thread-local, this MUST be called from the body of every Thread if you
+	 * want the logger to be accessible via {@link MainLogger#getLogger}.
 	 */
 	public function registerStatic(){
-		if(static::$logger instanceof MainLogger){
-			throw new \RuntimeException("MainLogger has been already registered");
+		if(static::$logger === null){
+			static::$logger = $this;
 		}
-		static::$logger = $this;
 	}
 
 	public function emergency($message){
@@ -110,8 +114,8 @@ class MainLogger extends \AttachableThreadedLogger{
 	/**
 	 * @param bool $logDebug
 	 */
-	public function setLogDebug($logDebug){
-		$this->logDebug = (bool) $logDebug;
+	public function setLogDebug(bool $logDebug){
+		$this->logDebug = $logDebug;
 	}
 
 	public function logException(\Throwable $e, $trace = null){
@@ -139,7 +143,7 @@ class MainLogger extends \AttachableThreadedLogger{
 			E_STRICT => "E_STRICT",
 			E_RECOVERABLE_ERROR => "E_RECOVERABLE_ERROR",
 			E_DEPRECATED => "E_DEPRECATED",
-			E_USER_DEPRECATED => "E_USER_DEPRECATED",
+			E_USER_DEPRECATED => "E_USER_DEPRECATED"
 		];
 		if($errno === 0){
 			$type = LogLevel::CRITICAL;
@@ -186,6 +190,7 @@ class MainLogger extends \AttachableThreadedLogger{
 
 	public function shutdown(){
 		$this->shutdown = true;
+		$this->notify();
 	}
 
 	protected function send($message, $level, $prefix, $color){
@@ -213,39 +218,35 @@ class MainLogger extends \AttachableThreadedLogger{
 			$this->attachment->call($level, $message);
 		}
 
-		$this->logStream[] = date("Y-m-d", $now) . " " . $cleanMessage . "\n";
-		if($this->logStream->count() === 1){
-			$this->synchronized(function(){
-				$this->notify();
-			});
+		$this->logStream[] = date("Y-m-d", $now) . " " . $cleanMessage . PHP_EOL;
+	}
+
+	/**
+	 * @param resource $logResource
+	 */
+	private function writeLogStream($logResource){
+		while($this->logStream->count() > 0){
+			$chunk = $this->logStream->shift();
+			fwrite($logResource, $chunk);
 		}
 	}
 
 	public function run(){
 		$this->shutdown = false;
-		$this->logResource = fopen($this->logFile, "a+b");
-		if(!is_resource($this->logResource)){
+		$logResource = fopen($this->logFile, "ab");
+		if(!is_resource($logResource)){
 			throw new \RuntimeException("Couldn't open log file");
 		}
 
 		while($this->shutdown === false){
+			$this->writeLogStream($logResource);
 			$this->synchronized(function(){
-				while($this->logStream->count() > 0){
-					$chunk = $this->logStream->shift();
-					fwrite($this->logResource, $chunk);
-				}
-
 				$this->wait(25000);
 			});
 		}
 
-		if($this->logStream->count() > 0){
-			while($this->logStream->count() > 0){
-				$chunk = $this->logStream->shift();
-				fwrite($this->logResource, $chunk);
-			}
-		}
+		$this->writeLogStream($logResource);
 
-		fclose($this->logResource);
+		fclose($logResource);
 	}
 }

@@ -23,12 +23,38 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\Tool;
 
-class FenceGateJungle extends FenceGate{
+class NetherQuartzOre extends Solid{
 
-	protected $id = self::FENCE_GATE_JUNGLE;
+	protected $id = Block::NETHER_QUARTZ_ORE;
 
-	public function getName(){
-		return "Jungle Fence Gate";
+	public function __construct(int $meta = 0){
+		$this->meta = $meta;
 	}
+
+	public function getName() : string{
+		return "Nether Quartz Ore";
+	}
+
+	public function getHardness() : float{
+		return 3;
+	}
+
+	public function getToolType() : int{
+		return Tool::TYPE_PICKAXE;
+	}
+
+	public function getDrops(Item $item) : array{
+		if($item->isPickaxe() >= Tool::TIER_WOODEN){
+			return [
+				ItemFactory::get(Item::QUARTZ, 0, 1)
+			];
+		}
+
+		return [];
+	}
+
 }

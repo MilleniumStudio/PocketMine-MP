@@ -46,7 +46,6 @@ class Item extends Entity{
 	protected $item;
 
 	public $width = 0.25;
-	public $length = 0.25;
 	public $height = 0.25;
 	protected $baseOffset = 0.125;
 
@@ -87,65 +86,31 @@ class Item extends Entity{
 		$this->server->getPluginManager()->callEvent(new ItemSpawnEvent($this));
 	}
 
-	public function attack($damage, EntityDamageEvent $source){
+	public function attack(EntityDamageEvent $source){
 		if(
 			$source->getCause() === EntityDamageEvent::CAUSE_VOID or
 			$source->getCause() === EntityDamageEvent::CAUSE_FIRE_TICK or
 			$source->getCause() === EntityDamageEvent::CAUSE_ENTITY_EXPLOSION or
 			$source->getCause() === EntityDamageEvent::CAUSE_BLOCK_EXPLOSION
 		){
-			parent::attack($damage, $source);
+			parent::attack($source);
 		}
 	}
 
-	public function onUpdate($currentTick){
+	public function entityBaseTick(int $tickDiff = 1) : bool{
 		if($this->closed){
 			return false;
 		}
 
-		$tickDiff = $currentTick - $this->lastUpdate;
-		if($tickDiff <= 0 and !$this->justCreated){
-			return true;
-		}
-
-		$this->lastUpdate = $currentTick;
-
-		$this->timings->startTiming();
-
-		$hasUpdate = $this->entityBaseTick($tickDiff);
+		$hasUpdate = parent::entityBaseTick($tickDiff);
 
 		if($this->isAlive()){
-
 			if($this->pickupDelay > 0 and $this->pickupDelay < 32767){ //Infinite delay
 				$this->pickupDelay -= $tickDiff;
 				if($this->pickupDelay < 0){
 					$this->pickupDelay = 0;
 				}
 			}
-
-			$this->motionY -= $this->gravity;
-
-			if($this->checkObstruction($this->x, $this->y, $this->z)){
-				$hasUpdate = true;
-			}
-
-			$this->move($this->motionX, $this->motionY, $this->motionZ);
-
-			$friction = 1 - $this->drag;
-
-			if($this->onGround and (abs($this->motionX) > 0.00001 or abs($this->motionZ) > 0.00001)){
-				$friction = $this->getLevel()->getBlock($this->temporalVector->setComponents((int) floor($this->x), (int) floor($this->y - 1), (int) floor($this->z) - 1))->getFrictionFactor() * $friction;
-			}
-
-			$this->motionX *= $friction;
-			$this->motionY *= 1 - $this->drag;
-			$this->motionZ *= $friction;
-
-			if($this->onGround){
-				$this->motionY *= -0.5;
-			}
-
-			$this->updateMovement();
 
 			if($this->age > 6000){
 				$this->server->getPluginManager()->callEvent($ev = new ItemDespawnEvent($this));
@@ -159,9 +124,16 @@ class Item extends Entity{
 
 		}
 
-		$this->timings->stopTiming();
+		return $hasUpdate;
+	}
 
-		return $hasUpdate or !$this->onGround or abs($this->motionX) > 0.00001 or abs($this->motionY) > 0.00001 or abs($this->motionZ) > 0.00001;
+	protected function tryChangeMovement(){
+		$this->checkObstruction($this->x, $this->y, $this->z);
+		parent::tryChangeMovement();
+	}
+
+	protected function applyDragBeforeGravity() : bool{
+		return true;
 	}
 
 	public function saveNBT(){
@@ -181,53 +153,53 @@ class Item extends Entity{
 	/**
 	 * @return ItemItem
 	 */
-	public function getItem(){
+	public function getItem() : ItemItem{
 		return $this->item;
 	}
 
-	public function canCollideWith(Entity $entity){
+	public function canCollideWith(Entity $entity) : bool{
 		return false;
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getPickupDelay(){
+	public function getPickupDelay() : int{
 		return $this->pickupDelay;
 	}
 
 	/**
 	 * @param int $delay
 	 */
-	public function setPickupDelay($delay){
+	public function setPickupDelay(int $delay){
 		$this->pickupDelay = $delay;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getOwner(){
+	public function getOwner() : string{
 		return $this->owner;
 	}
 
 	/**
 	 * @param string $owner
 	 */
-	public function setOwner($owner){
+	public function setOwner(string $owner){
 		$this->owner = $owner;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getThrower(){
+	public function getThrower() : string{
 		return $this->thrower;
 	}
 
 	/**
 	 * @param string $thrower
 	 */
-	public function setThrower($thrower){
+	public function setThrower(string $thrower){
 		$this->thrower = $thrower;
 	}
 

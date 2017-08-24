@@ -21,14 +21,26 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\network\mcpe\protocol;
 
+#include <rules/DataPacket.h>
 
-class FenceGateSpruce extends FenceGate{
+use pocketmine\network\mcpe\NetworkSession;
 
-	protected $id = self::FENCE_GATE_SPRUCE;
+class SimpleEventPacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::SIMPLE_EVENT_PACKET;
 
-	public function getName(){
-		return "Spruce Fence Gate";
+	public $unknownShort1;
+
+	public function decodePayload(){
+		$this->unknownShort1 = $this->getLShort();
+	}
+
+	public function encodePayload(){
+		$this->putLShort($this->unknownShort1);
+	}
+
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleSimpleEvent($this);
 	}
 }

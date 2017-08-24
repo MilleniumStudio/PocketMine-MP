@@ -24,11 +24,11 @@ declare(strict_types=1);
 namespace pocketmine\tile;
 
 use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\nbt\tag\ShortTag;
-use pocketmine\nbt\tag\StringTag;
 
 class FlowerPot extends Spawnable{
 
@@ -66,31 +66,25 @@ class FlowerPot extends Spawnable{
 	}
 
 	public function getItem() : Item{
-		return Item::get((int) ($this->namedtag["item"] ?? 0), (int) ($this->namedtag["mData"] ?? 0), 1);
+		return ItemFactory::get($this->namedtag->item->getValue(), $this->namedtag->mData->getValue(), 1);
 	}
 
 	public function setItem(Item $item){
-		$this->namedtag["item"] = $item->getId();
-		$this->namedtag["mData"] = $item->getDamage();
+		$this->namedtag->item->setValue($item->getId());
+		$this->namedtag->mData->setValue($item->getDamage());
 		$this->onChanged();
 	}
 
 	public function removeItem(){
-		$this->setItem(Item::get(Item::AIR));
+		$this->setItem(ItemFactory::get(Item::AIR));
 	}
 
 	public function isEmpty() : bool{
 		return $this->getItem()->getId() === Item::AIR;
 	}
 
-	public function getSpawnCompound() : CompoundTag{
-		return new CompoundTag("", [
-			new StringTag("id", Tile::FLOWER_POT),
-			new IntTag("x", (int) $this->x),
-			new IntTag("y", (int) $this->y),
-			new IntTag("z", (int) $this->z),
-			$this->namedtag->item,
-			$this->namedtag->mData
-		]);
+	public function addAdditionalSpawnData(CompoundTag $nbt){
+		$nbt->item = $this->namedtag->item;
+		$nbt->mData = $this->namedtag->mData;
 	}
 }

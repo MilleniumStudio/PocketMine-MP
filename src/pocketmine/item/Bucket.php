@@ -25,9 +25,11 @@ namespace pocketmine\item;
 
 use pocketmine\block\Air;
 use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
 use pocketmine\block\Liquid;
 use pocketmine\event\player\PlayerBucketFillEvent;
 use pocketmine\level\Level;
+use pocketmine\math\Vector3;
 use pocketmine\Player;
 
 class Bucket extends Item{
@@ -39,12 +41,16 @@ class Bucket extends Item{
 		return 1;
 	}
 
-	public function canBeActivated(){
-		return true;
+	public function getFuelTime() : int{
+		if($this->meta === Block::LAVA or $this->meta === Block::FLOWING_LAVA){
+			return 20000;
+		}
+
+		return 0;
 	}
 
-	public function onActivate(Level $level, Player $player, Block $block, Block $target, $face, $fx, $fy, $fz){
-		$targetBlock = Block::get($this->meta);
+	public function onActivate(Level $level, Player $player, Block $block, Block $target, int $face, Vector3 $facePos) : bool{
+		$targetBlock = BlockFactory::get($this->meta);
 
 		if($targetBlock instanceof Air){
 			if($target instanceof Liquid and $target->getDamage() === 0){
@@ -52,7 +58,7 @@ class Bucket extends Item{
 				$result->setDamage($target->getId());
 				$player->getServer()->getPluginManager()->callEvent($ev = new PlayerBucketFillEvent($player, $block, $face, $this, $result));
 				if(!$ev->isCancelled()){
-					$player->getLevel()->setBlock($target, new Air(), true, true);
+					$player->getLevel()->setBlock($target, BlockFactory::get(Block::AIR), true, true);
 					if($player->isSurvival()){
 						$player->getInventory()->setItemInHand($ev->getItem());
 					}

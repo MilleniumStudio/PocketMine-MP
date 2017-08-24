@@ -174,27 +174,27 @@ interface LevelProvider{
 	/**
 	 * @return string
 	 */
-	public function getName();
+	public function getName() : string;
 
 	/**
-	 * @return int|string int, or the string numeric representation of a long in 32-bit systems
+	 * @return int
 	 */
-	public function getTime();
+	public function getTime() : int;
 
 	/**
-	 * @param int|string $value int, or the string numeric representation of a long in 32-bit systems
+	 * @param int
 	 */
-	public function setTime($value);
+	public function setTime(int $value);
 
 	/**
-	 * @return int|string int, or the string numeric representation of a long in 32-bit systems
+	 * @return int
 	 */
-	public function getSeed();
+	public function getSeed() : int;
 
 	/**
-	 * @param int|string $value int, or the string numeric representation of a long in 32-bit systems
+	 * @param int
 	 */
-	public function setSeed($value);
+	public function setSeed(int $value);
 
 	/**
 	 * @return Vector3
@@ -216,7 +216,7 @@ interface LevelProvider{
 	/**
 	 * @return Level
 	 */
-	public function getLevel();
+	public function getLevel() : Level;
 
 	public function close();
 

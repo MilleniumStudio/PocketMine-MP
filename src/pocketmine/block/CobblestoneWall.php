@@ -27,29 +27,29 @@ use pocketmine\item\Tool;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 
-class StoneWall extends Transparent{
+class CobblestoneWall extends Transparent{
 	const NONE_MOSSY_WALL = 0;
 	const MOSSY_WALL = 1;
 
-	protected $id = self::STONE_WALL;
+	protected $id = self::COBBLESTONE_WALL;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function isSolid(){
+	public function isSolid() : bool{
 		return false;
 	}
 
-	public function getToolType(){
+	public function getToolType() : int{
 		return Tool::TYPE_PICKAXE;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 2;
 	}
 
-	public function getName(){
+	public function getName() : string{
 		if($this->meta === 0x01){
 			return "Mossy Cobblestone Wall";
 		}
@@ -88,7 +88,7 @@ class StoneWall extends Transparent{
 	}
 
 	public function canConnect(Block $block){
-		return ($block->getId() !== self::COBBLE_WALL and $block->getId() !== self::FENCE_GATE) ? $block->isSolid() and !$block->isTransparent() : true;
+		return ($block->getId() !== self::COBBLESTONE_WALL and $block->getId() !== self::FENCE_GATE) ? $block->isSolid() and !$block->isTransparent() : true;
 	}
 
 }

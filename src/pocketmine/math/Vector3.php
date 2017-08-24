@@ -132,8 +132,10 @@ class Vector3{
 		return new Vector3((int) floor($this->x), (int) floor($this->y), (int) floor($this->z));
 	}
 
-	public function round(){
-		return new Vector3((int) round($this->x), (int) round($this->y), (int) round($this->z));
+	public function round(int $precision = 0, int $mode = PHP_ROUND_HALF_UP){
+		return $precision > 0 ?
+			new Vector3(round($this->x, $precision, $mode), round($this->y, $precision, $mode), round($this->z, $precision, $mode)) :
+			new Vector3((int) round($this->x, $precision, $mode), (int) round($this->y, $precision, $mode), (int) round($this->z, $precision, $mode));
 	}
 
 	public function abs(){
@@ -161,7 +163,7 @@ class Vector3{
 
 	/**
 	 * Return a Vector3 instance
-	 * 
+	 *
 	 * @return Vector3
 	 */
 	public function asVector3() : Vector3{
@@ -189,7 +191,7 @@ class Vector3{
 	}
 
 	public function distanceSquared(Vector3 $pos){
-		return pow($this->x - $pos->x, 2) + pow($this->y - $pos->y, 2) + pow($this->z - $pos->z, 2);
+		return (($this->x - $pos->x) ** 2) + (($this->y - $pos->y) ** 2) + (($this->z - $pos->z) ** 2);
 	}
 
 	public function maxPlainDistance($x = 0, $z = 0){
@@ -234,7 +236,7 @@ class Vector3{
 		);
 	}
 
-	public function equals(Vector3 $v){
+	public function equals(Vector3 $v) : bool{
 		return $this->x == $v->x and $this->y == $v->y and $this->z == $v->z;
 	}
 

@@ -50,13 +50,13 @@ class Position extends Vector3{
 
 	/**
 	 * Return a Position instance
-	 * 
+	 *
 	 * @return Position
 	 */
 	public function asPosition() : Position{
 		return new Position($this->x, $this->y, $this->z, $this->level);
 	}
-	
+
 	/**
 	 * Returns the target Level, or null if the target is not valid.
 	 * If a reference exists to a Level which is closed, the reference will be destroyed and null will be returned.
@@ -95,7 +95,7 @@ class Position extends Vector3{
 	 *
 	 * @return bool
 	 */
-	public function isValid(){
+	public function isValid() : bool{
 		return $this->getLevel() instanceof Level;
 	}
 
@@ -133,7 +133,7 @@ class Position extends Vector3{
 		return $this;
 	}
 
-	public function equals(Vector3 $v){
+	public function equals(Vector3 $v) : bool{
 		if($v instanceof Position){
 			return parent::equals($v) and $v->getLevel() === $this->getLevel();
 		}

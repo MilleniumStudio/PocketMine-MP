@@ -80,7 +80,7 @@ namespace pocketmine {
 	use raklib\RakLib;
 
 	const VERSION = "1.6.2dev";
-	const API_VERSION = "3.0.0-ALPHA6";
+	const API_VERSION = "3.0.0-ALPHA7";
 	const CODENAME = "Unleashed";
 
 	/*
@@ -105,7 +105,7 @@ namespace pocketmine {
 	error_reporting(-1);
 
 	set_error_handler(function($severity, $message, $file, $line){
-		if((error_reporting() & $severity)){
+		if(error_reporting() & $severity){
 			throw new \ErrorException($message, 0, $severity, $file, $line);
 		}else{ //stfu operator
 			return true;
@@ -407,7 +407,7 @@ namespace pocketmine {
 					return (is_object($value) ? get_class($value) . " object" : gettype($value) . " " . (is_array($value) ? "Array()" : Utils::printable(@strval($value))));
 				}, $args));
 			}
-			$messages[] = "#$j " . (isset($trace[$i]["file"]) ? cleanPath($trace[$i]["file"]) : "") . "(" . (isset($trace[$i]["line"]) ? $trace[$i]["line"] : "") . "): " . (isset($trace[$i]["class"]) ? $trace[$i]["class"] . (($trace[$i]["type"] === "dynamic" or $trace[$i]["type"] === "->") ? "->" : "::") : "") . $trace[$i]["function"] . "(" . Utils::printable($params) . ")";
+			$messages[] = "#$j " . (isset($trace[$i]["file"]) ? cleanPath($trace[$i]["file"]) : "") . "(" . ($trace[$i]["line"] ?? "") . "): " . (isset($trace[$i]["class"]) ? $trace[$i]["class"] . (($trace[$i]["type"] === "dynamic" or $trace[$i]["type"] === "->") ? "->" : "::") : "") . $trace[$i]["function"] . "(" . Utils::printable($params) . ")";
 		}
 
 		return $messages;

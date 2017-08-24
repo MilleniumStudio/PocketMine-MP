@@ -27,7 +27,7 @@ namespace pocketmine\network\mcpe\protocol;
 
 use pocketmine\entity\Attribute;
 use pocketmine\entity\Entity;
-use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 use pocketmine\network\mcpe\NetworkSession;
 use pocketmine\utils\BinaryStream;
 use pocketmine\utils\Utils;
@@ -70,6 +70,7 @@ abstract class DataPacket extends BinaryStream{
 	public function encode(){
 		$this->reset();
 		$this->encodePayload();
+		$this->isEncoded = true;
 	}
 
 	/**
@@ -106,7 +107,7 @@ abstract class DataPacket extends BinaryStream{
 	public function __debugInfo(){
 		$data = [];
 		foreach($this as $k => $v){
-			if($k === "buffer"){
+			if($k === "buffer" and is_string($v)){
 				$data[$k] = bin2hex($v);
 			}elseif(is_string($v) or (is_object($v) and method_exists($v, "__toString"))){
 				$data[$k] = Utils::printable((string) $v);
@@ -208,7 +209,7 @@ abstract class DataPacket extends BinaryStream{
 					break;
 				case Entity::DATA_TYPE_SLOT:
 					//TODO: change this implementation (use objects)
-					$this->putSlot(Item::get($d[1][0], $d[1][2], $d[1][1])); //ID, damage, count
+					$this->putSlot(ItemFactory::get($d[1][0], $d[1][2], $d[1][1])); //ID, damage, count
 					break;
 				case Entity::DATA_TYPE_POS:
 					//TODO: change this implementation (use objects)

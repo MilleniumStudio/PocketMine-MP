@@ -23,12 +23,42 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
+use pocketmine\item\Tool;
 
-class FenceGateBirch extends FenceGate{
+class DoubleWoodenSlab extends Solid{
 
-	protected $id = self::FENCE_GATE_BIRCH;
+	protected $id = self::DOUBLE_WOODEN_SLAB;
 
-	public function getName(){
-		return "Birch Fence Gate";
+	public function __construct(int $meta = 0){
+		$this->meta = $meta;
 	}
+
+	public function getHardness() : float{
+		return 2;
+	}
+
+	public function getToolType() : int{
+		return Tool::TYPE_AXE;
+	}
+
+	public function getName() : string{
+		static $names = [
+			0 => "Oak",
+			1 => "Spruce",
+			2 => "Birch",
+			3 => "Jungle",
+			4 => "Acacia",
+			5 => "Dark Oak"
+		];
+		return "Double " . ($names[$this->meta & 0x07] ?? "") . " Wooden Slab";
+	}
+
+	public function getDrops(Item $item) : array{
+		return [
+			ItemFactory::get(Item::WOODEN_SLAB, $this->getDamage() & 0x07, 2)
+		];
+	}
+
 }

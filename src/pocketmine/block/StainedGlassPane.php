@@ -23,15 +23,14 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-class LitRedstoneTorch extends RedstoneTorch{
+use pocketmine\block\utils\ColorBlockMetaHelper;
 
-	protected $id = self::REDSTONE_TORCH;
+class StainedGlassPane extends GlassPane{
 
-	public function __construct($meta = 0){
-		$this->meta = $meta;
+	protected $id = self::STAINED_GLASS_PANE;
+
+	public function getName() : string{
+		return ColorBlockMetaHelper::getColorFromMeta($this->meta) . " Stained Glass Pane";
 	}
 
-	public function getName(){
-		return "Lit Redstone Torch";
-	}
 }

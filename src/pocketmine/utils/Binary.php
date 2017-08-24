@@ -55,6 +55,20 @@ class Binary{
 		return $value & 0xffffffff;
 	}
 
+
+	public static function flipShortEndianness(int $value) : int{
+		return self::readLShort(self::writeShort($value));
+	}
+
+	public static function flipIntEndianness(int $value) : int{
+		return self::readLInt(self::writeInt($value));
+	}
+
+	public static function flipLongEndianness(int $value) : int{
+		return self::readLLong(self::writeLong($value));
+	}
+
+
 	private static function checkLength($str, $expect){
 		assert(($len = strlen($str)) === $expect, "Expected $expect bytes, got $len");
 	}
@@ -282,7 +296,7 @@ class Binary{
 	 *
 	 * @return float
 	 */
-	public static function readRoundedFloat(string $str, int $accuracy){
+	public static function readRoundedFloat(string $str, int $accuracy) : float{
 		return round(self::readFloat($str), $accuracy);
 	}
 
@@ -315,7 +329,7 @@ class Binary{
 	 *
 	 * @return float
 	 */
-	public static function readRoundedLFloat(string $str, int $accuracy){
+	public static function readRoundedLFloat(string $str, int $accuracy) : float{
 		return round(self::readLFloat($str), $accuracy);
 	}
 
@@ -335,7 +349,7 @@ class Binary{
 	 * @param float $value
 	 * @return string
 	 */
-	public static function printFloat(float $value){
+	public static function printFloat(float $value) : string{
 		return preg_replace("/(\\.\\d+?)0+$/", "$1", sprintf("%F", $value));
 	}
 

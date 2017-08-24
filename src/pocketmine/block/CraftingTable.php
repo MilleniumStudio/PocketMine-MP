@@ -23,11 +23,39 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-class AcaciaWoodStairs extends WoodStairs{
+use pocketmine\item\Item;
+use pocketmine\item\Tool;
+use pocketmine\Player;
 
-	protected $id = self::ACACIA_WOOD_STAIRS;
+class CraftingTable extends Solid{
 
-	public function getName(){
-		return "Acacia Wood Stairs";
+	protected $id = self::CRAFTING_TABLE;
+
+	public function __construct(int $meta = 0){
+		$this->meta = $meta;
+	}
+
+	public function getHardness() : float{
+		return 2.5;
+	}
+
+	public function getName() : string{
+		return "Crafting Table";
+	}
+
+	public function getToolType() : int{
+		return Tool::TYPE_AXE;
+	}
+
+	public function onActivate(Item $item, Player $player = null) : bool{
+		if($player instanceof Player){
+			$player->craftingType = 1;
+		}
+
+		return true;
+	}
+
+	public function getFuelTime() : int{
+		return 300;
 	}
 }

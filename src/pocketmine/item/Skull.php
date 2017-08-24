@@ -23,10 +23,12 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-class Quartz extends Item{
+use pocketmine\block\Block;
+use pocketmine\block\BlockFactory;
+
+class Skull extends Item{
 	public function __construct($meta = 0, $count = 1){
-		parent::__construct(self::QUARTZ, $meta, $count, "Quartz");
+		$this->block = BlockFactory::get(Block::SKULL_BLOCK);
+		parent::__construct(self::SKULL, $meta, $count, "Mob Head");
 	}
-
 }
-

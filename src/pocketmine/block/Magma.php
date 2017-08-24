@@ -23,36 +23,53 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\entity\Entity;
+use pocketmine\event\entity\EntityDamageByBlockEvent;
+use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\item\Item;
 use pocketmine\item\Tool;
 
-class WoodDoor extends Door{
+class Magma extends Solid{
 
-	protected $id = self::WOOD_DOOR_BLOCK;
+	protected $id = Block::MAGMA;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getName(){
-		return "Wood Door Block";
+	public function getName() : string{
+		return "Magma Block";
 	}
 
-	public function canBeActivated(){
-		return true;
+	public function getHardness() : float{
+		return 0.5;
 	}
 
-	public function getHardness(){
+	public function getToolType() : int{
+		return Tool::TYPE_PICKAXE;
+	}
+
+	public function getLightLevel() : int{
 		return 3;
 	}
 
-	public function getToolType(){
-		return Tool::TYPE_AXE;
+	public function hasEntityCollision() : bool{
+		return true;
 	}
 
-	public function getDrops(Item $item){
-		return [
-			[Item::WOODEN_DOOR, 0, 1],
-		];
+	public function onEntityCollide(Entity $entity){
+		if(!$entity->isSneaking()){
+			$ev = new EntityDamageByBlockEvent($this, $entity, EntityDamageEvent::CAUSE_FIRE, 1);
+			$entity->attack($ev);
+		}
 	}
+
+	public function getDrops(Item $item) : array{
+		if($item->isPickaxe() >= Tool::TIER_WOODEN){
+			return parent::getDrops($item);
+		}
+
+		return [];
+	}
+
 }

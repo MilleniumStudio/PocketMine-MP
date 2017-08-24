@@ -21,13 +21,18 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\network\mcpe\protocol\types;
 
-class SpruceWoodStairs extends WoodStairs{
+interface ContainerIds{
 
-	protected $id = self::SPRUCE_WOOD_STAIRS;
+	const NONE = -1;
+	const INVENTORY = 0;
+	const FIRST = 1;
+	const LAST = 100;
+	const OFFHAND = 119;
+	const ARMOR = 120;
+	const CREATIVE = 121;
+	const HOTBAR = 122;
+	const FIXED_INVENTORY = 123;
 
-	public function getName(){
-		return "Spruce Wood Stairs";
-	}
 }

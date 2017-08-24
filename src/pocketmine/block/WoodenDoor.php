@@ -23,12 +23,15 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\item\Tool;
 
-class FenceGateDarkOak extends FenceGate{
+class WoodenDoor extends Door{
 
-	protected $id = self::FENCE_GATE_DARK_OAK;
+	public function getHardness() : float{
+		return 3;
+	}
 
-	public function getName(){
-		return "Dark Oak Fence Gate";
+	public function getToolType() : int{
+		return Tool::TYPE_AXE;
 	}
 }

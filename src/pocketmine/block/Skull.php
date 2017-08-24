@@ -24,8 +24,9 @@ declare(strict_types=1);
 namespace pocketmine\block;
 
 use pocketmine\item\Item;
-use pocketmine\level\Level;
+use pocketmine\item\ItemFactory;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\IntTag;
@@ -35,23 +36,24 @@ use pocketmine\tile\Skull as SkullTile;
 use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 
-class MobHead extends Flowable{
+class Skull extends Flowable{
 
-	protected $id = self::MOB_HEAD_BLOCK;
+	protected $id = self::SKULL_BLOCK;
 
-	public function __construct($meta = 0){
+	public function __construct(int $meta = 0){
 		$this->meta = $meta;
 	}
 
-	public function getHardness(){
+	public function getHardness() : float{
 		return 1;
 	}
 
-	public function getName(){
-		return "Mob Head";
+	public function getName() : string{
+		return "Mob Head Block";
 	}
 
 	protected function recalculateBoundingBox(){
+		//TODO: different bounds depending on attached face (meta)
 		return new AxisAlignedBB(
 			$this->x + 0.25,
 			$this->y,
@@ -62,10 +64,10 @@ class MobHead extends Flowable{
 		);
 	}
 
-	public function place(Item $item, Block $block, Block $target, $face, $fx, $fy, $fz, Player $player = null){
-		if($face !== 0){
+	public function place(Item $item, Block $block, Block $target, int $face, Vector3 $facePos, Player $player = null) : bool{
+		if($face !== Vector3::SIDE_DOWN){
 			$this->meta = $face;
-			if($face === 1){
+			if($face === Vector3::SIDE_UP){
 				$rot = floor(($player->yaw * 16 / 360) + 0.5) & 0x0F;
 			}else{
 				$rot = $face;
@@ -89,30 +91,11 @@ class MobHead extends Flowable{
 		return false;
 	}
 
-	public function onUpdate($type){
-		$faces = [
-			1 => 0,
-			2 => 3,
-			3 => 2,
-			4 => 5,
-			5 => 4,
-		];
-		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide($faces[$this->meta])->getId() === self::AIR){
-				$this->getLevel()->useBreakOn($this);
-
-				return Level::BLOCK_UPDATE_NORMAL;
-			}
-		}
-
-		return parent::onUpdate($type);
-	}
-
-	public function getDrops(Item $item){
+	public function getDrops(Item $item) : array{
 		$tile = $this->level->getTile($this);
 		if($tile instanceof SkullTile){
 			return [
-				[Item::MOB_HEAD, $tile->getType(), 1]
+				ItemFactory::get(Item::SKULL, $tile->getType(), 1)
 			];
 		}
 

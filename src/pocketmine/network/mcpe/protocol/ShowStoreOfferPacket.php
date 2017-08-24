@@ -21,13 +21,26 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\network\mcpe\protocol;
 
-class DarkOakWoodStairs extends WoodStairs{
+#include <rules/DataPacket.h>
 
-	protected $id = self::DARK_OAK_WOOD_STAIRS;
+use pocketmine\network\mcpe\NetworkSession;
 
-	public function getName(){
-		return "Dark Oak Wood Stairs";
+class ShowStoreOfferPacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::SHOW_STORE_OFFER_PACKET;
+
+	public $offerId;
+
+	public function decodePayload(){
+		$this->offerId = $this->getString();
+	}
+
+	public function encodePayload(){
+		$this->putString($this->offerId);
+	}
+
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleShowStoreOffer($this);
 	}
 }
