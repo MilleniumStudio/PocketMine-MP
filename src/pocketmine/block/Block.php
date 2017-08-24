@@ -462,12 +462,12 @@ class Block extends Position implements BlockIds, Metadatable{
 	 */
 	protected function recalculateBoundingBox(){
 		return new AxisAlignedBB(
-			$this->x,
-			$this->y,
-			$this->z,
-			$this->x + 1,
-			$this->y + 1,
-			$this->z + 1
+			(float)$this->x,
+			(float)$this->y,
+			(float)$this->z,
+			(float)$this->x + 1,
+			(float)$this->y + 1,
+			(float)$this->z + 1
 		);
 	}
 
