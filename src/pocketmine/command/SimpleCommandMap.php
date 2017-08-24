@@ -26,6 +26,7 @@ namespace pocketmine\command;
 use pocketmine\command\defaults\BanCommand;
 use pocketmine\command\defaults\BanIpCommand;
 use pocketmine\command\defaults\BanListCommand;
+use pocketmine\command\defaults\ConvertMap;
 use pocketmine\command\defaults\DefaultGamemodeCommand;
 use pocketmine\command\defaults\DeopCommand;
 use pocketmine\command\defaults\DifficultyCommand;
@@ -122,6 +123,7 @@ class SimpleCommandMap implements CommandMap{
 		$this->register("pocketmine", new TitleCommand("title"));
 		$this->register("pocketmine", new ReloadCommand("reload"));
 		$this->register("pocketmine", new TransferServerCommand("transferserver"));
+		$this->register("pocketmine", new ConvertMap("convertmap"));
 
 		if($this->server->getProperty("debug.commands", false)){
 			$this->register("pocketmine", new StatusCommand("status"));
