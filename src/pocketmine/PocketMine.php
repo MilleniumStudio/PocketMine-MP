@@ -89,8 +89,8 @@ namespace pocketmine {
 	 * Enjoy it as much as I did writing it. I don't want to do it again.
 	 */
 
-	if(version_compare("7.0", PHP_VERSION) > 0){
-		echo "[CRITICAL] You must use PHP >= 7.0" . PHP_EOL;
+	if(version_compare("7.0", PHP_VERSION) > 0 or version_compare("7.1", PHP_VERSION) <= 0){
+		echo "[CRITICAL] You must use PHP 7.0" . PHP_EOL;
 		echo "[CRITICAL] Please use the installer provided on the homepage." . PHP_EOL;
 		exit(1);
 	}
@@ -141,6 +141,12 @@ namespace pocketmine {
 	if(!class_exists(RakLib::class)){
 		echo "[CRITICAL] Unable to find the RakLib library." . PHP_EOL;
 		echo "[CRITICAL] Please use provided builds or clone the repository recursively." . PHP_EOL;
+		exit(1);
+	}
+
+	if(version_compare(RakLib::VERSION, "0.8.1") < 0){
+		echo "[CRITICAL] RakLib version 0.8.1 is required, while you have version " . RakLib::VERSION . "." . PHP_EOL;
+		echo "[CRITICAL] Please update your submodules or use provided builds." . PHP_EOL;
 		exit(1);
 	}
 
@@ -476,7 +482,7 @@ namespace pocketmine {
 		}
 
 		$gitHash = str_repeat("00", 20);
-#ifndef COMPILE
+
 		if(\Phar::running(true) === ""){
 			if(Utils::execute("git rev-parse HEAD", $out) === 0){
 				$gitHash = trim($out);
@@ -484,8 +490,14 @@ namespace pocketmine {
 					$gitHash .= "-dirty";
 				}
 			}
+		}else{
+			$phar = new \Phar(\Phar::running(false));
+			$meta = $phar->getMetadata();
+			if(isset($meta["git"])){
+				$gitHash = $meta["git"];
+			}
 		}
-#endif
+
 		define('pocketmine\GIT_COMMIT', $gitHash);
 
 
