@@ -150,8 +150,8 @@ class ItemFactory{
 			self::registerItem(new CookedChicken());
 			//TODO: ROTTEN_FLESH
 			//TODO: ENDER_PEARL
-			//TODO: BLAZE_ROD
-			//TODO: GHAST_TEAR
+			self::registerItem(new BlazeRod());
+			self::registerItem(new Item(Item::GHAST_TEAR, 0, "Ghast Tear"));
 			self::registerItem(new Item(Item::GOLD_NUGGET, 0, "Gold Nugget"));
 			self::registerItem(new NetherWart());
 			self::registerItem(new Potion());
@@ -193,7 +193,7 @@ class ItemFactory{
 			//TODO: RABBIT
 			self::registerItem(new CookedRabbit());
 			//TODO: RABBIT_STEW
-			//TODO: RABBIT_FOOT
+			self::registerItem(new Item(Item::RABBIT_FOOT, 0, "Rabbit's Foot"));
 			//TODO: RABBIT_HIDE
 			//TODO: HORSEARMORLEATHER
 			//TODO: HORSEARMORIRON
@@ -212,7 +212,7 @@ class ItemFactory{
 			//TODO: ACACIA_DOOR
 			//TODO: DARK_OAK_DOOR
 			//TODO: CHORUS_FRUIT
-			//TODO: CHORUS_FRUIT_POPPED
+			self::registerItem(new Item(Item::CHORUS_FRUIT_POPPED, 0, "Popped Chorus Fruit"));
 
 			//TODO: DRAGON_BREATH
 			//TODO: SPLASH_POTION
@@ -221,11 +221,11 @@ class ItemFactory{
 
 			//TODO: COMMAND_BLOCK_MINECART
 			//TODO: ELYTRA
-			//TODO: SHULKER_SHELL
+			self::registerItem(new Item(Item::SHULKER_SHELL, 0, "Shulker Shell"));
 
 			//TODO: TOTEM
 
-			//TODO: IRON_NUGGET
+			self::registerItem(new Item(Item::IRON_NUGGET, 0, "Iron Nugget"));
 
 			self::registerItem(new Beetroot());
 			self::registerItem(new BeetrootSeeds());
@@ -338,11 +338,13 @@ class ItemFactory{
 
 			if(defined(Item::class . "::" . strtoupper($b[0]))){
 				$item = self::get(constant(Item::class . "::" . strtoupper($b[0])), $meta);
-				if($item->getId() === Item::AIR and strtoupper($b[0]) !== "AIR"){
-					$item = self::get($b[0] & 0xFFFF, $meta);
+				if($item->getId() === Item::AIR and strtoupper($b[0]) !== "AIR" and is_numeric($b[0])){
+					$item = self::get(((int) $b[0]) & 0xFFFF, $meta);
 				}
+			}elseif(is_numeric($b[0])){
+				$item = self::get(((int) $b[0]) & 0xFFFF, $meta);
 			}else{
-				$item = self::get($b[0] & 0xFFFF, $meta);
+				$item = self::get(Item::AIR, 0, 0);
 			}
 
 			return $item;

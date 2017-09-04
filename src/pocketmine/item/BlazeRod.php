@@ -21,33 +21,16 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\nbt\tag;
+namespace pocketmine\item;
 
-use pocketmine\nbt\NBT;
+class BlazeRod extends Item{
 
-#include <rules/NBT.h>
-
-class LongTag extends NamedTag{
-
-	/**
-	 * LongTag constructor.
-	 *
-	 * @param string $name
-	 * @param int    $value
-	 */
-	public function __construct(string $name = "", int $value = 0){
-		parent::__construct($name, $value);
+	public function __construct(int $meta = 0){
+		parent::__construct(self::BLAZE_ROD, $meta, "Blaze Rod");
 	}
 
-	public function getType(){
-		return NBT::TAG_Long;
+	public function getFuelTime() : int{
+		return 2400;
 	}
 
-	public function read(NBT $nbt, bool $network = false){
-		$this->value = $nbt->getLong($network);
-	}
-
-	public function write(NBT $nbt, bool $network = false){
-		$nbt->putLong($this->value, $network);
-	}
 }
