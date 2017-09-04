@@ -13,10 +13,10 @@ CURL_VERSION="curl-7_54_0"
 READLINE_VERSION="6.3"
 NCURSES_VERSION="6.0"
 PHPNCURSES_VERSION="1.0.2"
-PTHREADS_VERSION="3.1.6"
+PTHREADS_VERSION="536a7b29ddd57a25209b5fb79b5abcf0ecd85f79"
 XDEBUG_VERSION="2.5.5"
 WEAKREF_VERSION="0.3.3"
-PHPYAML_VERSION="2.0.0"
+PHPYAML_VERSION="2.0.2"
 YAML_VERSION="0.1.7"
 YAML_VERSION_ANDROID="0.1.7"
 #PHPLEVELDB_VERSION="0.1.4"
@@ -60,16 +60,16 @@ fi
 #Needed to use aliases
 shopt -s expand_aliases
 type wget >> "$DIR/install.log" 2>&1
-#if [ $? -eq 0 ]; then
-#	alias download_file="wget --no-check-certificate -q -O -"
-#else
+if [ $? -eq 0 ]; then
+	alias download_file="wget --no-check-certificate -q -O -"
+else
 	type curl >> "$DIR/install.log" 2>&1
 	if [ $? -eq 0 ]; then
 		alias download_file="curl --insecure --silent --show-error --location --globoff"
 	else
 		echo "error, curl or wget not found"
 	fi
-#fi
+fi
 
 #if type llvm-gcc >/dev/null 2>&1; then
 #	export CC="llvm-gcc"
@@ -693,8 +693,8 @@ fi
 
 #pthreads
 echo -n "[PHP pthreads] downloading $PTHREADS_VERSION..."
-download_file "http://pecl.php.net/get/pthreads-$PTHREADS_VERSION.tgz" | tar -zx >> "$DIR/install.log" 2>&1
-#download_file "https://github.com/krakjoe/pthreads/archive/$PTHREADS_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+#download_file "http://pecl.php.net/get/pthreads-$PTHREADS_VERSION.tgz" | tar -zx >> "$DIR/install.log" 2>&1
+download_file "https://github.com/krakjoe/pthreads/archive/$PTHREADS_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
 mv pthreads-$PTHREADS_VERSION "$DIR/install_data/php/ext/pthreads"
 echo " done!"
 
