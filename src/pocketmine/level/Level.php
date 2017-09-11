@@ -94,6 +94,24 @@ use pocketmine\utils\ReversePriorityQueue;
 
 class Level implements ChunkManager, Metadatable{
 
+	const ADVENTURE_INTRACTABLE_BLOCKS = [
+		Block::CHEST,
+		Block::ENDER_CHEST,
+		Block::TRAPPED_CHEST,
+		Block::LEVER,
+		Block::OAK_DOOR_BLOCK,
+		Block::IRON_DOOR_BLOCK,
+		Block::WOODEN_TRAPDOOR,
+		Block::IRON_TRAPDOOR,
+		Block::SPRUCE_DOOR_BLOCK,
+		Block::BIRCH_DOOR_BLOCK,
+		Block::JUNGLE_DOOR_BLOCK,
+		Block::ACACIA_DOOR_BLOCK,
+		Block::DARK_OAK_DOOR_BLOCK,
+		Block::STONE_BUTTON,
+		Block::WOODEN_BUTTON
+	];
+
 	private static $levelIdCounter = 1;
 	private static $chunkLoaderCounter = 1;
 	public static $COMPRESSION_LEVEL = 8;
@@ -1688,7 +1706,7 @@ class Level implements ChunkManager, Metadatable{
 				$ev->setCancelled(); //set it to cancelled so plugins can bypass this
 			}
 
-			if($player->isAdventure(true) and !$ev->isCancelled()){
+			if(!in_array($blockClicked->getId(), Level::ADVENTURE_INTRACTABLE_BLOCKS, true) and $player->isAdventure(true) and !$ev->isCancelled()){
 				$canPlace = false;
 				$tag = $item->getNamedTagEntry("CanPlaceOn");
 				if($tag instanceof ListTag){
