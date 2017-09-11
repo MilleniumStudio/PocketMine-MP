@@ -47,6 +47,7 @@ class MainLogger extends \AttachableThreadedLogger{
 	 * @throws \RuntimeException
 	 */
 	public function __construct(string $logFile, bool $logDebug = false){
+		parent::__construct();
 		if(static::$logger instanceof MainLogger){
 			throw new \RuntimeException("MainLogger has been already created");
 		}
@@ -104,8 +105,8 @@ class MainLogger extends \AttachableThreadedLogger{
 		$this->send($message, \LogLevel::INFO, "INFO", TextFormat::WHITE);
 	}
 
-	public function debug($message){
-		if($this->logDebug === false){
+	public function debug($message, bool $force = false){
+		if($this->logDebug === false and !$force){
 			return;
 		}
 		$this->send($message, \LogLevel::DEBUG, "DEBUG", TextFormat::GRAY);
@@ -155,7 +156,7 @@ class MainLogger extends \AttachableThreadedLogger{
 		$errfile = \pocketmine\cleanPath($errfile);
 		$this->log($type, get_class($e) . ": \"$errstr\" ($errno) in \"$errfile\" at line $errline");
 		foreach(\pocketmine\getTrace(0, $trace) as $i => $line){
-			$this->debug($line);
+			$this->debug($line, true);
 		}
 	}
 
@@ -214,8 +215,10 @@ class MainLogger extends \AttachableThreadedLogger{
 			echo $message . PHP_EOL;
 		}
 
-		if($this->attachment instanceof \ThreadedLoggerAttachment){
-			$this->attachment->call($level, $message);
+		foreach($this->attachments as $attachment){
+			if($attachment instanceof \ThreadedLoggerAttachment){
+				$attachment->call($level, $message);
+			}
 		}
 
 		$this->logStream[] = date("Y-m-d", $now) . " " . $cleanMessage . PHP_EOL;

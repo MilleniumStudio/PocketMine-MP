@@ -1,8 +1,13 @@
-﻿param (
-	[switch]$Loop = $false
+﻿[CmdletBinding(PositionalBinding=$false)]
+param (
+	[string]$php = "",
+	[switch]$Loop = $false,
+	[string][Parameter(ValueFromRemainingArguments)]$extraPocketMineArgs
 )
 
-if(Test-Path "bin\php\php.exe"){
+if($php -ne ""){
+	$binary = $php
+}elseif(Test-Path "bin\php\php.exe"){
 	$env:PHPRC = ""
 	$binary = "bin\php\php.exe"
 }else{
@@ -20,7 +25,7 @@ if(Test-Path "PocketMine-MP.phar"){
 }
 
 function StartServer{
-	$command = "powershell " + $binary + " " + $file + " --enable-ansi"
+	$command = "powershell " + $binary + " " + $file + " --enable-ansi " + $extraPocketMineArgs
 	iex $command
 }
 
