@@ -70,39 +70,39 @@ class Ladder extends Transparent{
 
 		if($this->meta === 2){
 			return new AxisAlignedBB(
-				$this->x,
-				$this->y,
-				$this->z + 1 - $f,
-				$this->x + 1,
-				$this->y + 1,
-				$this->z + 1
+				(float)$this->x,
+				(float)$this->y,
+				(float)$this->z + 1 - $f,
+				(float)$this->x + 1,
+				(float)$this->y + 1,
+				(float)$this->z + 1
 			);
 		}elseif($this->meta === 3){
 			return new AxisAlignedBB(
-				$this->x,
-				$this->y,
-				$this->z,
-				$this->x + 1,
-				$this->y + 1,
-				$this->z + $f
+				(float)$this->x,
+				(float)$this->y,
+				(float)$this->z,
+				(float)$this->x + 1,
+				(float)$this->y + 1,
+				(float)$this->z + $f
 			);
 		}elseif($this->meta === 4){
 			return new AxisAlignedBB(
-				$this->x + 1 - $f,
-				$this->y,
-				$this->z,
-				$this->x + 1,
-				$this->y + 1,
-				$this->z + 1
+				(float)$this->x + 1 - $f,
+				(float)$this->y,
+				(float)$this->z,
+				(float)$this->x + 1,
+				(float)$this->y + 1,
+				(float)$this->z + 1
 			);
 		}elseif($this->meta === 5){
 			return new AxisAlignedBB(
-				$this->x,
-				$this->y,
-				$this->z,
-				$this->x + $f,
-				$this->y + 1,
-				$this->z + 1
+				(float)$this->x,
+				(float)$this->y,
+				(float)$this->z,
+				(float)$this->x + $f,
+				(float)$this->y + 1,
+				(float)$this->z + 1
 			);
 		}
 
