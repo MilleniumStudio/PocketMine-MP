@@ -76,11 +76,11 @@ class FlowerPot extends Spawnable{
 	}
 
 	public function removeItem(){
-		$this->setItem(ItemFactory::get(Item::AIR));
+		$this->setItem(ItemFactory::get(Item::AIR, 0, 0));
 	}
 
 	public function isEmpty() : bool{
-		return $this->getItem()->getId() === Item::AIR;
+		return $this->getItem()->isNull();
 	}
 
 	public function addAdditionalSpawnData(CompoundTag $nbt){

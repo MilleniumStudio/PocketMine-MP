@@ -53,6 +53,10 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable{
 		}
 		if(!isset($nbt->MaxTime)){
 			$nbt->MaxTime = new ShortTag("BurnTime", $nbt->BurnTime->getValue());
+			unset($nbt->BurnTicks);
+		}
+
+		if(!isset($nbt->BurnTicks)){
 			$nbt->BurnTicks = new ShortTag("BurnTicks", 0);
 		}
 
@@ -65,7 +69,7 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable{
 		}
 
 		for($i = 0; $i < $this->getSize(); ++$i){
-			$this->inventory->setItem($i, $this->getItem($i));
+			$this->inventory->setItem($i, $this->getItem($i), false);
 		}
 
 		if($this->namedtag->BurnTime->getValue() > 0){
@@ -159,7 +163,7 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable{
 
 		$d = $item->nbtSerialize($index);
 
-		if($item->getId() === Item::AIR or $item->getCount() <= 0){
+		if($item->isNull()){
 			if($i >= 0){
 				unset($this->namedtag->Items[$i]);
 			}
@@ -191,7 +195,7 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable{
 
 		$this->namedtag->MaxTime->setValue($ev->getBurnTime());
 		$this->namedtag->BurnTime->setValue($ev->getBurnTime());
-		$this->namedtag->BurnTicks = new ShortTag("BurnTicks", 0);
+		$this->namedtag->BurnTicks->setValue(0);
 		if($this->getBlock()->getId() === Item::FURNACE){
 			$this->getLevel()->setBlock($this, BlockFactory::get(Block::BURNING_FURNACE, $this->getBlock()->getDamage()), true);
 		}
@@ -226,7 +230,7 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable{
 
 		if($this->namedtag->BurnTime->getValue() > 0){
 			$this->namedtag->BurnTime->setValue($this->namedtag->BurnTime->getValue() - 1);
-			$this->namedtag->BurnTicks = new ShortTag("BurnTicks", (int) ceil($this->namedtag->BurnTime->getValue() / $this->namedtag->MaxTime->getValue() * 200));
+			$this->namedtag->BurnTicks->setValue((int) ceil($this->namedtag->BurnTime->getValue() / $this->namedtag->MaxTime->getValue() * 200));
 
 			if($smelt instanceof FurnaceRecipe and $canSmelt){
 				$this->namedtag->CookTime->setValue($this->namedtag->CookTime->getValue() + 1);
@@ -267,14 +271,14 @@ class Furnace extends Spawnable implements InventoryHolder, Container, Nameable{
 			$windowId = $player->getWindowId($this->getInventory());
 			if($windowId > 0){
 				$pk = new ContainerSetDataPacket();
-				$pk->windowid = $windowId;
-				$pk->property = 0; //Smelting
+				$pk->windowId = $windowId;
+				$pk->property = ContainerSetDataPacket::PROPERTY_FURNACE_TICK_COUNT; //Smelting
 				$pk->value = $this->namedtag->CookTime->getValue();
 				$player->dataPacket($pk);
 
 				$pk = new ContainerSetDataPacket();
-				$pk->windowid = $windowId;
-				$pk->property = 1; //Fire icon
+				$pk->windowId = $windowId;
+				$pk->property = ContainerSetDataPacket::PROPERTY_FURNACE_LIT_TIME;
 				$pk->value = $this->namedtag->BurnTicks->getValue();
 				$player->dataPacket($pk);
 			}

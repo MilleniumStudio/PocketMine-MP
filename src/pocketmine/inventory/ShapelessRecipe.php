@@ -24,10 +24,9 @@ declare(strict_types=1);
 namespace pocketmine\inventory;
 
 use pocketmine\item\Item;
-use pocketmine\Server;
 use pocketmine\utils\UUID;
 
-class ShapelessRecipe implements Recipe{
+class ShapelessRecipe implements CraftingRecipe{
 	/** @var Item */
 	private $output;
 
@@ -44,7 +43,7 @@ class ShapelessRecipe implements Recipe{
 	/**
 	 * @return UUID|null
 	 */
-	public function getId(){
+	public function getId() : ?UUID{
 		return $this->id;
 	}
 
@@ -61,6 +60,14 @@ class ShapelessRecipe implements Recipe{
 
 	public function getResult() : Item{
 		return clone $this->output;
+	}
+
+	public function getExtraResults() : array{
+		return []; //TODO
+	}
+
+	public function getAllResults() : array{
+		return [$this->getResult()]; //TODO
 	}
 
 	/**
@@ -129,7 +136,62 @@ class ShapelessRecipe implements Recipe{
 		return $count;
 	}
 
-	public function registerToCraftingManager(){
-		Server::getInstance()->getCraftingManager()->registerShapelessRecipe($this);
+	public function registerToCraftingManager(CraftingManager $manager) : void{
+		$manager->registerShapelessRecipe($this);
+	}
+
+	public function requiresCraftingTable() : bool{
+		return count($this->ingredients) > 4;
+	}
+
+	/**
+	 * @param Item[][] $input
+	 * @param Item[][] $output
+	 *
+	 * @return bool
+	 */
+	public function matchItems(array $input, array $output) : bool{
+		/** @var Item[] $haveInputs */
+		$haveInputs = array_merge(...$input); //we don't care how the items were arranged
+		$needInputs = $this->getIngredientList();
+
+		if(!$this->matchItemList($haveInputs, $needInputs)){
+			return false;
+		}
+
+		/** @var Item[] $haveOutputs */
+		$haveOutputs = array_merge(...$output);
+		$needOutputs = $this->getExtraResults();
+
+		if(!$this->matchItemList($haveOutputs, $needOutputs)){
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param Item[] $haveItems
+	 * @param Item[] $needItems
+	 *
+	 * @return bool
+	 */
+	private function matchItemList(array $haveItems, array $needItems) : bool{
+		foreach($haveItems as $j => $haveItem){
+			if($haveItem->isNull()){
+				unset($haveItems[$j]);
+				continue;
+			}
+
+
+			foreach($needItems as $i => $needItem){
+				if($needItem->equals($haveItem, !$needItem->hasAnyDamageValue(), $needItem->hasCompoundTag()) and $needItem->getCount() === $haveItem->getCount()){
+					unset($haveItems[$j], $needItems[$i]);
+					break;
+				}
+			}
+		}
+
+		return count($haveItems) === 0 and count($needItems) === 0;
 	}
 }

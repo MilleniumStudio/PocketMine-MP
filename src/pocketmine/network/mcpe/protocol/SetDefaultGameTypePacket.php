@@ -21,43 +21,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\inventory;
+namespace pocketmine\network\mcpe\protocol;
 
-interface TransactionGroup{
+#include <rules/DataPacket.h>
 
-	/**
-	 * @return float
-	 */
-	public function getCreationTime() : float;
+use pocketmine\network\mcpe\NetworkSession;
 
-	/**
-	 * @return Transaction[]
-	 */
-	public function getTransactions() : array;
+class SetDefaultGameTypePacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::SET_DEFAULT_GAME_TYPE_PACKET;
 
-	/**
-	 * @return Inventory[]
-	 */
-	public function getInventories() : array;
+	/** @var int */
+	public $gamemode;
 
-	/**
-	 * @param Transaction $transaction
-	 */
-	public function addTransaction(Transaction $transaction);
+	protected function decodePayload(){
+		$this->gamemode = $this->getVarInt();
+	}
 
-	/**
-	 * @return bool
-	 */
-	public function canExecute() : bool;
+	protected function encodePayload(){
+		$this->putUnsignedVarInt($this->gamemode);
+	}
 
-	/**
-	 * @return bool
-	 */
-	public function execute() : bool;
-
-	/**
-	 * @return bool
-	 */
-	public function hasExecuted() : bool;
-
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleSetDefaultGameType($this);
+	}
 }

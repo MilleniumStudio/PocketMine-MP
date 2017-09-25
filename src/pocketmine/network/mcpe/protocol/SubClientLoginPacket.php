@@ -21,8 +21,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\inventory;
+namespace pocketmine\network\mcpe\protocol;
 
-class BigShapedRecipe extends ShapedRecipe{
+#include <rules/DataPacket.h>
 
+use pocketmine\network\mcpe\NetworkSession;
+
+class SubClientLoginPacket extends DataPacket{
+	const NETWORK_ID = ProtocolInfo::SUB_CLIENT_LOGIN_PACKET;
+
+	/** @var string */
+	public $connectionRequestData;
+
+	protected function decodePayload(){
+		$this->connectionRequestData = $this->getString();
+	}
+
+	protected function encodePayload(){
+		$this->putString($this->connectionRequestData);
+	}
+
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleSubClientLogin($this);
+	}
 }

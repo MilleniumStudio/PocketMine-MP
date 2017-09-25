@@ -53,7 +53,7 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 		}
 
 		for($i = 0; $i < $this->getSize(); ++$i){
-			$this->inventory->setItem($i, $this->getItem($i));
+			$this->inventory->setItem($i, $this->getItem($i), false);
 		}
 	}
 
@@ -135,7 +135,7 @@ class Chest extends Spawnable implements InventoryHolder, Container, Nameable{
 
 		$d = $item->nbtSerialize($index);
 
-		if($item->getId() === Item::AIR or $item->getCount() <= 0){
+		if($item->isNull()){
 			if($i >= 0){
 				unset($this->namedtag->Items[$i]);
 			}

@@ -45,19 +45,19 @@ class ItemFrame extends Spawnable{
 	}
 
 	public function hasItem() : bool{
-		return $this->getItem()->getId() !== Item::AIR;
+		return !$this->getItem()->isNull();
 	}
 
 	public function getItem() : Item{
 		if(isset($this->namedtag->Item)){
 			return Item::nbtDeserialize($this->namedtag->Item);
 		}else{
-			return ItemFactory::get(Item::AIR);
+			return ItemFactory::get(Item::AIR, 0, 0);
 		}
 	}
 
 	public function setItem(Item $item = null){
-		if($item !== null and $item->getId() !== Item::AIR){
+		if($item !== null and !$item->isNull()){
 			$this->namedtag->Item = $item->nbtSerialize(-1, "Item");
 		}else{
 			unset($this->namedtag->Item);

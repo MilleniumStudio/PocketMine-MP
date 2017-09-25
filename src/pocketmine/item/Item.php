@@ -643,6 +643,10 @@ class Item implements ItemIds, \JsonSerializable{
 		return $this;
 	}
 
+	public function isNull() : bool{
+		return $this->count <= 0 or $this->id === Item::AIR;
+	}
+
 	/**
 	 * Returns the name of the item, or the custom name if it is set.
 	 * @return string
@@ -880,6 +884,16 @@ class Item implements ItemIds, \JsonSerializable{
 	}
 
 	/**
+	 * Returns whether the specified item stack has the same ID, damage, NBT and count as this item stack.
+	 * @param Item $other
+	 *
+	 * @return bool
+	 */
+	final public function equalsExact(Item $other) : bool{
+		return $this->equals($other, true, true) and $this->count === $other->count;
+	}
+
+	/**
 	 * @deprecated Use {@link Item#equals} instead, this method will be removed in the future.
 	 *
 	 * @param Item $item
@@ -905,12 +919,23 @@ class Item implements ItemIds, \JsonSerializable{
 	 * @return array
 	 */
 	final public function jsonSerialize(){
-		return [
-			"id" => $this->getId(),
-			"damage" => $this->getDamage(),
-			"count" => $this->getCount(),
-			"nbt_hex" => bin2hex($this->getCompoundTag())
+		$data = [
+			"id" => $this->getId()
 		];
+
+		if($this->getDamage() !== 0){
+			$data["damage"] = $this->getDamage();
+		}
+
+		if($this->getCount() !== 1){
+			$data["count"] = $this->getCount();
+		}
+
+		if($this->hasCompoundTag()){
+			$data["nbt_hex"] = bin2hex($this->getCompoundTag());
+		}
+
+		return $data;
 	}
 
 	/**
@@ -922,9 +947,9 @@ class Item implements ItemIds, \JsonSerializable{
 	final public static function jsonDeserialize(array $data) : Item{
 		return ItemFactory::get(
 			(int) $data["id"],
-			(int) $data["damage"],
-			(int) $data["count"],
-			(string) ($data["nbt"] ?? hex2bin($data["nbt_hex"])) //`nbt` key might contain old raw data
+			(int) ($data["damage"] ?? 0),
+			(int) ($data["count"] ?? 1),
+			(string) ($data["nbt"] ?? (isset($data["nbt_hex"]) ? hex2bin($data["nbt_hex"]) : "")) //`nbt` key might contain old raw data
 		);
 	}
 
