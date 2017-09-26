@@ -207,6 +207,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	/** @var int */
 	protected $protocol = -1;
 
+	/** @var string */
+	public $XUID = "";
+
 	/** @var bool */
 	public $playedBefore;
 	public $spawned = false;
@@ -3195,6 +3198,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk = new TextPacket();
 		$pk->type = TextPacket::TYPE_POPUP;
 		$pk->message = $message;
+		$pk->xboxUserId = $this->XUID;
 		$this->dataPacket($pk);
 	}
 
