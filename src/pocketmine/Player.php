@@ -147,6 +147,7 @@ use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 use pocketmine\network\mcpe\protocol\UpdateAttributesPacket;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
+use pocketmine\network\mcpe\VerifyLoginTask;
 use pocketmine\network\SourceInterface;
 use pocketmine\permission\PermissibleBase;
 use pocketmine\permission\PermissionAttachment;
@@ -157,6 +158,7 @@ use pocketmine\tile\ItemFrame;
 use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\utils\TextFormat;
+use pocketmine\utils\Utils;
 use pocketmine\utils\UUID;
 
 
@@ -202,6 +204,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 */
 	protected $sessionAdapter;
 
+	/** @var int */
+	protected $protocol = -1;
+
 	/** @var bool */
 	public $playedBefore;
 	public $spawned = false;
@@ -209,6 +214,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public $joined = false;
 	public $gamemode;
 	public $lastBreak;
+	/** @var bool */
+	protected $authenticated = false;
 
 	protected $windowCnt = 2;
 	/** @var \SplObjectStorage<Inventory> */
@@ -350,6 +357,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}else{
 			$this->server->removeWhitelist($this->iusername);
 		}
+	}
+
+	public function isAuthenticated() : bool{
+		return $this->authenticated;
 	}
 
 	public function getPlayer(){
@@ -792,6 +803,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 			$this->usedChunks = [];
 			$this->level->sendTime($this);
+			$this->level->sendDifficulty($this);
 
 			return true;
 		}
@@ -1788,18 +1800,34 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$this->addDefaultWindows();
 	}
 
-
-	protected function processLogin(){
-		if(!$this->server->isWhitelisted($this->iusername)){
-			$this->close($this->getLeaveMessage(), "Server is white-listed");
-
-			return;
-		}elseif($this->server->getNameBans()->isBanned($this->iusername) or $this->server->getIPBans()->isBanned($this->getAddress())){
-			$this->close($this->getLeaveMessage(), "You are banned");
-
+	public function onVerifyCompleted(LoginPacket $packet, bool $isValid, bool $isAuthenticated) : void{
+		if($this->closed){
 			return;
 		}
 
+		if(!$isValid){
+			$this->close("", "disconnect.loginFailedInfo.invalidSession");
+			return;
+		}
+
+		$this->authenticated = $isAuthenticated;
+
+		if(!$isAuthenticated){
+			if($this->server->requiresAuthentication() and $this->kick("disconnectionScreen.notAuthenticated", false)){ //use kick to allow plugins to cancel this
+				return;
+			}else{
+				$this->server->getLogger()->debug($this->getName() . " is NOT logged into to Xbox Live");
+			}
+		}else{
+			$this->server->getLogger()->debug($this->getName() . " is logged into Xbox Live");
+		}
+
+		//TODO: get data from loginpacket (xbox user ID and stuff), add events
+
+		$this->processLogin();
+	}
+
+	protected function processLogin(){
 		foreach($this->server->getLoggedInPlayers() as $p){
 			if($p !== $this and $p->iusername === $this->iusername){
 				if($p->kick("logged in from another location") === false){
@@ -1897,7 +1925,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk->seed = -1;
 		$pk->dimension = DimensionIds::OVERWORLD; //TODO: implement this properly
 		$pk->worldGamemode = Player::getClientFriendlyGamemode($this->server->getGamemode());
-		$pk->difficulty = $this->server->getDifficulty();
+		$pk->difficulty = $this->level->getDifficulty();
 		$pk->spawnX = $spawnPosition->getFloorX();
 		$pk->spawnY = $spawnPosition->getFloorY();
 		$pk->spawnZ = $spawnPosition->getFloorZ();
@@ -1946,15 +1974,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			return false;
 		}
 
+		$this->protocol = $packet->protocol;
+
 		if($packet->protocol !== ProtocolInfo::CURRENT_PROTOCOL){
 			if($packet->protocol < ProtocolInfo::CURRENT_PROTOCOL){
-				$message = "disconnectionScreen.outdatedClient";
 				$this->sendPlayStatus(PlayStatusPacket::LOGIN_FAILED_CLIENT, true);
 			}else{
-				$message = "disconnectionScreen.outdatedServer";
 				$this->sendPlayStatus(PlayStatusPacket::LOGIN_FAILED_SERVER, true);
 			}
-			$this->close("", $message, false);
+
+			//This pocketmine disconnect message will only be seen by the console (PlayStatusPacket causes the messages to be shown for the client)
+			$this->close("", $this->server->getLanguage()->translateString("pocketmine.disconnect.incompatibleProtocol", [$packet->protocol]), false);
 
 			return true;
 		}
@@ -1985,6 +2015,17 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$this->setSkin($packet->skin, $packet->skinId);
 
+		if(!$this->server->isWhitelisted($this->iusername) and $this->kick("Server is white-listed", false)){
+			return true;
+		}
+
+		if(
+			($this->server->getNameBans()->isBanned($this->iusername) or $this->server->getIPBans()->isBanned($this->getAddress())) and
+			$this->kick("You are banned", false)
+		){
+			return true;
+		}
+
 		$this->server->getPluginManager()->callEvent($ev = new PlayerPreLoginEvent($this, "Plugin reason"));
 		if($ev->isCancelled()){
 			$this->close("", $ev->getKickMessage());
@@ -1992,9 +2033,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			return true;
 		}
 
-		//TODO: add JWT verification, add encryption
-
-		$this->processLogin();
+		$this->server->getScheduler()->scheduleAsyncTask(new VerifyLoginTask($this, $packet));
 
 		return true;
 	}
@@ -2002,6 +2041,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function sendPlayStatus(int $status, bool $immediate = false){
 		$pk = new PlayStatusPacket();
 		$pk->status = $status;
+		$pk->protocol = $this->protocol;
 		if($immediate){
 			$this->directDataPacket($pk);
 		}else{
@@ -2388,7 +2428,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							}elseif($target instanceof Player){
 								if(($target->getGamemode() & 0x01) > 0){
 									return true;
-								}elseif($this->server->getConfigBoolean("pvp") !== true or $this->server->getDifficulty() === 0){
+								}elseif($this->server->getConfigBoolean("pvp") !== true or $this->level->getDifficulty() === Level::DIFFICULTY_PEACEFUL){
 									$cancelled = true;
 								}
 
@@ -2433,64 +2473,68 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				break;
 			case InventoryTransactionPacket::TYPE_RELEASE_ITEM:
-				$type = $packet->trData->actionType;
-				switch($type){
-					case InventoryTransactionPacket::RELEASE_ITEM_ACTION_RELEASE:
-						if($this->isUsingItem()){
-							$item = $this->inventory->getItemInHand();
-							if($item->onReleaseUsing($this)){
-								$this->inventory->setItemInHand($item);
-							}
-						}else{
-							$this->inventory->sendContents($this);
-						}
-
-						$this->setGenericFlag(self::DATA_FLAG_ACTION, false);
-						return true;
-					case InventoryTransactionPacket::RELEASE_ITEM_ACTION_CONSUME:
-						$slot = $this->inventory->getItemInHand();
-
-						if($slot->canBeConsumed()){
-							$ev = new PlayerItemConsumeEvent($this, $slot);
-							if(!$slot->canBeConsumedBy($this)){
-								$ev->setCancelled();
-							}
-							$this->server->getPluginManager()->callEvent($ev);
-							if(!$ev->isCancelled()){
-								$slot->onConsume($this);
+				try{
+					$type = $packet->trData->actionType;
+					switch($type){
+						case InventoryTransactionPacket::RELEASE_ITEM_ACTION_RELEASE:
+							if($this->isUsingItem()){
+								$item = $this->inventory->getItemInHand();
+								if($item->onReleaseUsing($this)){
+									$this->inventory->setItemInHand($item);
+								}
 							}else{
 								$this->inventory->sendContents($this);
 							}
 
 							return true;
-						}elseif($this->inventory->getItemInHand()->getId() === Item::BUCKET and $this->inventory->getItemInHand()->getDamage() === 1){ //Milk!
-							$this->server->getPluginManager()->callEvent($ev = new PlayerItemConsumeEvent($this, $this->inventory->getItemInHand()));
-							if($ev->isCancelled()){
-								$this->inventory->sendContents($this);
+						case InventoryTransactionPacket::RELEASE_ITEM_ACTION_CONSUME:
+							$slot = $this->inventory->getItemInHand();
+
+							if($slot->canBeConsumed()){
+								$ev = new PlayerItemConsumeEvent($this, $slot);
+								if(!$slot->canBeConsumedBy($this)){
+									$ev->setCancelled();
+								}
+								$this->server->getPluginManager()->callEvent($ev);
+								if(!$ev->isCancelled()){
+									$slot->onConsume($this);
+								}else{
+									$this->inventory->sendContents($this);
+								}
+
+								return true;
+							}elseif($this->inventory->getItemInHand()->getId() === Item::BUCKET and $this->inventory->getItemInHand()->getDamage() === 1){ //Milk!
+								$this->server->getPluginManager()->callEvent($ev = new PlayerItemConsumeEvent($this, $this->inventory->getItemInHand()));
+								if($ev->isCancelled()){
+									$this->inventory->sendContents($this);
+
+									return true;
+								}
+
+								$pk = new EntityEventPacket();
+								$pk->entityRuntimeId = $this->getId();
+								$pk->event = EntityEventPacket::USE_ITEM;
+								$this->dataPacket($pk);
+								$this->server->broadcastPacket($this->getViewers(), $pk);
+
+								if($this->isSurvival()){
+									$slot = $this->inventory->getItemInHand();
+									--$slot->count;
+									$this->inventory->setItemInHand($slot);
+									$this->inventory->addItem(ItemFactory::get(Item::BUCKET, 0, 1));
+								}
+
+								$this->removeAllEffects();
+
 								return true;
 							}
 
-							$pk = new EntityEventPacket();
-							$pk->entityRuntimeId = $this->getId();
-							$pk->event = EntityEventPacket::USE_ITEM;
-							$this->dataPacket($pk);
-							$this->server->broadcastPacket($this->getViewers(), $pk);
-
-							if($this->isSurvival()){
-								$slot = $this->inventory->getItemInHand();
-								--$slot->count;
-								$this->inventory->setItemInHand($slot);
-								$this->inventory->addItem(ItemFactory::get(Item::BUCKET, 0, 1));
-							}
-
-							$this->removeAllEffects();
-
-							return true;
-						}
-
-						return false;
-					default:
-						break;
+							return false;
+						default:
+							break;
+					}
+				}finally{
+					$this->setUsingItem(false);
 				}
 				break;
 			default:
