@@ -50,7 +50,6 @@ class VerifyLoginTask extends AsyncTask{
 	 */
 	private $authenticated = false;
 
-	private $XUID = "";
 
 	public function __construct(Player $player, LoginPacket $packet){
 		$this->storeLocal($player);
@@ -127,11 +126,6 @@ class VerifyLoginTask extends AsyncTask{
 			return false; //token has expired
 		}
 
-		if (isset($claims["extraData"]) && isset($claims["extraData"]["XUID"]))
-		{
-			$this->XUID = $claims["extraData"]["XUID"];
-		}
-
 		$currentPublicKey = $claims["identityPublicKey"]; //the next link should be signed with this
 
 		return true;
@@ -144,10 +138,6 @@ class VerifyLoginTask extends AsyncTask{
 			$server->getLogger()->error("Player " . $player->getName() . " was disconnected before their login could be verified");
 		}else{
 			$player->onVerifyCompleted($this->packet, $this->valid, $this->authenticated);
-			if ($this->valid && $this->authenticated)
-			{
-				$player->XUID = $this->XUID;
-			}
 		}
 	}
 
