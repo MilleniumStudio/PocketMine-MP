@@ -24,8 +24,8 @@ declare(strict_types=1);
 namespace pocketmine\level\format\io\region;
 
 use pocketmine\level\format\Chunk;
-use pocketmine\level\format\io\BaseLevelProvider;
 use pocketmine\level\format\ChunkException;
+use pocketmine\level\format\io\BaseLevelProvider;
 use pocketmine\level\format\io\ChunkUtils;
 use pocketmine\level\format\SubChunk;
 use pocketmine\level\generator\Generator;
@@ -95,8 +95,7 @@ class McRegion extends BaseLevelProvider{
 			}
 		}
 
-		$nbt->Entities = new ListTag("Entities", $entities);
-		$nbt->Entities->setTagType(NBT::TAG_Compound);
+		$nbt->Entities = new ListTag("Entities", $entities, NBT::TAG_Compound);
 
 		$tiles = [];
 		foreach($chunk->getTiles() as $tile){
@@ -104,8 +103,7 @@ class McRegion extends BaseLevelProvider{
 			$tiles[] = $tile->namedtag;
 		}
 
-		$nbt->TileEntities = new ListTag("TileEntities", $tiles);
-		$nbt->TileEntities->setTagType(NBT::TAG_Compound);
+		$nbt->TileEntities = new ListTag("TileEntities", $tiles, NBT::TAG_Compound);
 
 		$writer = new NBT(NBT::BIG_ENDIAN);
 		$nbt->setName("Level");

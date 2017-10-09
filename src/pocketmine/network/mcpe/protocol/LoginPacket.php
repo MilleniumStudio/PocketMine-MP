@@ -44,14 +44,11 @@ class LoginPacket extends DataPacket{
 	/** @var int */
 	public $clientId;
 	/** @var string */
+	public $xuid;
+	/** @var string */
 	public $identityPublicKey;
 	/** @var string */
 	public $serverAddress;
-
-	/** @var string */
-	public $skinId;
-	/** @var string */
-	public $skin = "";
 
 	/** @var array (the "chain" index contains one or more JWTs) */
 	public $chainData = [];
@@ -91,9 +88,13 @@ class LoginPacket extends DataPacket{
 				if(isset($webtoken["extraData"]["identity"])){
 					$this->clientUUID = $webtoken["extraData"]["identity"];
 				}
-				if(isset($webtoken["identityPublicKey"])){
-					$this->identityPublicKey = $webtoken["identityPublicKey"];
+				if(isset($webtoken["extraData"]["XUID"])){
+					$this->xuid = $webtoken["extraData"]["XUID"];
 				}
+			}
+
+			if(isset($webtoken["identityPublicKey"])){
+				$this->identityPublicKey = $webtoken["identityPublicKey"];
 			}
 		}
 
@@ -102,11 +103,6 @@ class LoginPacket extends DataPacket{
 
 		$this->clientId = $this->clientData["ClientRandomId"] ?? null;
 		$this->serverAddress = $this->clientData["ServerAddress"] ?? null;
-		$this->skinId = $this->clientData["SkinId"] ?? null;
-
-		if(isset($this->clientData["SkinData"])){
-			$this->skin = base64_decode($this->clientData["SkinData"]);
-		}
 	}
 
 	protected function encodePayload(){

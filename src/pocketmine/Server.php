@@ -36,6 +36,7 @@ use pocketmine\command\SimpleCommandMap;
 use pocketmine\entity\Attribute;
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
+use pocketmine\entity\Skin;
 use pocketmine\event\HandlerList;
 use pocketmine\event\level\LevelInitEvent;
 use pocketmine\event\level\LevelLoadEvent;
@@ -763,25 +764,25 @@ class Server{
 				new DoubleTag("", $spawn->x),
 				new DoubleTag("", $spawn->y),
 				new DoubleTag("", $spawn->z)
-			]),
+			], NBT::TAG_Double),
 			new StringTag("Level", $this->getDefaultLevel()->getName()),
 			//new StringTag("SpawnLevel", $this->getDefaultLevel()->getName()),
 			//new IntTag("SpawnX", (int) $spawn->x),
 			//new IntTag("SpawnY", (int) $spawn->y),
 			//new IntTag("SpawnZ", (int) $spawn->z),
 			//new ByteTag("SpawnForced", 1), //TODO
-			new ListTag("Inventory", []),
+			new ListTag("Inventory", [], NBT::TAG_Compound),
 			new CompoundTag("Achievements", []),
 			new IntTag("playerGameType", $this->getGamemode()),
 			new ListTag("Motion", [
 				new DoubleTag("", 0.0),
 				new DoubleTag("", 0.0),
 				new DoubleTag("", 0.0)
-			]),
+			], NBT::TAG_Double),
 			new ListTag("Rotation", [
 				new FloatTag("", 0.0),
 				new FloatTag("", 0.0)
-			]),
+			], NBT::TAG_Float),
 			new FloatTag("FallDistance", 0.0),
 			new ShortTag("Fire", 0),
 			new ShortTag("Air", 300),
@@ -789,10 +790,6 @@ class Server{
 			new ByteTag("Invulnerable", 0),
 			new StringTag("NameTag", $name)
 		]);
-		$nbt->Pos->setTagType(NBT::TAG_Double);
-		$nbt->Inventory->setTagType(NBT::TAG_Compound);
-		$nbt->Motion->setTagType(NBT::TAG_Double);
-		$nbt->Rotation->setTagType(NBT::TAG_Float);
 
 		return $nbt;
 
@@ -1487,7 +1484,7 @@ class Server{
 				"rcon.password" => substr(base64_encode(random_bytes(20)), 3, 10),
 				"auto-save" => true,
 				"view-distance" => 8,
-				"online-mode" => true
+				"xbox-auth" => true
 			]);
 
 			$this->forceLanguage = $this->getProperty("settings.force-language", false);
@@ -1514,7 +1511,12 @@ class Server{
 			}else{
 				Network::$BATCH_THRESHOLD = -1;
 			}
+
 			$this->networkCompressionLevel = $this->getProperty("network.compression-level", 7);
+			if($this->networkCompressionLevel < 1 or $this->networkCompressionLevel > 9){
+				$this->logger->warning("Invalid network compression level $this->networkCompressionLevel set, setting to default 7");
+				$this->networkCompressionLevel = 7;
+			}
 			$this->networkCompressionAsync = $this->getProperty("network.async-compression", true);
 
 			$this->autoTickRate = (bool) $this->getProperty("level-settings.auto-tick-rate", true);
@@ -1560,7 +1562,7 @@ class Server{
 			$this->maxPlayers = $this->getConfigInt("max-players", 20);
 			$this->setAutoSave($this->getConfigBoolean("auto-save", true));
 
-			$this->onlineMode = $this->getConfigBoolean("online-mode", true);
+			$this->onlineMode = $this->getConfigBoolean("xbox-auth", true);
 			if($this->onlineMode){
 				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.auth", ["enabled", "will"]));
 				$this->logger->notice($this->getLanguage()->translateString("pocketmine.server.authProperty", ["disable", "false"]));
@@ -1650,11 +1652,9 @@ class Server{
 			Generator::addGenerator(Nether::class, "hell");
 			Generator::addGenerator(Nether::class, "nether");
 
-			foreach((array) $this->getProperty("worlds", []) as $name => $worldSetting){
+			foreach((array) $this->getProperty("worlds", []) as $name => $options){
 				if($this->loadLevel($name) === false){
-					$options = $this->getProperty("worlds.$name");
-
-					$seed = $this->getProperty($options["seed"], time());
+					$seed = $options["seed"] ?? time();
 					if(is_string($seed) and !is_numeric($seed)){
 						$seed = Utils::javaStringHash($seed);
 					}elseif(!is_int($seed)){
@@ -2285,7 +2285,7 @@ class Server{
 	}
 
 	public function addOnlinePlayer(Player $player){
-		$this->updatePlayerListData($player->getUniqueId(), $player->getId(), $player->getDisplayName(), $player->getSkinId(), $player->getSkinData());
+		$this->updatePlayerListData($player->getUniqueId(), $player->getId(), $player->getDisplayName(), $player->getSkin());
 
 		$this->playerList[$player->getRawUniqueId()] = $player;
 	}
@@ -2302,15 +2302,14 @@ class Server{
 	 * @param UUID          $uuid
 	 * @param int           $entityId
 	 * @param string        $name
-	 * @param string        $skinId
-	 * @param string        $skinData
+	 * @param Skin          $skin
 	 * @param Player[]|null $players
 	 */
-	public function updatePlayerListData(UUID $uuid, int $entityId, string $name, string $skinId, string $skinData, array $players = null){
+	public function updatePlayerListData(UUID $uuid, int $entityId, string $name, Skin $skin, array $players = null){
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_ADD;
 
-		$pk->entries[] = PlayerListEntry::createAdditionEntry($uuid, $entityId, $name, $skinId, $skinData);
+		$pk->entries[] = PlayerListEntry::createAdditionEntry($uuid, $entityId, $name, $skin);
 		$this->broadcastPacket($players ?? $this->playerList, $pk);
 	}
 
@@ -2332,7 +2331,7 @@ class Server{
 		$pk = new PlayerListPacket();
 		$pk->type = PlayerListPacket::TYPE_ADD;
 		foreach($this->playerList as $player){
-			$pk->entries[] = PlayerListEntry::createAdditionEntry($player->getUniqueId(), $player->getId(), $player->getDisplayName(), $player->getSkinId(), $player->getSkinData());
+			$pk->entries[] = PlayerListEntry::createAdditionEntry($player->getUniqueId(), $player->getId(), $player->getDisplayName(), $player->getSkin());
 		}
 
 		$p->dataPacket($pk);
@@ -2453,8 +2452,6 @@ class Server{
 			" kB/s | TPS " . $this->getTicksPerSecondAverage() .
 			" | Load " . $this->getTickUsageAverage() . "%\x07";
 
-		$this->network->resetStatistics();
-
 		Timings::$titleTickTimer->stopTiming();
 	}
 
@@ -2515,25 +2512,26 @@ class Server{
 			$player->checkNetwork();
 		}
 
-		if(($this->tickCounter & 0b1111) === 0){
+		if(($this->tickCounter % 20) === 0){
 			if($this->doTitleTick and Terminal::hasFormattingCodes()){
 				$this->titleTick();
 			}
 			$this->currentTPS = 20;
 			$this->currentUse = 0;
 
-			if(($this->tickCounter & 0b111111111) === 0){
-				try{
-					$this->getPluginManager()->callEvent($this->queryRegenerateTask = new QueryRegenerateEvent($this, 5));
-					if($this->queryHandler !== null){
-						$this->queryHandler->regenerateInfo();
-					}
-				}catch(\Throwable $e){
-					$this->logger->logException($e);
-				}
-			}
+			$this->network->updateName();
+			$this->network->resetStatistics();
+		}
 
-			$this->getNetwork()->updateName();
+		if(($this->tickCounter & 0b111111111) === 0){
+			try{
+				$this->getPluginManager()->callEvent($this->queryRegenerateTask = new QueryRegenerateEvent($this, 5));
+				if($this->queryHandler !== null){
+					$this->queryHandler->regenerateInfo();
+				}
+			}catch(\Throwable $e){
+				$this->logger->logException($e);
+			}
 		}
 
 		if($this->autoSave and ++$this->autoSaveTicker >= $this->autoSaveTicks){

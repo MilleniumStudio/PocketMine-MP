@@ -79,7 +79,9 @@ memory:
   low-memory-trigger: true
 
  world-caches:
+  #Disallow adding to world chunk-packet caches when memory is low
   disable-chunk-cache: true
+  #Clear world caches when memory is low
   low-memory-trigger: true
 
 
@@ -130,9 +132,6 @@ chunk-sending:
  per-tick: 4
  #Radius of chunks that need to be sent before spawning the player
  spawn-radius: 4
- #Save a serialized copy of the chunk in memory for faster sending
- #Useful in mostly-static worlds where lots of players join at the same time
- cache-chunks: false
 
 chunk-ticking:
  #Max amount of chunks processed each tick

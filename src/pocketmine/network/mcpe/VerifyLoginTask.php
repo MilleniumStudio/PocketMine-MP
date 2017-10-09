@@ -27,7 +27,6 @@ use pocketmine\network\mcpe\protocol\LoginPacket;
 use pocketmine\Player;
 use pocketmine\scheduler\AsyncTask;
 use pocketmine\Server;
-use pocketmine\utils\MainLogger;
 
 class VerifyLoginTask extends AsyncTask{
 
@@ -42,7 +41,7 @@ class VerifyLoginTask extends AsyncTask{
 	 * has an invalid signature. If false, the keychain might have been tampered with.
 	 * The player will always be disconnected if this is false.
 	 */
-	private $valid = true;
+	private $valid = false;
 	/**
 	 * @var bool
 	 * Whether the player is logged into Xbox Live. This is true if any link in the keychain is signed with the Mojang
@@ -60,26 +59,33 @@ class VerifyLoginTask extends AsyncTask{
 		$packet = $this->packet; //Get it in a local variable to make sure it stays unserialized
 
 		$currentKey = null;
+		$first = true;
 
 		foreach($packet->chainData["chain"] as $jwt){
-			if(!$this->validateToken($jwt, $currentKey)){
-				$this->valid = false;
-
+			if(!$this->validateToken($jwt, $currentKey, $first)){
 				return;
 			}
+			$first = false;
 		}
 
 		if(!$this->validateToken($packet->clientDataJwt, $currentKey)){
-			$this->valid = false;
+			return;
 		}
+
+		$this->valid = true;
 	}
 
-	private function validateToken(string $jwt, ?string &$currentPublicKey) : bool{
+	private function validateToken(string $jwt, ?string &$currentPublicKey, bool $first = false) : bool{
 		[$headB64, $payloadB64, $sigB64] = explode('.', $jwt);
 
 		$headers = json_decode(base64_decode(strtr($headB64, '-_', '+/'), true), true);
 
-		if($currentPublicKey === null){ //First link, check that it is self-signed
+		if($currentPublicKey === null){
+			if(!$first){
+				return false; //we should have a key but the last link didn't have one
+			}
+
+			//First link, check that it is self-signed
 			$currentPublicKey = $headers["x5u"];
 		}
 
@@ -126,7 +132,7 @@ class VerifyLoginTask extends AsyncTask{
 			return false; //token has expired
 		}
 
-		$currentPublicKey = $claims["identityPublicKey"]; //the next link should be signed with this
+		$currentPublicKey = $claims["identityPublicKey"] ?? null; //if there are further links, the next link should be signed with this
 
 		return true;
 	}
