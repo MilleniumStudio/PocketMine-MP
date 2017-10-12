@@ -87,9 +87,9 @@ class SimpleCommandMap implements CommandMap{
 
 	private function setDefaultCommands(){
 		$this->registerAll("pocketmine", [
-			new BanCommand("ban"),
-			new BanIpCommand("ban-ip"),
-			new BanListCommand("banlist"),
+//			new BanCommand("ban"),
+//			new BanIpCommand("ban-ip"),
+//			new BanListCommand("banlist"),
 			new DefaultGamemodeCommand("defaultgamemode"),
 			new DeopCommand("deop"),
 			new DifficultyCommand("difficulty"),
