@@ -26,4 +26,16 @@ namespace pocketmine\entity;
 
 abstract class Vehicle extends Entity implements Rideable{
 
+    public function mount(Entity $passenger)
+    {
+        $this->passenger = $passenger;
+        $passenger->vehicle = $this;
+    }
+
+    public function unMount()
+    {
+        $passenger = $this->passenger;
+        $passenger->vehicle = null;
+        $this->passenger = null;
+    }
 }

@@ -26,4 +26,7 @@ namespace pocketmine\entity;
 
 interface Rideable{
 
+    public function mount(Entity $passenger);
+
+    public function unMount();
 }

@@ -226,6 +226,7 @@ abstract class Entity extends Location implements Metadatable{
 		Entity::registerEntity(Zombie::class);
 
 		Entity::registerEntity(Human::class, true);
+		Entity::registerEntity(Boat::class, true);
 	}
 
 	/**
@@ -1675,6 +1676,10 @@ abstract class Entity extends Location implements Metadatable{
 
 
 			//TODO: vehicle collision events (first we need to spawn them!)
+                        if ($this->passenger != null)
+                        {
+                            
+                        }
 
 			Timings::$entityMoveTimer->stopTiming();
 

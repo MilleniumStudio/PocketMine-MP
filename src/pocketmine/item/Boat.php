@@ -23,6 +23,17 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use pocketmine\block\Block;
+use pocketmine\entity\Entity;
+use pocketmine\entity\Boat as BoatEntity;
+use pocketmine\level\Level;
+use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\ListTag;
+use pocketmine\Player;
+
 class Boat extends Item{
 	public function __construct(int $meta = 0){
 		parent::__construct(self::BOAT, $meta, "Boat");
@@ -30,6 +41,40 @@ class Boat extends Item{
 
 	public function getFuelTime() : int{
 		return 1200; //400 in PC
+	}
+
+        public function onActivate(Level $level, Player $player, Block $block, Block $target, int $face, Vector3 $facePos) : bool{
+		$nbt = new CompoundTag("", [
+			new ListTag("Pos", [
+				new DoubleTag("", $block->getX() + 0.5),
+				new DoubleTag("", $block->getY()),
+				new DoubleTag("", $block->getZ() + 0.5)
+			]),
+			new ListTag("Motion", [
+				new DoubleTag("", 0),
+				new DoubleTag("", 0),
+				new DoubleTag("", 0)
+			]),
+			new ListTag("Rotation", [
+				new FloatTag("", lcg_value() * 360),
+				new FloatTag("", 0)
+			]),
+		]);
+//
+//                var_dump($this->meta);
+
+		$entity = Entity::createEntity(BoatEntity::NETWORK_ID, $level, $nbt);
+                $entity->passenger = $player;
+
+		if($entity instanceof Entity){
+			if($player->isSurvival()){
+				--$this->count;
+			}
+			$entity->spawnToAll();
+			return true;
+		}
+
+		return false;
 	}
 
 	//TODO
