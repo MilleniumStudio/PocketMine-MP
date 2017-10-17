@@ -28,6 +28,7 @@ use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\event\player\PlayerExhaustEvent;
 use pocketmine\inventory\InventoryHolder;
 use pocketmine\inventory\PlayerInventory;
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item as ItemItem;
 use pocketmine\level\Level;
 use pocketmine\nbt\NBT;
@@ -454,6 +455,14 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 		}
 	}
 
+	protected function doAirSupplyTick(int $tickDiff){
+		//TODO: allow this to apply to other mobs
+		if(($ench = $this->inventory->getHelmet()->getEnchantment(Enchantment::RESPIRATION)) === null or
+			lcg_value() <= (1 / ($ench->getLevel() + 1))){
+			parent::doAirSupplyTick($tickDiff);
+		}
+	}
+
 	public function getName() : string{
 		return $this->getNameTag();
 	}
@@ -476,7 +485,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 			$slotCount = $this->inventory->getSize() + $this->inventory->getHotbarSize();
 			for($slot = $this->inventory->getHotbarSize(); $slot < $slotCount; ++$slot){
 				$item = $this->inventory->getItem($slot - 9);
-				if($item->getId() !== ItemItem::AIR){
+				if(!$item->isNull()){
 					$this->namedtag->Inventory[$slot] = $item->nbtSerialize($slot);
 				}
 			}
@@ -484,7 +493,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 			//Armor
 			for($slot = 100; $slot < 104; ++$slot){
 				$item = $this->inventory->getItem($this->inventory->getSize() + $slot - 100);
-				if($item instanceof ItemItem and $item->getId() !== ItemItem::AIR){
+				if(!$item->isNull()){
 					$this->namedtag->Inventory[$slot] = $item->nbtSerialize($slot);
 				}
 			}
@@ -532,10 +541,7 @@ class Human extends Creature implements ProjectileSource, InventoryHolder{
 	public function close(){
 		if(!$this->closed){
 			if($this->inventory !== null){
-				foreach($this->inventory->getViewers() as $viewer){
-					$viewer->removeWindow($this->inventory);
-				}
-
+				$this->inventory->removeAllViewers(true);
 				$this->inventory = null;
 			}
 			parent::close();

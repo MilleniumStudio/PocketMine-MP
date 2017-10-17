@@ -21,18 +21,17 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\network\mcpe\protocol\types;
 
-use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
+class EntityLink{
 
-class WoodenDoor extends Item{
-	public function __construct(int $meta = 0){
-		$this->block = BlockFactory::get(Block::WOODEN_DOOR_BLOCK);
-		parent::__construct(self::WOODEN_DOOR, $meta, "Wooden Door");
-	}
+	/** @var int */
+	public $fromEntityUniqueId;
+	/** @var int */
+	public $toEntityUniqueId;
+	/** @var int */
+	public $type;
+	/** @var int */
+	public $byte2;
 
-	public function getMaxStackSize() : int{
-		return 1;
-	}
 }

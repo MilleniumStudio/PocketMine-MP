@@ -23,30 +23,48 @@ declare(strict_types=1);
 
 namespace pocketmine\tile;
 
-use pocketmine\item\Item;
-use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
-use pocketmine\Player;
 
-class EnchantTable extends Spawnable implements Nameable{
-	use NameableTrait;
+/**
+ * This trait implements most methods in the {@link Nameable} interface. It should only be used by Tiles.
+ */
+trait NameableTrait{
 
 	/**
 	 * @return string
 	 */
-	public function getDefaultName() : string{
-		return "Enchanting Table";
+	abstract public function getDefaultName() : string;
+
+	/**
+	 * @return CompoundTag
+	 */
+	abstract public function getNBT() : CompoundTag;
+
+	/**
+	 * @return string
+	 */
+	public function getName() : string{
+		$nbt = $this->getNBT();
+		return $nbt->getString("CustomName") ?? $this->getDefaultName();
 	}
 
-	public function addAdditionalSpawnData(CompoundTag $nbt) : void{
-		if($this->hasName()){
-			$nbt->setTag($this->namedtag->getTag("CustomName"));
+	/**
+	 * @param string $name
+	 */
+	public function setName(string $name) : void{
+		$nbt = $this->getNBT();
+		if($name === ""){
+			$nbt->removeTag("CustomName");
+			return;
 		}
+
+		$nbt->setString("CustomName", $name);
 	}
 
-	protected static function createAdditionalNBT(CompoundTag $nbt, Vector3 $pos, ?int $face = null, ?Item $item = null, ?Player $player = null) : void{
-		if($item !== null and $item->hasCustomName()){
-			$nbt->setString("CustomName", $item->getCustomName());
-		}
+	/**
+	 * @return bool
+	 */
+	public function hasName() : bool{
+		return $this->getNBT()->hasTag("CustomName");
 	}
 }

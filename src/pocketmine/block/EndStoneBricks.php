@@ -21,18 +21,37 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\block;
 
-use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
+use pocketmine\item\Item;
+use pocketmine\item\Tool;
 
-class IronDoor extends Item{
+class EndStoneBricks extends Solid{
+
+	protected $id = self::END_BRICKS;
+
 	public function __construct(int $meta = 0){
-		$this->block = BlockFactory::get(Block::IRON_DOOR_BLOCK);
-		parent::__construct(self::IRON_DOOR, $meta, "Iron Door");
+		$this->meta = $meta;
 	}
 
-	public function getMaxStackSize() : int{
-		return 1;
+	public function getName() : string{
+		return "End Stone Bricks";
 	}
+
+	public function getHardness() : float{
+		return 0.8;
+	}
+
+	public function getToolType() : int{
+		return Tool::TYPE_PICKAXE;
+	}
+
+	public function getDrops(Item $item) : array{
+		if($item->isPickaxe() >= Tool::TIER_WOODEN){
+			return parent::getDrops($item);
+		}
+
+		return [];
+	}
+
 }

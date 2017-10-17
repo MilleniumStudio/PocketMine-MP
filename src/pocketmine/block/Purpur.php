@@ -21,13 +21,31 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\block;
 
-use pocketmine\block\Block;
+class Purpur extends Quartz{
 
-class BrewingStand extends Item{
+	protected $id = self::PURPUR_BLOCK;
+
 	public function __construct(int $meta = 0){
-		$this->block = Block::get(Block::BREWING_STAND_BLOCK);
-		parent::__construct(self::BREWING_STAND, $meta, "Brewing Stand");
+		$this->meta = $meta;
+	}
+
+	public function getName() : string{
+		static $names = [
+			self::NORMAL => "Purpur Block",
+			self::CHISELED => "Chiseled Purpur", //wtf?
+			self::PILLAR => "Purpur Pillar"
+		];
+
+		return $names[$this->getVariant()] ?? "Unknown";
+	}
+
+	public function getHardness() : float{
+		return 1.5;
+	}
+
+	public function getBlastResistance() : float{
+		return 30;
 	}
 }

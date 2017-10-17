@@ -59,14 +59,16 @@ class Ladder extends Transparent{
 		return true;
 	}
 
-	public function onEntityCollide(Entity $entity){
+	public function onEntityCollide(Entity $entity) : void{
 		$entity->resetFallDistance();
 		$entity->onGround = true;
 	}
 
-	protected function recalculateBoundingBox(){
-
+	protected function recalculateBoundingBox() : ?AxisAlignedBB{
 		$f = 0.1875;
+
+		$minX = $minZ = 0;
+		$maxX = $maxZ = 1;
 
 		if($this->meta === 2){
 			return new AxisAlignedBB(
@@ -106,7 +108,14 @@ class Ladder extends Transparent{
 			);
 		}
 
-		return null;
+		return new AxisAlignedBB(
+			$this->x + $minX,
+			$this->y,
+			$this->z + $minZ,
+			$this->x + $maxX,
+			$this->y + 1,
+			$this->z + $maxZ
+		);
 	}
 
 

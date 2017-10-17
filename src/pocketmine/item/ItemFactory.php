@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\nbt\tag\CompoundTag;
 
@@ -106,12 +107,12 @@ class ItemFactory{
 			self::registerItem(new Painting());
 			self::registerItem(new GoldenApple());
 			self::registerItem(new Sign());
-			self::registerItem(new WoodenDoor());
+			self::registerItem(new ItemBlock(Block::OAK_DOOR_BLOCK, 0, Item::OAK_DOOR));
 			self::registerItem(new Bucket());
 
 			self::registerItem(new Minecart());
 			//TODO: SADDLE
-			self::registerItem(new IronDoor());
+			self::registerItem(new ItemBlock(Block::IRON_DOOR_BLOCK, 0, Item::IRON_DOOR));
 			self::registerItem(new Redstone());
 			self::registerItem(new Snowball());
 			self::registerItem(new Boat());
@@ -119,7 +120,7 @@ class ItemFactory{
 
 			self::registerItem(new Item(Item::BRICK, 0, "Brick"));
 			self::registerItem(new Item(Item::CLAY_BALL, 0, "Clay"));
-			self::registerItem(new Sugarcane());
+			self::registerItem(new ItemBlock(Block::SUGARCANE_BLOCK, 0, Item::SUGARCANE));
 			self::registerItem(new Item(Item::PAPER, 0, "Paper"));
 			self::registerItem(new Book());
 			self::registerItem(new Item(Item::SLIME_BALL, 0, "Slimeball"));
@@ -153,14 +154,14 @@ class ItemFactory{
 			self::registerItem(new BlazeRod());
 			self::registerItem(new Item(Item::GHAST_TEAR, 0, "Ghast Tear"));
 			self::registerItem(new Item(Item::GOLD_NUGGET, 0, "Gold Nugget"));
-			self::registerItem(new NetherWart());
+			self::registerItem(new ItemBlock(Block::NETHER_WART_PLANT, 0, Item::NETHER_WART));
 			self::registerItem(new Potion());
 			self::registerItem(new GlassBottle());
 			self::registerItem(new SpiderEye());
 			self::registerItem(new Item(Item::FERMENTED_SPIDER_EYE, 0, "Fermented Spider Eye"));
 			self::registerItem(new Item(Item::BLAZE_POWDER, 0, "Blaze Powder"));
 			self::registerItem(new Item(Item::MAGMA_CREAM, 0, "Magma Cream"));
-			self::registerItem(new BrewingStand());
+			self::registerItem(new ItemBlock(Block::BREWING_STAND_BLOCK, 0, Item::BREWING_STAND));
 			//TODO: CAULDRON
 			//TODO: ENDER_EYE
 			self::registerItem(new Item(Item::GLISTERING_MELON, 0, "Glistering Melon"));
@@ -170,15 +171,15 @@ class ItemFactory{
 			self::registerItem(new WritableBook());
 			self::registerItem(new WrittenBook());
 			self::registerItem(new Item(Item::EMERALD, 0, "Emerald"));
-			self::registerItem(new ItemFrame());
-			self::registerItem(new FlowerPot());
+			self::registerItem(new ItemBlock(Block::ITEM_FRAME_BLOCK, 0, Item::ITEM_FRAME));
+			self::registerItem(new ItemBlock(Block::FLOWER_POT_BLOCK, 0, Item::FLOWER_POT));
 			self::registerItem(new Carrot());
 			self::registerItem(new Potato());
 			self::registerItem(new BakedPotato());
 			//TODO: POISONOUS_POTATO
 			//TODO: EMPTYMAP
 			self::registerItem(new GoldenCarrot());
-			self::registerItem(new Skull());
+			self::registerItem(new ItemBlock(Block::SKULL_BLOCK, 0, Item::SKULL));
 			//TODO: CARROTONASTICK
 			self::registerItem(new Item(Item::NETHER_STAR, 0, "Nether Star"));
 			self::registerItem(new PumpkinPie());
@@ -208,11 +209,11 @@ class ItemFactory{
 			//TODO: COOKED_MUTTON
 			//TODO: ARMOR_STAND
 			//TODO: END_CRYSTAL
-			//TODO: SPRUCE_DOOR
-			//TODO: BIRCH_DOOR
-			//TODO: JUNGLE_DOOR
-			//TODO: ACACIA_DOOR
-			//TODO: DARK_OAK_DOOR
+			self::registerItem(new ItemBlock(Block::SPRUCE_DOOR_BLOCK, 0, Item::SPRUCE_DOOR));
+			self::registerItem(new ItemBlock(Block::BIRCH_DOOR_BLOCK, 0, Item::BIRCH_DOOR));
+			self::registerItem(new ItemBlock(Block::JUNGLE_DOOR_BLOCK, 0, Item::JUNGLE_DOOR));
+			self::registerItem(new ItemBlock(Block::ACACIA_DOOR_BLOCK, 0, Item::ACACIA_DOOR));
+			self::registerItem(new ItemBlock(Block::DARK_OAK_DOOR_BLOCK, 0, Item::DARK_OAK_DOOR));
 			//TODO: CHORUS_FRUIT
 			self::registerItem(new Item(Item::CHORUS_FRUIT_POPPED, 0, "Popped Chorus Fruit"));
 
@@ -300,7 +301,7 @@ class ItemFactory{
 			if($id < 256){
 				/* Blocks must have a damage value 0-15, but items can have damage value -1 to indicate that they are
 				 * crafting ingredients with any-damage. */
-				$item = new ItemBlock(BlockFactory::get($id, $meta !== -1 ? $meta & 0xf : 0), $meta);
+				$item = new ItemBlock($id, $meta);
 			}else{
 				/** @var Item|null $listed */
 				$listed = self::$list[$id];

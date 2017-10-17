@@ -727,9 +727,13 @@ class Level implements ChunkManager, Metadatable{
 		while($this->neighbourBlockUpdateQueue->count() > 0){
 			$index = $this->neighbourBlockUpdateQueue->dequeue();
 			Level::getBlockXYZ($index, $x, $y, $z);
-			$this->server->getPluginManager()->callEvent($ev = new BlockUpdateEvent($this->getBlock($this->temporalVector->setComponents($x, $y, $z))));
+
+			$block = $this->getBlock($this->temporalVector->setComponents($x, $y, $z));
+			$block->clearBoundingBoxes(); //for blocks like fences, force recalculation of connected AABBs
+
+			$this->server->getPluginManager()->callEvent($ev = new BlockUpdateEvent($block));
 			if(!$ev->isCancelled()){
-				$ev->getBlock()->onUpdate(self::BLOCK_UPDATE_NORMAL);
+				$block->onUpdate(self::BLOCK_UPDATE_NORMAL);
 			}
 		}
 
@@ -1206,7 +1210,9 @@ class Level implements ChunkManager, Metadatable{
 				for($y = $minY; $y <= $maxY; ++$y){
 					$block = $this->getBlock($this->temporalVector->setComponents($x, $y, $z));
 					if(!$block->canPassThrough() and $block->collidesWithBB($bb)){
-						$collides[] = $block->getBoundingBox();
+						foreach($block->getCollisionBoxes() as $blockBB){
+							$collides[] = $blockBB;
+						}
 					}
 				}
 			}
@@ -1498,6 +1504,7 @@ class Level implements ChunkManager, Metadatable{
 			}
 
 			$block->position($pos);
+			$block->clearBoundingBoxes();
 			unset($this->blockCache[Level::blockHash($pos->x, $pos->y, $pos->z)]);
 
 			$index = Level::chunkHash($pos->x >> 4, $pos->z >> 4);
@@ -1683,7 +1690,7 @@ class Level implements ChunkManager, Metadatable{
 		}
 
 		$above = $this->getBlock(new Vector3($target->x, $target->y + 1, $target->z));
-		if($above->getId() === Item::FIRE){
+		if($above->getId() === Block::FIRE){ //TODO: this should be done in Fire's onUpdate(), not with this hack
 			$this->setBlock($above, BlockFactory::get(Block::AIR), true);
 		}
 
@@ -1700,9 +1707,7 @@ class Level implements ChunkManager, Metadatable{
 					$tile->unpair();
 				}
 
-				foreach($tile->getInventory()->getContents() as $chestItem){
-					$this->dropItem($target, $chestItem);
-				}
+				$tile->getInventory()->dropContents($this, $target);
 			}
 
 			$tile->close();
@@ -1748,7 +1753,7 @@ class Level implements ChunkManager, Metadatable{
 			return false;
 		}
 
-		if($blockClicked->getId() === Item::AIR){
+		if($blockClicked->getId() === Block::AIR){
 			return false;
 		}
 
@@ -1807,21 +1812,23 @@ class Level implements ChunkManager, Metadatable{
 			return false;
 		}
 
-		if($hand->isSolid() === true and $hand->getBoundingBox() !== null){
-			$entities = $this->getCollidingEntities($hand->getBoundingBox());
-			foreach($entities as $e){
-				if($e instanceof Arrow or $e instanceof DroppedItem or ($e instanceof Player and $e->isSpectator())){
-					continue;
+		if($hand->isSolid()){
+			foreach($hand->getCollisionBoxes() as $collisionBox){
+				$entities = $this->getCollidingEntities($collisionBox);
+				foreach($entities as $e){
+					if($e instanceof Arrow or $e instanceof DroppedItem or ($e instanceof Player and $e->isSpectator())){
+						continue;
+					}
+
+					return false; //Entity in block
 				}
 
-				return false; //Entity in block
-			}
-
-			if($player !== null){
-				if(($diff = $player->getNextPosition()->subtract($player->getPosition())) and $diff->lengthSquared() > 0.00001){
-					$bb = $player->getBoundingBox()->getOffsetBoundingBox($diff->x, $diff->y, $diff->z);
-					if($hand->getBoundingBox()->intersectsWith($bb)){
-						return false; //Inside player BB
+				if($player !== null){
+					if(($diff = $player->getNextPosition()->subtract($player->getPosition())) and $diff->lengthSquared() > 0.00001){
+						$bb = $player->getBoundingBox()->getOffsetBoundingBox($diff->x, $diff->y, $diff->z);
+						if($collisionBox->intersectsWith($bb)){
+							return false; //Inside player BB
+						}
 					}
 				}
 			}

@@ -21,14 +21,31 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\block;
 
-use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
+use pocketmine\item\Tool;
 
-class Skull extends Item{
+class PurpurStairs extends Stair{
+
+	protected $id = self::PURPUR_STAIRS;
+
 	public function __construct(int $meta = 0){
-		$this->block = BlockFactory::get(Block::SKULL_BLOCK);
-		parent::__construct(self::SKULL, $meta, "Mob Head");
+		$this->meta = $meta;
+	}
+
+	public function getName() : string{
+		return "Purpur Stairs";
+	}
+
+	public function getToolType() : int{
+		return Tool::TYPE_PICKAXE;
+	}
+
+	public function getHardness() : float{
+		return 1.5;
+	}
+
+	public function getBlastResistance() : float{
+		return 30;
 	}
 }

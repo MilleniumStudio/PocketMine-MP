@@ -23,30 +23,39 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\item\Item;
 use pocketmine\item\Tool;
 
-class MonsterSpawner extends Transparent{
+class WoodenFence extends Fence{
+	const FENCE_OAK = 0;
+	const FENCE_SPRUCE = 1;
+	const FENCE_BIRCH = 2;
+	const FENCE_JUNGLE = 3;
+	const FENCE_ACACIA = 4;
+	const FENCE_DARKOAK = 5;
 
-	protected $id = self::MONSTER_SPAWNER;
-
-	public function __construct(int $meta = 0){
-		$this->meta = $meta;
-	}
+	protected $id = self::FENCE;
 
 	public function getHardness() : float{
-		return 5;
+		return 2;
 	}
 
 	public function getToolType() : int{
-		return Tool::TYPE_PICKAXE;
+		return Tool::TYPE_AXE;
 	}
 
 	public function getName() : string{
-		return "Monster Spawner";
+		static $names = [
+			self::FENCE_OAK => "Oak Fence",
+			self::FENCE_SPRUCE => "Spruce Fence",
+			self::FENCE_BIRCH => "Birch Fence",
+			self::FENCE_JUNGLE => "Jungle Fence",
+			self::FENCE_ACACIA => "Acacia Fence",
+			self::FENCE_DARKOAK => "Dark Oak Fence"
+		];
+		return $names[$this->meta & 0x07] ?? "Unknown";
 	}
 
-	public function getDrops(Item $item) : array{
-		return [];
+	public function getFuelTime() : int{
+		return 300;
 	}
 }
