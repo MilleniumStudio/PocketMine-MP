@@ -74,12 +74,12 @@ class CobblestoneWall extends Transparent{
 		}
 
 		return new AxisAlignedBB(
-			(float)$this->x + $w,
+			(float)$this->x + $west,
 			(float)$this->y + 0.0,
-			(float)$this->z + $n,
-			(float)$this->x + $e,
+			(float)$this->z + $north,
+			(float)$this->x + $east,
 			(float)$this->y + 1.5,
-			(float)$this->z + $s
+			(float)$this->z + $south
 		);
 	}
 
