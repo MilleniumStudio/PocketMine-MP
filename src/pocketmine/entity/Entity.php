@@ -376,6 +376,16 @@ abstract class Entity extends Location implements Metadatable{
 	/** @var bool */
 	protected $constructed = false;
 
+	// FATCRAFT START
+	public $lastTickX = 0.0;
+	public $lastTickY = 0.0;
+	public $lastTickZ = 0.0;
+	private $speedLagThresold = 0;
+	public $speedX = 0.0;
+	public $speedY = 0.0;
+	public $speedZ = 0.0;
+	// FATCRAFT END
+
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->constructed = true;
@@ -1320,7 +1330,7 @@ abstract class Entity extends Location implements Metadatable{
 		$hasUpdate = $this->entityBaseTick($tickDiff);
 		Timings::$timerEntityBaseTick->stopTiming();
 
-
+		$this->updateSpeed();
 
 		$this->timings->stopTiming();
 
@@ -1474,6 +1484,36 @@ abstract class Entity extends Location implements Metadatable{
 
 		return true;
 	}
+
+	// FATCRAFT START
+	public function updateSpeed()
+	{
+		$l_IsMoving = $this->lastTickX != $this->getX() || $this->lastTickY != $this->getY() || $this->lastTickZ != $this->getZ();
+		//        System.out.println("1 - Entity diff: " + (Math.pow(lastTickX - locX, 2) + Math.pow(lastTickY - locY, 2) + Math.pow(lastTickZ - locZ, 2)) + " (thresold: " + speedLagThresold + ") + " + l_IsMoving);
+		if (!$l_IsMoving && $this->speedLagThresold > 0)
+		$this->speedLagThresold--;
+		else if ($l_IsMoving && $this->speedLagThresold < 2)
+		$this->speedLagThresold++;
+
+		$this->speedX = ($this->speedLagThresold == 2 ? $this->lastTickX - $this->getX() : ($this->speedLagThresold == 0 ? 0 : $this->speedX));
+		$this->speedY = ($this->speedLagThresold == 2 ? $this->lastTickY - $this->getY() : ($this->speedLagThresold == 0 ? 0 : $this->speedY));
+		$this->speedZ = ($this->speedLagThresold == 2 ? $this->lastTickZ - $this->getZ() : ($this->speedLagThresold == 0 ? 0 : $this->speedZ));
+
+		$this->lastTickX = $this->getX();
+		$this->lastTickY = $this->getY();
+		$this->lastTickZ = $this->getZ();
+	}
+
+	public function isMoving():bool
+	{
+		return $this->speedX != 0 || $this->speedY != 0 || $this->speedZ != 0;
+	}
+
+	public function getSpeedVector():Vector3
+	{
+		return new Vector3($this->speedX, $this->speedY, $this->speedZ);
+	}
+	// FATCRAFT END
 
 	public function getPosition() : Position{
 		return $this->asPosition();

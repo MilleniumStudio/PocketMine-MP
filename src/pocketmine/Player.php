@@ -1695,6 +1695,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			}
 		}
 
+		$this->updateSpeed();
+
 		$this->timings->stopTiming();
 
 		return true;
