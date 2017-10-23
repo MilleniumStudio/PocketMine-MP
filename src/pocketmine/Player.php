@@ -144,6 +144,9 @@ use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 use pocketmine\network\mcpe\protocol\UpdateAttributesPacket;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
+use pocketmine\network\mcpe\protocol\PlayerInputPacket;
+use pocketmine\network\mcpe\protocol\MoveEntityPacket;
+use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
 use pocketmine\network\mcpe\VerifyLoginTask;
 use pocketmine\network\SourceInterface;
 use pocketmine\permission\PermissibleBase;
@@ -156,9 +159,7 @@ use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
-use pocketmine\utils\BlockIterator;
 use pocketmine\event\entity\EntityInteractEvent;
-use pocketmine\entity\Boat;
 
 /**
  * Main class that handles networking, recovery, and packet sending to the server part
@@ -1474,7 +1475,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$revert = false;
 
-		if(($distanceSquared / ($tickDiff ** 2)) > 100){
+		if(($distanceSquared / ($tickDiff ** 2)) > 100 && $this->vehicle === null){
 			$this->server->getLogger()->warning($this->getName() . " moved too fast, reverting movement");
 			$this->server->getLogger()->debug("Old position: " . $this->asVector3() . ", new position: " . $this->newPosition);
 			$revert = true;
@@ -2216,14 +2217,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}elseif((!$this->isAlive() or $this->spawned !== true) and $newPos->distanceSquared($this) > 0.01){
 			$this->sendPosition($this, null, null, MovePlayerPacket::MODE_RESET);
 			$this->server->getLogger()->debug("Reverted movement of " . $this->getName() . " due to not alive or not spawned, received " . $newPos . ", locked at " . $this->asVector3());
-		}elseif($this->vehicle != null){
-//			$this->server->getLogger()->debug("Movement application to vehicle " . $this->vehicle->getName() . ", " . $newPos . ", locked at " . $this->asVector3());
-                        if ($this->vehicle instanceof Boat)
-                        {
-                            $this->vehicle->setPositionAndRotation($newPos, ($packet->yaw + 90) % 360, 0);
-                            $this->vehicle->updateRiderPosition($this->vehicle->getMountedYOffset());
-//                            $this->sendPosition($this, null, null, MovePlayerPacket::MODE_RESET);
-                        }
 		}else{
 			// Once we get a movement within a reasonable distance, treat it as a teleport ACK and remove position lock
 			if($this->isTeleporting){
@@ -2657,6 +2650,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		switch($packet->action){
 			case InteractPacket::ACTION_LEAVE_VEHICLE:
+                            if($this->vehicle != null){
+                                $this->vehicle->mountEntity($this); // get out of the vehicle
+                            }
+                            break;
 			case InteractPacket::ACTION_MOUSEOVER:
 				break; //TODO: handle these
 			default:
@@ -2666,6 +2663,35 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		return true;
+	}
+
+        /**
+	 * Used for getting values of arrows clicked during the riding of a pet, and when dismounted, as well as throwing the rider off the vehicle when leaving.
+	 *
+	 * @param PlayerInputPacket $packet
+	 */
+	public function handlePlayerInput(PlayerInputPacket $packet) : bool
+        {
+            if($this->vehicle instanceof entity\Vehicle)
+            {
+                if($packet->motionX !== 0 && $packet->motionY !== 0)
+                {
+                    $this->vehicle->doRidingMovement($packet->motionX, $packet->motionY);
+                }
+            }
+            return true;
+	}
+
+        public function handleMoveEntity(MoveEntityPacket $packet) : bool
+        {
+            //TODO MoveEntity
+            return true;
+	}
+
+        public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool
+        {
+            //TODO SetEntityMotion
+            return true;
 	}
 
 	public function handleBlockPickRequest(BlockPickRequestPacket $packet) : bool{
@@ -2826,9 +2852,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				}else{
 					$this->setSneaking(true);
 				}
-                                if($this->vehicle != null){
-                                    $this->vehicle->mountEntity($this); // get out of the vehicle
-                                }
 				return true;
 			case PlayerActionPacket::ACTION_STOP_SNEAK:
 				$ev = new PlayerToggleSneakEvent($this, false);

@@ -65,11 +65,9 @@ class Boat extends Item
                 new FloatTag("", 0)
                     ]),
         ]);
-//
 //                var_dump($this->meta);
 
         $entity = Entity::createEntity(BoatEntity::NETWORK_ID, $level, $nbt);
-        $entity->passenger = $player;
 
         if ($entity instanceof Entity){
             if ($player->isSurvival()){
@@ -81,6 +79,4 @@ class Boat extends Item
 
         return false;
     }
-
-    //TODO
 }

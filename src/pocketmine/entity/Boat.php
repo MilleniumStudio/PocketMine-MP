@@ -35,6 +35,8 @@ use pocketmine\event\entity\VehicleUpdateEvent;
 use pocketmine\event\entity\VehicleMoveEvent;
 use pocketmine\math\Vector3;
 use pocketmine\level\Location;
+use pocketmine\level\Level;
+use pocketmine\nbt\tag\CompoundTag;
 
 class Boat extends Vehicle
 {
@@ -42,11 +44,15 @@ class Boat extends Vehicle
     const NETWORK_ID = 90;
     const DATA_WOOD_ID = 20;
 
-    public $width = 1.6;
-    public $height = 0.7;
-    public $drag = 0.1;
-    public $gravity = 0.1;
-    public $baseOffset = 0.35;
+    public function __construct(Level $level, CompoundTag $nbt)
+    {
+        parent::__construct($level, $nbt);
+        $this->width = 1.6;
+        $this->height = 0.4;
+        $this->drag = 0.1;
+        $this->gravity = 0.1;
+        $this->seatOffset = array(0, 0.9, 0);
+    }
 
     public function getName(): string
     {
@@ -87,10 +93,10 @@ class Boat extends Vehicle
         }
         if ($instantKill || $this->getDamage() > 40)
         {
-            if ($this->passenger != null)
-            {
-                $this->mountEntity($this->passenger);
-            }
+//            if ($this->passenger != null)
+//            {
+//                $this->mountEntity($this->passenger);
+//            }
 
             if ($instantKill) {
                 $this->kill();
@@ -124,10 +130,10 @@ class Boat extends Vehicle
         }
 
         $tickDiff = $currentTick - $this->lastUpdate;
-//        if ($tickDiff <= 0){
-//            $this->server->getLogger()->debug("Expected tick difference of at least 1, got $tickDiff for " . get_class($this));
-//            return false;
-//        }
+        if ($tickDiff <= 0){
+            $this->server->getLogger()->debug("Expected tick difference of at least 1, got $tickDiff for " . get_class($this));
+            return false;
+        }
 
         if (!$this->isAlive()){
             $this->deadTicks += $tickDiff;

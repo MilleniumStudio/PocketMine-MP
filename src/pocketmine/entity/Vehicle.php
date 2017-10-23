@@ -23,14 +23,22 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
-use pocketmine\network\mcpe\protocol\SetEntityDataPacket;
 use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\event\entity\EntityVehicleEnterEvent;
 use pocketmine\event\entity\EntityVehicleExitEvent;
 
 abstract class Vehicle extends Interactable implements Rideable{
 
     protected $rollingDirection = true;
+    /** @var int */
+    protected $jumpTicks = 0;
+    /** @var float */
+    protected $jumpHeight = 0.08;
+    protected $seatOffset = array(0, 0, 0);
+
+    const STATE_SITTING = 1;
+    const STATE_STANDING = 0;
 
     public function getRollingAmplitude() {
         return $this->getDataProperty(Entity::DATA_HURT_TIME);
@@ -61,7 +69,7 @@ abstract class Vehicle extends Interactable implements Rideable{
     }
 
     public function canDoInteraction():bool {
-        return $this->linkedEntity == null;
+        return $this->passenger == null;
     }
 
     /**
@@ -73,28 +81,10 @@ abstract class Vehicle extends Interactable implements Rideable{
     public function mountEntity(Entity $p_Rider) {
         $this->PitchDelta = 0.0;
         $this->YawDelta = 0.0;
-        if ($p_Rider->vehicle != null) { //dismount action
-            $ev = new EntityVehicleExitEvent($p_Rider, $this);
-            $this->server->getPluginManager()->callEvent($ev);
-            if ($ev->isCancelled()) {
-                return false;
-            }
 
-            $pk = new SetEntityLinkPacket();
-            $pk->rider = $p_Rider->getId();
-            $pk->riding = $p_Rider->vehicle->getId();
-            $pk->type = SetEntityLinkPacket::TYPE_REMOVE;
-            $this->server->broadcastPacket($p_Rider->getViewers(), $pk);
-
-            if ($p_Rider instanceof \pocketmine\Player) {
-                $p_Rider->dataPacket($pk);
-            }
-
-            $this->server->getLogger()->info("Entity " . $p_Rider->getId() . " dismount " . $p_Rider->vehicle->getId());
-            $p_Rider->vehicle->passenger = null;
-            $p_Rider->vehicle = null;
-            $p_Rider->setDataProperty(Entity::DATA_FLAG_RIDING, Entity::DATA_TYPE_BYTE, 0);
-            return true;
+        //dismount action
+        if ($p_Rider->vehicle != null) {
+            return $this->dismount($p_Rider);
         }
         $ev = new EntityVehicleEnterEvent($p_Rider, $this);
         $this->server->getPluginManager()->callEvent($ev);
@@ -103,23 +93,166 @@ abstract class Vehicle extends Interactable implements Rideable{
         }
 
         // mount Action
-        $pk = new SetEntityLinkPacket();
-        $pk->rider = $p_Rider->getId();
-        $pk->riding = $this->getId();
-        $pk->type = SetEntityLinkPacket::TYPE_RIDE;
-        $this->server->broadcastPacket($p_Rider->getViewers(), $pk);
-
-        if (!$p_Rider instanceof Player) {
-            $p_Rider->dataPacket($pk);
+        if($p_Rider->vehicle !== null) {
+            return false;
         }
-
-        $p_Rider->vehicle = $this;
+        if($p_Rider instanceof Player && $p_Rider->isSurvival(true)) {
+            $p_Rider->setAllowFlight(true); // Set allow flight to true to prevent any 'kicked for flying' issues.
+        }
         $this->passenger = $p_Rider;
+        $p_Rider->vehicle = $this;
+        $p_Rider->canCollide = false;
 
-        $p_Rider->setDataProperty(Entity::DATA_FLAG_RIDING, Entity::DATA_TYPE_BYTE, 1);
-        $this->updateRiderPosition($this->getMountedYOffset());
+        $p_Rider->setDataProperty(self::DATA_RIDER_SEAT_POSITION, self::DATA_TYPE_VECTOR3F, $this->seatOffset);
+        $p_Rider->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_RIDING, true);
+//        $this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_SADDLED, true);
+
+        $pk = new SetEntityLinkPacket();
+        $link = new EntityLink();
+        $link->fromEntityUniqueId = $this->getId();
+        $link->type = self::STATE_SITTING;
+        $link->toEntityUniqueId = $p_Rider->getId();
+        $link->byte2 = 1;
+
+        $pk->link = $link;
+        $this->server->broadcastPacket($this->server->getOnlinePlayers(), $pk);
+
+        $pk = new SetEntityLinkPacket();
+        $link = new EntityLink();
+        $link->fromEntityUniqueId = $this->getId();
+        $link->type = self::STATE_SITTING;
+        $link->toEntityUniqueId = 0;
+        $link->byte2 = 1;
+
+        $pk->link = $link;
+        $p_Rider->dataPacket($pk);
         $this->server->getLogger()->info("Entity " . $p_Rider->getId() . " mount " . $this->getId());
         return true;
+    }
+
+    public function dismount(Entity $p_Rider): bool
+    {
+        $ev = new EntityVehicleExitEvent($p_Rider, $p_Rider->vehicle);
+        $this->server->getPluginManager()->callEvent($ev);
+        if ($ev->isCancelled()) {
+            return false;
+        }
+        $this->server->getLogger()->info("Entity " . $p_Rider->getId() . " dismount " . $p_Rider->vehicle->getId());
+
+        $pk = new SetEntityLinkPacket();
+        $link = new EntityLink();
+        $link->fromEntityUniqueId = $p_Rider->vehicle->getId();
+        $link->type = self::STATE_STANDING;
+        $link->toEntityUniqueId = $p_Rider->getId();
+        $link->byte2 = 1;
+
+        $pk->link = $link;
+        $this->server->broadcastPacket($this->level->getPlayers(), $pk);
+
+        $pk = new SetEntityLinkPacket();
+
+        $link = new EntityLink();
+        $link->fromEntityUniqueId = $p_Rider->getId();
+        $link->type = self::STATE_STANDING;
+        $link->toEntityUniqueId = 0;
+        $link->byte2 = 1;
+
+        $pk->link = $link;
+        $p_Rider->dataPacket($pk);
+
+        if($p_Rider !== null) {
+            $p_Rider->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_RIDING, false);
+            if($p_Rider instanceof Player && $p_Rider->isSurvival(true))
+            {
+                $p_Rider->setAllowFlight(false);
+            }
+        }
+
+        $p_Rider->canCollide = true;
+        $p_Rider->vehicle->passenger = null;
+        $p_Rider->vehicle = null;
+        $p_Rider->onGround = true;
+        return true;
+    }
+
+    public function doRidingMovement(float $motionX, float $motionZ): bool
+    {
+        $this->pitch = $this->passenger->pitch;
+        $this->yaw = $this->passenger->yaw;
+
+        $x = $this->getDirectionVector()->x / 2 * $this->getSpeed();
+        $z = $this->getDirectionVector()->z / 2 * $this->getSpeed();
+
+        if($this->jumpTicks > 0) {
+            $this->jumpTicks--;
+        }
+
+        if(!$this->isOnGround()) {
+            if($this->motionY > -$this->gravity * 2) {
+                $this->motionY = -$this->gravity * 2;
+            } else {
+                $this->motionY -= $this->gravity;
+            }
+        } else {
+            $this->motionY -= $this->gravity;
+        }
+
+        $finalMotion = [0, 0];
+        switch($motionZ) {
+            case 1:
+                $finalMotion = [$x, $z];
+                if($this->isOnGround()) {
+                    $this->jump();
+                }
+                break;
+            case 0:
+                if($this->isOnGround()) {
+                    $this->jump();
+                }
+                break;
+            case -1:
+                $finalMotion = [-$x, -$z];
+                if($this->isOnGround()) {
+                    $this->jump();
+                }
+                break;
+            default:
+                $average = $x + $z / 2;
+                $finalMotion = [$average / 1.414 * $motionZ, $average / 1.414 * $motionX];
+                if($this->isOnGround()) {
+                    $this->jump();
+                }
+                break;
+        }
+        switch($motionX) {
+            case 1:
+                $finalMotion = [$z, -$x];
+                if($this->isOnGround()) {
+                        $this->jump();
+                }
+                break;
+            case 0:
+                if($this->isOnGround()) {
+                        $this->jump();
+                }
+                break;
+            case -1:
+                $finalMotion = [-$z, $x];
+                if($this->isOnGround()) {
+                        $this->jump();
+                }
+                break;
+        }
+
+        $this->move($finalMotion[0], $this->motionY, $finalMotion[1]);
+        $this->updateMovement();
+        return $this->isAlive();
+    }
+
+    public function jump(): void {
+        $this->motionY = $this->jumpHeight * 12 * $this->getScale();
+        $this->move($this->motionX, $this->motionY, $this->motionZ);
+        $this->jumpTicks = 10;
     }
 
     public function onUpdate(int $currentTick):bool {
