@@ -21,8 +21,22 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+/**
+ * Entity related Events, like spawn, inventory, attack...
+ */
+namespace pocketmine\event\entity;
 
+use pocketmine\entity\Vehicle;
+use pocketmine\event\Event;
 
-interface Rideable{
+abstract class VehicleEvent extends Event{
+	/** @var Vehicle */
+	protected $vehicle;
+
+	/**
+	 * @return Vehicle
+	 */
+	public function getVehicle():Vehicle {
+		return $this->vehicle;
+	}
 }

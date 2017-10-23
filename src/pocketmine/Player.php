@@ -156,7 +156,9 @@ use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
-
+use pocketmine\utils\BlockIterator;
+use pocketmine\event\entity\EntityInteractEvent;
+use pocketmine\entity\Boat;
 
 /**
  * Main class that handles networking, recovery, and packet sending to the server part
@@ -249,6 +251,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $clientID = null;
 
 	private $loaderId = 0;
+
+        private $buttonText = "Button";
 
 	protected $stepHeight = 0.6;
 
@@ -807,6 +811,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function getInAirTicks() : int{
 		return $this->inAirTicks;
 	}
+
+        public function getButtonText():string {
+            return $this->buttonText;
+        }
+
+        public function setButtonText(string $text) {
+            $this->buttonText = $text;
+            $this->setDataProperty(Entity::DATA_INTERACTIVE_TAG, self::DATA_TYPE_STRING, $this->buttonText);
+        }
 
 	/**
 	 * Returns whether the player is currently using an item (right-click and hold).
@@ -1684,6 +1697,81 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return true;
 	}
 
+//    public function checkInteractNearby()
+//    {
+//        $interactDistance = $this->gamemode === Player::CREATIVE ? 5 : 3;
+//        if($this->canInteract($this, $interactDistance))
+//        {
+//            if($this->getEntityPlayerLookingAt($interactDistance) != null)
+//            {
+//                $onInteract = $this->getEntityPlayerLookingAt($interactDistance);
+//                $this->setButtonText($onInteract->getInteractButtonText());
+//            }
+//            else
+//            {
+//                $this->setButtonText("");
+//            }
+//        }
+//        else
+//        {
+//            $this->setButtonText("");
+//        }
+//    }
+//
+//     /**
+//     * Returns the Entity the player is looking at currently
+//     *
+//     * @param maxDistance the maximum distance to check for entities
+//     * @return Entity|null    either NULL if no entity is found or an instance of the entity
+//     */
+//    public function getEntityPlayerLookingAt(int $maxDistance = 1)
+//    {
+//        $this->timings->startTiming();
+//        $entity = null;
+//
+//        // just a fix because player MAY not be fully initialized
+//        if ($this->spawned)
+//        {
+//            $nearbyEntities = $this->level->getNearbyEntities($this->boundingBox->grow($maxDistance, $maxDistance, $maxDistance), $this);
+//
+//            // get all blocks in looking direction until the max interact distance is reached (it's possible that startblock isn't found!)
+//            try
+//            {
+//                $itr = new BlockIterator($this->level, $this->getPosition(), $this->getDirectionVector(), $this->getEyeHeight(), $maxDistance);
+//                while ($itr->valid())
+//                {
+//                    $itr->next();
+//                    $block = $itr->current();
+//                    $entity = $this->getEntityAtPosition($nearbyEntities, $block->getFloorX(), $block->getFloorY(), $block->getFloorZ());
+//                    if ($entity != null)
+//                    {
+//                        break;
+//                    }
+//                }
+//            }
+//            catch (Exception $ex)
+//            {
+//                // nothing to log here!
+//            }
+//        }
+//
+//        $this->timings->stopTiming();
+//
+//        return $entity;
+//    }
+//
+//    private function getEntityAtPosition(array $nearbyEntities, int $x, int $y, int $z)
+//    {
+//        foreach ($nearbyEntities as $nearestEntity) {
+//            if ($nearestEntity->getFloorX() == $x && $nearestEntity->getFloorY() == $y && $nearestEntity->getFloorZ() == $z
+//                    && $nearestEntity instanceof EntityInteractable
+//                    && $nearestEntity->canDoInteraction()) {
+//                return $nearestEntity;
+//            }
+//        }
+//        return null;
+//    }
+
 	public function doFoodTick(int $tickDiff = 1){
 		if($this->isSurvival()){
 			parent::doFoodTick($tickDiff);
@@ -2128,6 +2216,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}elseif((!$this->isAlive() or $this->spawned !== true) and $newPos->distanceSquared($this) > 0.01){
 			$this->sendPosition($this, null, null, MovePlayerPacket::MODE_RESET);
 			$this->server->getLogger()->debug("Reverted movement of " . $this->getName() . " due to not alive or not spawned, received " . $newPos . ", locked at " . $this->asVector3());
+		}elseif($this->vehicle != null){
+//			$this->server->getLogger()->debug("Movement application to vehicle " . $this->vehicle->getName() . ", " . $newPos . ", locked at " . $this->asVector3());
+                        if ($this->vehicle instanceof Boat)
+                        {
+                            $this->vehicle->setPositionAndRotation($newPos, ($packet->yaw + 90) % 360, 0);
+                            $this->vehicle->updateRiderPosition($this->vehicle->getMountedYOffset());
+//                            $this->sendPosition($this, null, null, MovePlayerPacket::MODE_RESET);
+                        }
 		}else{
 			// Once we get a movement within a reasonable distance, treat it as a teleport ACK and remove position lock
 			if($this->isTeleporting){
@@ -2381,7 +2477,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				switch($type){
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT:
-						break; //TODO
+                                            $ev = new EntityInteractEvent($this, $target);
+                                            $this->getServer()->getPluginManager()->callEvent($ev);
+                                            if (!$ev->isCancelled())
+                                            {
+                                                $target->onInteract($this, $packet->trData->itemInHand);
+                                            }
+                                            return true;
+						break;
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_ATTACK:
 						$cancelled = false;
 						if($target instanceof Player and $this->server->getConfigBoolean("pvp", true) === false){
@@ -2723,6 +2826,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				}else{
 					$this->setSneaking(true);
 				}
+                                if($this->vehicle != null){
+                                    $this->vehicle->mountEntity($this); // get out of the vehicle
+                                }
 				return true;
 			case PlayerActionPacket::ACTION_STOP_SNEAK:
 				$ev = new PlayerToggleSneakEvent($this, false);

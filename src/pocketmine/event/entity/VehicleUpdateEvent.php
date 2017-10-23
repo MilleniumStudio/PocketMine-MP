@@ -21,8 +21,15 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\entity;
+namespace pocketmine\event\entity;
 
+use pocketmine\event\Cancellable;
+use pocketmine\entity\Vehicle;
 
-interface Rideable{
+class VehicleUpdateEvent extends VehicleEvent implements Cancellable{
+	public static $handlerList = null;
+
+	public function __construct(Vehicle $vehicle){
+		$this->vehicle = $vehicle;
+	}
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*
  *
  *  ____            _        _   __  __ _                  __  __ ____
@@ -18,11 +17,15 @@
  *
  *
 */
-
 declare(strict_types=1);
-
-namespace pocketmine\entity;
-
-
-interface Rideable{
+namespace pocketmine\network\mcpe\protocol\types;
+class EntityLink{
+	/** @var int */
+	public $fromEntityUniqueId;
+	/** @var int */
+	public $toEntityUniqueId;
+	/** @var int */
+	public $type;
+	/** @var int */
+	public $byte2;
 }

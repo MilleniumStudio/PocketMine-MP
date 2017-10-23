@@ -31,17 +31,13 @@ use pocketmine\network\mcpe\NetworkSession;
 class SetEntityLinkPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::SET_ENTITY_LINK_PACKET;
 
-	/** @var array [from, to, type, unknown byte] */
-	public $link = [];
-
+        public $link;
 	protected function decodePayload(){
 		$this->link = $this->getEntityLink();
 	}
-
 	protected function encodePayload(){
 		$this->putEntityLink($this->link);
 	}
-
 	public function handle(NetworkSession $session) : bool{
 		return $session->handleSetEntityLink($this);
 	}
