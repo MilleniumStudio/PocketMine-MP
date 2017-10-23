@@ -166,7 +166,7 @@ class Boat extends Vehicle
         $friction = 1 - $this->drag;
 
         if ($this->onGround && (abs($this->motionX) > 0.00001 || abs($this->motionZ) > 0.00001)) {
-            $friction *= $this->getLevel()->getBlock($this->temporalVector->setComponents((int) floor($this->x), (int) floor($this->y - 1), (int) floor($this->z) - 1)).getFrictionFactor();
+            $friction *= $this->getLevel()->getBlock($this->temporalVector->setComponents((int) floor($this->x), (int) floor($this->y - 1), (int) floor($this->z) - 1))->getFrictionFactor();
         }
 
         $this->motionX *= $friction;

@@ -1191,6 +1191,13 @@ abstract class Entity extends Location implements Metadatable{
 
 			$this->broadcastMotion();
 		}
+
+                if ($this->vehicle !== null)
+                {
+                    $this->x = $this->vehicle + $this->seatOffset[0];
+                    $this->y = $this->vehicle + $this->seatOffset[1];
+                    $this->z = $this->vehicle + $this->seatOffset[2];
+                }
 	}
 
 	public function getOffsetPosition(Vector3 $vector3) : Vector3{

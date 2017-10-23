@@ -35,7 +35,7 @@ abstract class Vehicle extends Interactable implements Rideable{
     protected $jumpTicks = 0;
     /** @var float */
     protected $jumpHeight = 0.08;
-    protected $seatOffset = array(0, 0, 0);
+    public $seatOffset = array(0, 0, 0);
 
     const STATE_SITTING = 1;
     const STATE_STANDING = 0;
@@ -79,8 +79,8 @@ abstract class Vehicle extends Interactable implements Rideable{
      * @return {@code true} if the mounting successful
      */
     public function mountEntity(Entity $p_Rider) {
-        $this->PitchDelta = 0.0;
-        $this->YawDelta = 0.0;
+//        $this->PitchDelta = 0.0;
+//        $this->YawDelta = 0.0;
 
         //dismount action
         if ($p_Rider->vehicle != null) {
@@ -102,6 +102,7 @@ abstract class Vehicle extends Interactable implements Rideable{
         $this->passenger = $p_Rider;
         $p_Rider->vehicle = $this;
         $p_Rider->canCollide = false;
+        $p_Rider->pitch = $this->pitch;
 
         $p_Rider->setDataProperty(self::DATA_RIDER_SEAT_POSITION, self::DATA_TYPE_VECTOR3F, $this->seatOffset);
         $p_Rider->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_RIDING, true);
@@ -270,6 +271,10 @@ abstract class Vehicle extends Interactable implements Rideable{
         }
         // Movement code
         $this->updateMovement();
+        if ($this->passenger !== null)
+        {
+            $this->passenger->updateMovement();
+        }
         return true;
     }
 
