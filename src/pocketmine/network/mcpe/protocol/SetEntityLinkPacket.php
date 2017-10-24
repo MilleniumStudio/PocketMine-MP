@@ -38,11 +38,9 @@ class SetEntityLinkPacket extends DataPacket{
 	protected function decodePayload(){
 		$this->link = $this->getEntityLink();
 	}
-
 	protected function encodePayload(){
 		$this->putEntityLink($this->link);
 	}
-
 	public function handle(NetworkSession $session) : bool{
 		return $session->handleSetEntityLink($this);
 	}

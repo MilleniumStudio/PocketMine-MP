@@ -63,9 +63,12 @@ use pocketmine\network\mcpe\protocol\MoveEntityPacket;
 use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
 use pocketmine\network\mcpe\protocol\SetEntityDataPacket;
 use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
+use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
+use pocketmine\item\Item;
 
 abstract class Entity extends Location implements Metadatable, EntityIds{
 
@@ -163,18 +166,18 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	 * 78 (int) */
 
 
-	const DATA_FLAG_ONFIRE = 0;
+	const DATA_FLAG_ONFIRE = 0;// working on player
 	const DATA_FLAG_SNEAKING = 1;
-	const DATA_FLAG_RIDING = 2;
+	const DATA_FLAG_RIDING = 2;// 
 	const DATA_FLAG_SPRINTING = 3;
 	const DATA_FLAG_ACTION = 4;
-	const DATA_FLAG_INVISIBLE = 5;
+	const DATA_FLAG_INVISIBLE = 5;// working on player
 	const DATA_FLAG_TEMPTED = 6;
 	const DATA_FLAG_INLOVE = 7;
 	const DATA_FLAG_SADDLED = 8;
 	const DATA_FLAG_POWERED = 9;
 	const DATA_FLAG_IGNITED = 10;
-	const DATA_FLAG_BABY = 11;
+	const DATA_FLAG_BABY = 11; // big head
 	const DATA_FLAG_CONVERTING = 12;
 	const DATA_FLAG_CRITICAL = 13;
 	const DATA_FLAG_CAN_SHOW_NAMETAG = 14;
@@ -193,7 +196,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	const DATA_FLAG_TAMED = 27;
 	const DATA_FLAG_LEASHED = 28;
 	const DATA_FLAG_SHEARED = 29;
-	const DATA_FLAG_GLIDING = 30;
+	const DATA_FLAG_GLIDING = 30; //working
 	const DATA_FLAG_ELDER = 31;
 	const DATA_FLAG_MOVING = 32;
 	const DATA_FLAG_BREATHING = 33;
@@ -201,7 +204,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	const DATA_FLAG_STACKABLE = 35;
 	const DATA_FLAG_SHOWBASE = 36;
 	const DATA_FLAG_REARING = 37;
-	const DATA_FLAG_VIBRATING = 38;
+	const DATA_FLAG_VIBRATING = 38; //player
 	const DATA_FLAG_IDLING = 39;
 	const DATA_FLAG_EVOKER_SPELL = 40;
 	const DATA_FLAG_CHARGE_ATTACK = 41;
@@ -237,6 +240,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		Entity::registerEntity(Zombie::class, false, ['Zombie',	'minecraft:zombie']);
 
 		Entity::registerEntity(Human::class, true);
+		Entity::registerEntity(Boat::class, true);
 	}
 
 
@@ -350,8 +354,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	protected $changedDataProperties = [];
 
-	public $passenger = null;
-	public $vehicle = null;
+        public $seatOffset = array(0, 0, 0);
+        public $passenger = null;//linkedEntity
+	public $vehicle = null;//riding
 
 	/** @var Chunk */
 	public $chunk;
@@ -390,6 +395,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 	public $lastYaw;
 	/** @var float */
 	public $lastPitch;
+
+        /** @var float */
+        public $PitchDelta;
+        /** @var float */
+        public $YawDelta;
 
 	/** @var AxisAlignedBB */
 	public $boundingBox;
@@ -574,7 +584,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		$this->server->getPluginManager()->callEvent(new EntitySpawnEvent($this));
 
 		$this->scheduleUpdate();
-
 	}
 
 	/**
@@ -974,6 +983,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	public function entityBaseTick(int $tickDiff = 1) : bool{
 		//TODO: check vehicles
+                if ($this->vehicle != null && !$this->vehicle->isAlive()) {
+                    $this->vehicle->mountEntity($this);
+                }
+
 
 		$this->justCreated = false;
 
@@ -1305,6 +1318,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 		$this->timings->startTiming();
 
+                if ($this->passenger !== null)
+                {
+                    $this->passenger->x = $this->x + $this->seatOffset[0];
+                    $this->passenger->y = $this->y + $this->seatOffset[1];
+                    $this->passenger->z = $this->z + $this->seatOffset[2];
+                }
+
 		if($this->hasMovementUpdate()){
 			$this->tryChangeMovement();
 			$this->move($this->motionX, $this->motionY, $this->motionZ);
@@ -1336,6 +1356,51 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return ($hasUpdate or $this->hasMovementUpdate());
 		//return !($this instanceof Player);
 	}
+
+        protected function updateRidden() {
+            if ($this->passenger != null) {
+                if (!$this->passenger->isAlive()) {
+                    return false;
+                }
+                $this->motionX = 0.0;
+                $this->motionY = 0.0;
+                $this->motionZ = 0.0;
+//                $this->onUpdate($this->lastUpdate);
+                $this->YawDelta += $this->passenger->yaw - $this->passenger->lastYaw;
+                for ($this->PitchDelta += $this->passenger->pitch - $this->passenger->lastPitch ; $this->YawDelta >= 180.0 ; $this->YawDelta -= 360.0) {
+                }
+                while ($this->YawDelta < -180.0) {
+                    $this->YawDelta += 360.0;
+                }
+                while ($this->PitchDelta >= 180.0) {
+                    $this->PitchDelta -= 360.0;
+                }
+                while ($this->PitchDelta < -180.0) {
+                    $this->PitchDelta += 360.0;
+                }
+                $var1 = $this->YawDelta * 0.5;
+                $var3 = $this->PitchDelta * 0.5;
+                $var5 = 10.0;
+                $var1 = Math::clamp($var1, -$var5, $var5);
+                $var3 = Math::clamp($var3, -$var5, $var5);
+                $this->YawDelta -= $var1;
+                $this->PitchDelta -= $var3;
+                return true;
+            }
+            return false;
+        }
+
+        protected function updateRiderPosition(array $p_SeatOffset)
+        {
+            if ($this->updateRidden())
+            {
+                $this->passenger->setDataProperty(Entity::DATA_RIDER_SEAT_POSITION, Entity::DATA_TYPE_VECTOR3F, $p_SeatOffset);
+            }
+        }
+
+        public function getMountedYOffset() {
+            return $this->height * 0.75;
+        }
 
 	final public function scheduleUpdate(){
 		$this->level->updateEntities[$this->id] = $this;
@@ -1415,29 +1480,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 
 	}
 
-	protected function switchLevel(Level $targetLevel) : bool{
-		if($this->closed){
-			return false;
-		}
-
-		if($this->isValid()){
-			$this->server->getPluginManager()->callEvent($ev = new EntityLevelChangeEvent($this, $this->level, $targetLevel));
-			if($ev->isCancelled()){
-				return false;
-			}
-
-			$this->level->removeEntity($this);
-			if($this->chunk !== null){
-				$this->chunk->removeEntity($this);
-			}
-			$this->despawnFromAll();
-		}
-
-		$this->setLevel($targetLevel);
-		$this->level->addEntity($this);
-		$this->chunk = null;
-
-		return true;
+        public function onInteract(Player $player, Item $item):bool {
+            return false;
 	}
 
 	// FATCRAFT START
@@ -1469,14 +1513,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 		return new Vector3($this->speedX, $this->speedY, $this->speedZ);
 	}
 	// FATCRAFT END
-
-	public function getPosition() : Position{
-		return $this->asPosition();
-	}
-
-	public function getLocation() : Location{
-		return $this->asLocation();
-	}
 
 	public function isInsideOfWater() : bool{
 		$block = $this->level->getBlockAt(Math::floorFloat($this->x), Math::floorFloat($y = ($this->y + $this->getEyeHeight())), Math::floorFloat($this->z));
@@ -1962,6 +1998,20 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$this->hasSpawned[$player->getLoaderId()] = $player;
 
 			$this->sendSpawnPacket($player);
+
+                        // check vehicle
+                        if ($this->vehicle !== null)
+                        {
+                            $pk = new SetEntityLinkPacket();
+                            $link = new EntityLink();
+                            $link->fromEntityUniqueId = $this->vehicle->getId();
+                            $link->type = \pocketmine\entity\Vehicle::STATE_SITTING;
+                            $link->toEntityUniqueId = $this->getId();
+                            $link->byte2 = 1;
+
+                            $pk->link = $link;
+                            $player->dataPacket($pk);
+                        }
 		}
 	}
 

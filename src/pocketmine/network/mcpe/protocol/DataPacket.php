@@ -526,7 +526,6 @@ abstract class DataPacket extends BinaryStream{
 
 		return $link;
 	}
-
 	/**
 	 * @param EntityLink $link
 	 */

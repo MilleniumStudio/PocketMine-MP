@@ -144,6 +144,9 @@ use pocketmine\network\mcpe\protocol\types\DimensionIds;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
 use pocketmine\network\mcpe\protocol\UpdateAttributesPacket;
 use pocketmine\network\mcpe\protocol\UpdateBlockPacket;
+use pocketmine\network\mcpe\protocol\PlayerInputPacket;
+use pocketmine\network\mcpe\protocol\MoveEntityPacket;
+use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
 use pocketmine\network\mcpe\VerifyLoginTask;
 use pocketmine\network\SourceInterface;
 use pocketmine\permission\PermissibleBase;
@@ -156,7 +159,7 @@ use pocketmine\tile\Spawnable;
 use pocketmine\tile\Tile;
 use pocketmine\utils\TextFormat;
 use pocketmine\utils\UUID;
-
+use pocketmine\event\entity\EntityInteractEvent;
 
 /**
  * Main class that handles networking, recovery, and packet sending to the server part
@@ -249,6 +252,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	protected $clientID = null;
 
 	private $loaderId = 0;
+
+        private $buttonText = "Button";
 
 	protected $stepHeight = 0.6;
 
@@ -788,6 +793,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function getInAirTicks() : int{
 		return $this->inAirTicks;
 	}
+
+        public function getButtonText():string {
+            return $this->buttonText;
+        }
+
+        public function setButtonText(string $text) {
+            $this->buttonText = $text;
+            $this->setDataProperty(Entity::DATA_INTERACTIVE_TAG, self::DATA_TYPE_STRING, $this->buttonText);
+        }
 
 	/**
 	 * Returns whether the player is currently using an item (right-click and hold).
@@ -1514,7 +1528,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 					$this->server->getLogger()->warning($this->getServer()->getLanguage()->translateString("pocketmine.player.invalidMove", [$this->getName()]));
 					$this->server->getLogger()->debug("Old position: " . $this->asVector3() . ", new position: " . $this->newPosition);
 				}
-			}*/
+			}
 
 			if($diff > 0){
 				$this->x = $newPos->x;
@@ -1694,6 +1708,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				}
 			}
 		}
+//                $subtitle = "";
+//                if ($this->vehicle !== null)
+//                {
+//                    $subtitle = "Vehicle : " . $this->vehicle->x . " / " . $this->vehicle->y . " / " . $this->vehicle->z . "";
+//                }
+//                $this->sendPopup("Position : " . $this->x . " / " . $this->y . " / " . $this->z . "\n" . $subtitle, "");
 
 		$this->updateSpeed();
 
@@ -2394,7 +2414,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				switch($type){
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_INTERACT:
-						break; //TODO
+                                            $ev = new EntityInteractEvent($this, $target);
+                                            $this->getServer()->getPluginManager()->callEvent($ev);
+                                            if (!$ev->isCancelled())
+                                            {
+                                                $target->onInteract($this, $packet->trData->itemInHand);
+                                            }
+                                            return true;
+						break;
 					case InventoryTransactionPacket::USE_ITEM_ON_ENTITY_ACTION_ATTACK:
 						if(!$target->isAlive()){
 							return true;
@@ -2569,6 +2596,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		switch($packet->action){
 			case InteractPacket::ACTION_LEAVE_VEHICLE:
+                            if($this->vehicle != null){
+                                $this->vehicle->mountEntity($this); // get out of the vehicle
+                            }
+                            break;
 			case InteractPacket::ACTION_MOUSEOVER:
 				break; //TODO: handle these
 			default:
@@ -2578,6 +2609,50 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		return true;
+	}
+
+        /**
+	 * Used for getting values of arrows clicked during the riding of a pet, and when dismounted, as well as throwing the rider off the vehicle when leaving.
+	 *
+	 * @param PlayerInputPacket $packet
+	 */
+	public function handlePlayerInput(PlayerInputPacket $packet) : bool
+        {
+            if($this->vehicle instanceof entity\Vehicle)
+            {
+                if($packet->motionX !== 0 && $packet->motionY !== 0)
+                {
+                    $this->vehicle->doRidingMovement($packet->motionX, $packet->motionY);
+                }
+            }
+            return true;
+	}
+
+        public function handleMoveEntity(MoveEntityPacket $packet) : bool
+        {
+            //TODO MoveEntity
+//            var_dump($packet);
+            if ($this->vehicle !== null)
+            {
+                $this->vehicle->x = $packet->position->x;
+		$this->vehicle->y = $packet->position->y;
+		$this->vehicle->z = $packet->position->z;
+            }
+            return true;
+	}
+
+        public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool
+        {
+            //TODO SetEntityMotion
+//            var_dump($packet);
+            if ($this->vehicle !== null)
+            {
+//                $this->vehicle->setMotion($packet->motion);
+                $this->vehicle->motionX = $packet->motion->x;
+		$this->vehicle->motionY = $packet->motion->y;
+		$this->vehicle->motionZ = $packet->motion->z;
+            }
+            return true;
 	}
 
 	public function handleBlockPickRequest(BlockPickRequestPacket $packet) : bool{

@@ -23,6 +23,15 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+abstract class Interactable extends Entity{
 
-interface Rideable{
+    public function __construct(\pocketmine\level\Level $level, \pocketmine\nbt\tag\CompoundTag $nbt)
+    {
+        parent::__construct($level, $nbt);
+    }
+
+// Todo: Passive entity?? i18n and boat leaving text
+    abstract function getInteractButtonText(): string;
+
+    abstract function canDoInteraction():bool ;
 }

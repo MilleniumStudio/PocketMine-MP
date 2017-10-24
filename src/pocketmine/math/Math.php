@@ -38,4 +38,8 @@ abstract class Math{
 		$i = (int) ($n + 1);
 		return $n >= $i ? $i : $i - 1;
 	}
+
+    public static function clamp($check, $min, $max) {
+        return $check > $max ? $max : ($check < $min ? $min : $check);
+    }
 }

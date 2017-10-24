@@ -63,6 +63,8 @@ use pocketmine\network\mcpe\protocol\SetPlayerGameTypePacket;
 use pocketmine\network\mcpe\protocol\ShowCreditsPacket;
 use pocketmine\network\mcpe\protocol\SpawnExperienceOrbPacket;
 use pocketmine\network\mcpe\protocol\TextPacket;
+use pocketmine\network\mcpe\protocol\MoveEntityPacket;
+use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
 use pocketmine\Player;
 use pocketmine\Server;
 
@@ -114,6 +116,14 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 		}
 
 		return false;
+	}
+
+        public function handleMoveEntity(MoveEntityPacket $packet) : bool{
+		return $this->player->handleMoveEntity($packet);
+	}
+
+        public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool{
+		return $this->player->handleSetEntityMotion($packet);
 	}
 
 	public function handleMovePlayer(MovePlayerPacket $packet) : bool{
@@ -185,7 +195,7 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
 	public function handlePlayerInput(PlayerInputPacket $packet) : bool{
-		return false; //TODO
+		return $this->player->handlePlayerInput($packet);
 	}
 
 	public function handleSetPlayerGameType(SetPlayerGameTypePacket $packet) : bool{
