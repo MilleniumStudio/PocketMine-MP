@@ -1207,13 +1207,6 @@ abstract class Entity extends Location implements Metadatable{
 
 			$this->broadcastMotion();
 		}
-
-                if ($this->vehicle !== null)
-                {
-                    $this->motionX = $this->vehicle->motionX;
-                    $this->motionY = $this->vehicle->motionY;
-                    $this->motionZ = $this->vehicle->motionZ;
-                }
 	}
 
 	public function getOffsetPosition(Vector3 $vector3) : Vector3{
@@ -1310,6 +1303,13 @@ abstract class Entity extends Location implements Metadatable{
 
 		$this->timings->startTiming();
 
+                if ($this->passenger !== null)
+                {
+                    $this->passenger->x = $this->x + $this->seatOffset[0];
+                    $this->passenger->y = $this->y + $this->seatOffset[1];
+                    $this->passenger->z = $this->z + $this->seatOffset[2];
+                }
+
 		if($this->hasMovementUpdate()){
 			$this->tryChangeMovement();
 			$this->move($this->motionX, $this->motionY, $this->motionZ);
@@ -1332,8 +1332,6 @@ abstract class Entity extends Location implements Metadatable{
 		$hasUpdate = $this->entityBaseTick($tickDiff);
 		Timings::$timerEntityBaseTick->stopTiming();
 
-
-
 		$this->timings->stopTiming();
 
 		//if($this->isStatic())
@@ -1350,25 +1348,25 @@ abstract class Entity extends Location implements Metadatable{
                 $this->motionY = 0.0;
                 $this->motionZ = 0.0;
                 $this->onUpdate($this->lastUpdate);
-                    $this->YawDelta += $this->passenger->yaw - $this->passenger->lastYaw;
-                    for ($this->PitchDelta += $this->passenger->pitch - $this->passenger->lastPitch ; $this->YawDelta >= 180.0 ; $this->YawDelta -= 360.0) {
-                    }
-                    while ($this->YawDelta < -180.0) {
-                        $this->YawDelta += 360.0;
-                    }
-                    while ($this->PitchDelta >= 180.0) {
-                        $this->PitchDelta -= 360.0;
-                    }
-                    while ($this->PitchDelta < -180.0) {
-                        $this->PitchDelta += 360.0;
-                    }
-                    $var1 = $this->YawDelta * 0.5;
-                    $var3 = $this->PitchDelta * 0.5;
-                    $var5 = 10.0;
-                    $var1 = Math::clamp($var1, -$var5, $var5);
-                    $var3 = Math::clamp($var3, -$var5, $var5);
-                    $this->YawDelta -= $var1;
-                    $this->PitchDelta -= $var3;
+                $this->YawDelta += $this->passenger->yaw - $this->passenger->lastYaw;
+                for ($this->PitchDelta += $this->passenger->pitch - $this->passenger->lastPitch ; $this->YawDelta >= 180.0 ; $this->YawDelta -= 360.0) {
+                }
+                while ($this->YawDelta < -180.0) {
+                    $this->YawDelta += 360.0;
+                }
+                while ($this->PitchDelta >= 180.0) {
+                    $this->PitchDelta -= 360.0;
+                }
+                while ($this->PitchDelta < -180.0) {
+                    $this->PitchDelta += 360.0;
+                }
+                $var1 = $this->YawDelta * 0.5;
+                $var3 = $this->PitchDelta * 0.5;
+                $var5 = 10.0;
+                $var1 = Math::clamp($var1, -$var5, $var5);
+                $var3 = Math::clamp($var3, -$var5, $var5);
+                $this->YawDelta -= $var1;
+                $this->PitchDelta -= $var3;
                 return true;
             }
             return false;

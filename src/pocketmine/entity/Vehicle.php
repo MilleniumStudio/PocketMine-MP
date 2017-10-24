@@ -123,7 +123,7 @@ abstract class Vehicle extends Interactable implements Rideable{
 
         $pk->link = $link;
         $p_Rider->dataPacket($pk);
-        $this->server->getLogger()->info("Entity " . $p_Rider->getId() . " mount " . $this->getId());
+//        $this->server->getLogger()->debug("Entity " . $p_Rider->getId() . " mount " . $this->getId());
         return true;
     }
 
@@ -134,7 +134,7 @@ abstract class Vehicle extends Interactable implements Rideable{
         if ($ev->isCancelled()) {
             return false;
         }
-        $this->server->getLogger()->info("Entity " . $p_Rider->getId() . " dismount " . $p_Rider->vehicle->getId());
+//        $this->server->getLogger()->debug("Entity " . $p_Rider->getId() . " dismount " . $p_Rider->vehicle->getId());
 
         $pk = new SetEntityLinkPacket();
         $link = new EntityLink();
@@ -175,7 +175,6 @@ abstract class Vehicle extends Interactable implements Rideable{
 
     public function doRidingMovement(float $motionX, float $motionZ): bool
     {
-//        $this->pitch = $this->passenger->pitch;
         $this->yaw = $this->passenger->yaw;
 
         $x = $this->getDirectionVector()->x / 2 * $this->getSpeed();
@@ -223,6 +222,10 @@ abstract class Vehicle extends Interactable implements Rideable{
     }
 
     public function onUpdate(int $currentTick):bool {
+        if (!parent::onUpdate($currentTick))
+        {
+            return false;
+        }
         // The rolling amplitude
         if ($this->getRollingAmplitude() > 0) {
             $this->setRollingAmplitude($this->getRollingAmplitude() - 1);
@@ -237,6 +240,11 @@ abstract class Vehicle extends Interactable implements Rideable{
         }
         // Movement code
         $this->updateMovement();
+//        if ($this->passenger !== null)
+//        {
+//            $title = "Position : " . $this->passenger->x . " / " . $this->passenger->y . " / " . $this->passenger->z . "\n";
+//            $this->sendPopup($title . "Vehicle : " . $this->x . " / " . $this->y . " / " . $this->z . "", "");
+//        }
         return true;
     }
 
@@ -251,7 +259,7 @@ abstract class Vehicle extends Interactable implements Rideable{
         $this->setRollingDirection($this->rollingDirection ? 1 : -1);
         $this->rollingDirection = !$this->rollingDirection;
         $this->setDamage($this->getDamage() + $damage);
-        $this->server->getLogger()->info("Entity " . $this->getId() . " damage " . $this->getDamage() . "/" . $this->getHealth());
+//        $this->server->getLogger()->debug("Entity " . $this->getId() . " damage " . $this->getDamage() . "/" . $this->getHealth());
         return true;
     }
 }
