@@ -23,23 +23,22 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\math\AxisAlignedBB;
+class StoneSlab2 extends StoneSlab{
+	const TYPE_RED_SANDSTONE = 0;
+	const TYPE_PURPUR = 1;
 
-abstract class Flowable extends Transparent{
+	protected $id = self::STONE_SLAB2;
 
-	public function canBeFlowedInto() : bool{
-		return true;
+	public function getDoubleSlabId() : int{
+		return self::DOUBLE_STONE_SLAB2;
 	}
 
-	public function getHardness() : float{
-		return 0;
-	}
+	public function getName() : string{
+		static $names = [
+			self::TYPE_RED_SANDSTONE => "Red Sandstone",
+			self::TYPE_PURPUR => "Purpur"
+		];
 
-	public function isSolid() : bool{
-		return false;
-	}
-
-	protected function recalculateBoundingBox() : ?AxisAlignedBB{
-		return null;
+		return (($this->meta & 0x08) > 0 ? "Upper " : "") . ($names[$this->getVariant()] ?? "") . " Slab";
 	}
 }

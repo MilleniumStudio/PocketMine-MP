@@ -94,8 +94,8 @@ namespace pocketmine {
 	 */
 
 	if(version_compare(MIN_PHP_VERSION, PHP_VERSION) > 0){
-		echo "[CRITICAL] You must use PHP >= " . MIN_PHP_VERSION . PHP_EOL;
-		echo "[CRITICAL] Please use the installer provided on the homepage." . PHP_EOL;
+		echo "[CRITICAL] " . \pocketmine\NAME . " requires PHP >= " . MIN_PHP_VERSION . ", but you have PHP " . PHP_VERSION . "." . PHP_EOL;
+		echo "[CRITICAL] Please use the installer provided on the homepage, or update to a newer PHP version." . PHP_EOL;
 		exit(1);
 	}
 
@@ -435,7 +435,7 @@ namespace pocketmine {
 					return (is_object($value) ? get_class($value) . " object" : gettype($value) . " " . (is_array($value) ? "Array()" : Utils::printable(@strval($value))));
 				}, $args));
 			}
-			$messages[] = "#$j " . (isset($trace[$i]["file"]) ? cleanPath($trace[$i]["file"]) : "") . "(" . ($trace[$i]["line"] ?? "") . "): " . (isset($trace[$i]["class"]) ? $trace[$i]["class"] . (($trace[$i]["type"] === "dynamic" or $trace[$i]["type"] === "->") ? "->" : "::") : "") . $trace[$i]["function"] . "(" . Utils::printable($params) . ")";
+			$messages[] = "#$j " . (isset($trace[$i]["file"]) ? cleanPath($trace[$i]["file"]) : "") . "(" . (isset($trace[$i]["line"]) ? $trace[$i]["line"] : "") . "): " . (isset($trace[$i]["class"]) ? $trace[$i]["class"] . (($trace[$i]["type"] === "dynamic" or $trace[$i]["type"] === "->") ? "->" : "::") : "") . $trace[$i]["function"] . "(" . Utils::printable($params) . ")";
 		}
 
 		return $messages;

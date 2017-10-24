@@ -23,23 +23,25 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\math\AxisAlignedBB;
+use pocketmine\item\Item;
+use pocketmine\item\ItemFactory;
 
-abstract class Flowable extends Transparent{
+abstract class DoubleSlab extends Solid{
 
-	public function canBeFlowedInto() : bool{
-		return true;
+	public function __construct(int $meta = 0){
+		$this->meta = $meta;
 	}
 
-	public function getHardness() : float{
-		return 0;
+	abstract public function getSlabId() : int;
+
+	public function getName() : string{
+		return "Double " . BlockFactory::get($this->getSlabId(), $this->getVariant())->getName() . " Slab";
 	}
 
-	public function isSolid() : bool{
-		return false;
+	public function getDrops(Item $item) : array{
+		return [
+			ItemFactory::get($this->getSlabId(), $this->getVariant(), 2)
+		];
 	}
 
-	protected function recalculateBoundingBox() : ?AxisAlignedBB{
-		return null;
-	}
 }

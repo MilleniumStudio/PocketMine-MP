@@ -21,25 +21,9 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\entity\projectile;
 
-use pocketmine\math\AxisAlignedBB;
 
-abstract class Flowable extends Transparent{
+interface ProjectileSource{
 
-	public function canBeFlowedInto() : bool{
-		return true;
-	}
-
-	public function getHardness() : float{
-		return 0;
-	}
-
-	public function isSolid() : bool{
-		return false;
-	}
-
-	protected function recalculateBoundingBox() : ?AxisAlignedBB{
-		return null;
-	}
 }

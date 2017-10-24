@@ -248,10 +248,10 @@ class BlockFactory{
 			//TODO: STANDING_BANNER
 			//TODO: WALL_BANNER
 			//TODO: DAYLIGHT_DETECTOR_INVERTED
-			//TODO: RED_SANDSTONE
-			//TODO: RED_SANDSTONE_STAIRS
-			//TODO: DOUBLE_STONE_SLAB2
-			//TODO: STONE_SLAB2
+			self::registerBlock(new RedSandstone());
+			self::registerBlock(new RedSandstoneStairs());
+			self::registerBlock(new DoubleStoneSlab2());
+			self::registerBlock(new StoneSlab2());
 			self::registerBlock(new FenceGate(Block::SPRUCE_FENCE_GATE, 0, "Spruce Fence Gate"));
 			self::registerBlock(new FenceGate(Block::BIRCH_FENCE_GATE, 0, "Birch Fence Gate"));
 			self::registerBlock(new FenceGate(Block::JUNGLE_FENCE_GATE, 0, "Jungle Fence Gate"));

@@ -23,23 +23,15 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\math\AxisAlignedBB;
+class RedSandstone extends Sandstone{
+	protected $id = self::RED_SANDSTONE;
 
-abstract class Flowable extends Transparent{
-
-	public function canBeFlowedInto() : bool{
-		return true;
-	}
-
-	public function getHardness() : float{
-		return 0;
-	}
-
-	public function isSolid() : bool{
-		return false;
-	}
-
-	protected function recalculateBoundingBox() : ?AxisAlignedBB{
-		return null;
+	public function getName() : string{
+		static $names = [
+			self::NORMAL => "Red Sandstone",
+			self::CHISELED => "Chiseled Red Sandstone",
+			self::SMOOTH => "Smooth Red Sandstone"
+		];
+		return $names[$this->getVariant()] ?? "Unknown";
 	}
 }

@@ -23,23 +23,29 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
-use pocketmine\math\AxisAlignedBB;
+use pocketmine\item\Item;
+use pocketmine\math\Vector3;
+use pocketmine\Player;
 
-abstract class Flowable extends Transparent{
+abstract class Button extends Flowable{
 
-	public function canBeFlowedInto() : bool{
-		return true;
+	public function __construct(int $meta = 0){
+		$this->meta = $meta;
 	}
 
-	public function getHardness() : float{
+	public function getVariantBitmask() : int{
 		return 0;
 	}
 
-	public function isSolid() : bool{
-		return false;
+	public function place(Item $item, Block $blockReplace, Block $blockClicked, int $face, Vector3 $facePos, Player $player = null) : bool{
+		//TODO: check valid target block
+		$this->meta = $face;
+
+		return $this->level->setBlock($this, $this, true, true);
 	}
 
-	protected function recalculateBoundingBox() : ?AxisAlignedBB{
-		return null;
+	public function onActivate(Item $item, Player $player = null) : bool{
+		//TODO
+		return true;
 	}
 }
