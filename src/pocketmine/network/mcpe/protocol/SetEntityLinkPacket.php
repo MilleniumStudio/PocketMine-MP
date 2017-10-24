@@ -27,11 +27,14 @@ namespace pocketmine\network\mcpe\protocol;
 
 
 use pocketmine\network\mcpe\NetworkSession;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
 
 class SetEntityLinkPacket extends DataPacket{
 	const NETWORK_ID = ProtocolInfo::SET_ENTITY_LINK_PACKET;
 
-        public $link;
+	/** @var EntityLink */
+	public $link;
+
 	protected function decodePayload(){
 		$this->link = $this->getEntityLink();
 	}

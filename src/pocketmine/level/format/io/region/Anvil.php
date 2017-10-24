@@ -31,7 +31,6 @@ use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\{
 	ByteArrayTag, ByteTag, CompoundTag, IntArrayTag, IntTag, ListTag, LongTag
 };
-use pocketmine\Player;
 use pocketmine\utils\MainLogger;
 
 class Anvil extends McRegion{
@@ -70,7 +69,7 @@ class Anvil extends McRegion{
 		$entities = [];
 
 		foreach($chunk->getEntities() as $entity){
-			if(!($entity instanceof Player) and !$entity->isClosed()){
+			if($entity->canSaveWithChunk() and !$entity->isClosed()){
 				$entity->saveNBT();
 				$entities[] = $entity->namedtag;
 			}

@@ -59,14 +59,16 @@ class Ladder extends Transparent{
 		return true;
 	}
 
-	public function onEntityCollide(Entity $entity){
+	public function onEntityCollide(Entity $entity) : void{
 		$entity->resetFallDistance();
 		$entity->onGround = true;
 	}
 
-	protected function recalculateBoundingBox(){
-
+	protected function recalculateBoundingBox() : ?AxisAlignedBB{
 		$f = 0.1875;
+
+		$minX = $minZ = 0;
+		$maxX = $maxZ = 1;
 
 		if($this->meta === 2){
 			return new AxisAlignedBB(
@@ -106,7 +108,14 @@ class Ladder extends Transparent{
 			);
 		}
 
-		return null;
+		return new AxisAlignedBB(
+			$this->x + $minX,
+			$this->y,
+			$this->z + $minZ,
+			$this->x + $maxX,
+			$this->y + 1,
+			$this->z + $maxZ
+		);
 	}
 
 
@@ -131,13 +140,7 @@ class Ladder extends Transparent{
 
 	public function onUpdate(int $type){
 		if($type === Level::BLOCK_UPDATE_NORMAL){
-			$sides = [
-				2 => 3,
-				3 => 2,
-				4 => 5,
-				5 => 4
-			];
-			if(!$this->getSide($sides[$this->meta])->isSolid()){ //Replace with common break method
+			if(!$this->getSide($this->meta ^ 0x01)->isSolid()){ //Replace with common break method
 				$this->level->useBreakOn($this);
 				return Level::BLOCK_UPDATE_NORMAL;
 			}

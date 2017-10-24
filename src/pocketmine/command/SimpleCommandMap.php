@@ -87,9 +87,9 @@ class SimpleCommandMap implements CommandMap{
 
 	private function setDefaultCommands(){
 		$this->registerAll("pocketmine", [
-			new BanCommand("ban"),
-			new BanIpCommand("ban-ip"),
-			new BanListCommand("banlist"),
+//			new BanCommand("ban"),
+//			new BanIpCommand("ban-ip"),
+//			new BanListCommand("banlist"),
 			new DefaultGamemodeCommand("defaultgamemode"),
 			new DeopCommand("deop"),
 			new DifficultyCommand("difficulty"),
@@ -173,6 +173,23 @@ class SimpleCommandMap implements CommandMap{
 		$command->register($this);
 
 		return $registered;
+	}
+
+	/**
+	 * @param Command $command
+	 *
+	 * @return bool
+	 */
+	public function unregister(Command $command) : bool{
+		foreach($this->knownCommands as $lbl => $cmd){
+			if($cmd === $command){
+				unset($this->knownCommands[$lbl]);
+			}
+		}
+
+		$command->unregister($this);
+
+		return true;
 	}
 
 	/**

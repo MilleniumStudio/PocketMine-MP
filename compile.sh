@@ -1,31 +1,26 @@
 #!/bin/bash
-[ -z "$PHP_VERSION" ] && PHP_VERSION="7.2.0RC1"
+[ -z "$PHP_VERSION" ] && PHP_VERSION="7.2.0RC4"
 
 PHP_IS_BETA="yes"
 
 ZEND_VM="GOTO"
 
 ZLIB_VERSION="1.2.11"
-MBEDTLS_VERSION="2.4.2"
+MBEDTLS_VERSION="2.6.0"
 GMP_VERSION="6.1.2"
-GMP_VERSION_DIR="6.1.2"
-CURL_VERSION="curl-7_54_0"
+CURL_VERSION="curl-7_56_0"
 READLINE_VERSION="6.3"
 NCURSES_VERSION="6.0"
 PHPNCURSES_VERSION="1.0.2"
-PTHREADS_VERSION="536a7b29ddd57a25209b5fb79b5abcf0ecd85f79"
+PTHREADS_VERSION="caca8dc42a5d75ddfb39e6fd15337e87e967517e"
 XDEBUG_VERSION="2.5.5"
 WEAKREF_VERSION="0.3.3"
 PHPYAML_VERSION="2.0.2"
 YAML_VERSION="0.1.7"
-YAML_VERSION_ANDROID="0.1.7"
-#PHPLEVELDB_VERSION="0.1.4"
 PHPLEVELDB_VERSION="5cfe735dac5ceafc6848c96177509450febc12d0"
-#LEVELDB_VERSION="1.18"
 LEVELDB_VERSION="f4022ac7c5a022f7a08a1b6dc98c06ef3eed352a" #Check MacOS
 LIBXML_VERSION="2.9.1"
 LIBPNG_VERSION="1.6.32"
-BCOMPILER_VERSION="1.0.2"
 POCKETMINE_CHUNKUTILS_VERSION="master"
 OPENSSL_VERSION="1.1.0f"
 
@@ -68,6 +63,7 @@ else
 		alias download_file="curl --insecure --silent --show-error --location --globoff"
 	else
 		echo "error, curl or wget not found"
+		exit 1
 	fi
 fi
 
@@ -89,11 +85,11 @@ HAVE_MYSQLI="--enable-embedded-mysqli --enable-mysqlnd --with-mysqli=mysqlnd"
 COMPILE_TARGET=""
 COMPILE_CURL="default"
 COMPILE_FANCY="no"
-HAS_ZEPHIR="no"
 IS_CROSSCOMPILE="no"
 IS_WINDOWS="no"
 DO_OPTIMIZE="no"
 DO_STATIC="no"
+DO_CLEANUP="yes"
 COMPILE_DEBUG="no"
 COMPILE_LEVELDB="yes"
 FLAGS_LTO=""
@@ -103,7 +99,7 @@ LD_PRELOAD=""
 COMPILE_POCKETMINE_CHUNKUTILS="no"
 COMPILE_GD="no"
 
-while getopts "::t:oj:srcdlxzff:ug" OPTION; do
+while getopts "::t:oj:srcdlxzff:ugn" OPTION; do
 
 	case $OPTION in
 		t)
@@ -119,8 +115,9 @@ while getopts "::t:oj:srcdlxzff:ug" OPTION; do
 			COMPILE_FANCY="yes"
 			;;
 		d)
-			echo "[opt] Will compile profiler and xdebug"
+			echo "[opt] Will compile profiler and xdebug, will not remove sources"
 			COMPILE_DEBUG="yes"
+			DO_CLEANUP="no"
 			;;
 		c)
 			echo "[opt] Will force compile cURL"
@@ -169,6 +166,10 @@ while getopts "::t:oj:srcdlxzff:ug" OPTION; do
 		g)
 			echo "[opt] Will enable GD2"
 			COMPILE_GD="yes"
+			;;
+		n)
+			echo "[opt] Will not remove sources after completing compilation"
+			DO_CLEANUP="no"
 			;;
 		\?)
 			echo "Invalid option: -$OPTION$OPTARG" >&2
@@ -394,7 +395,6 @@ else
 	HAVE_READLINE="--without-readline"
 fi
 
-
 if [ "$DO_STATIC" == "yes" ]; then
 	EXTRA_FLAGS="--static"
 else
@@ -433,7 +433,7 @@ fi
 #GMP
 echo -n "[GMP] downloading $GMP_VERSION..."
 download_file "https://gmplib.org/download/gmp/gmp-$GMP_VERSION.tar.bz2" | tar -jx >> "$DIR/install.log" 2>&1
-mv gmp-$GMP_VERSION_DIR gmp
+mv gmp-$GMP_VERSION gmp
 echo -n " checking..."
 cd gmp
 RANLIB=$RANLIB ./configure --prefix="$DIR/bin/php7" \
@@ -497,7 +497,7 @@ no-threads \
 no-engine >> "$DIR/install.log" 2>&1
 
 echo -n " compiling..."
-make >> "$DIR/install.log" 2>&1
+make -j $THREADS >> "$DIR/install.log" 2>&1
 echo -n " installing..."
 make install >> "$DIR/install.log" 2>&1
 cd ..
@@ -555,12 +555,6 @@ else
 	HAVE_CURL="$DIR/bin/php7"
 fi
 
-#bcompiler
-#echo -n "[bcompiler] downloading $BCOMPILER_VERSION..."
-#download_file "http://pecl.php.net/get/bcompiler-$BCOMPILER_VERSION.tgz" | tar -zx >> "$DIR/install.log" 2>&1
-#mv bcompiler-$BCOMPILER_VERSION "$DIR/install_data/php/ext/bcompiler"
-#echo " done!"
-
 #PHP ncurses
 #echo -n "[PHP ncurses] downloading $PHPNCURSES_VERSION..."
 #download_file "http://pecl.php.net/get/ncurses-$PHPNCURSES_VERSION.tgz" | tar -zx >> "$DIR/install.log" 2>&1
@@ -575,7 +569,7 @@ else
 fi
 #YAML
 echo -n "[YAML] downloading $YAML_VERSION..."
-download_file "https://github.com/yaml/libyaml/archive/$YAML_VERSION_ANDROID.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
+download_file "https://github.com/yaml/libyaml/archive/$YAML_VERSION.tar.gz" | tar -zx >> "$DIR/install.log" 2>&1
 mv libyaml-$YAML_VERSION yaml
 cd yaml
 ./bootstrap >> "$DIR/install.log" 2>&1
@@ -747,6 +741,7 @@ cd php
 rm -f ./aclocal.m4 >> "$DIR/install.log" 2>&1
 rm -rf ./autom4te.cache/ >> "$DIR/install.log" 2>&1
 rm -f ./configure >> "$DIR/install.log" 2>&1
+
 ./buildconf --force >> "$DIR/install.log" 2>&1
 if [ "$IS_CROSSCOMPILE" == "yes" ]; then
 	sed -i=".backup" 's/pthreads_working=no/pthreads_working=yes/' ./configure
@@ -834,7 +829,7 @@ $HAVE_MYSQLI \
 --enable-zip \
 --enable-ftp \
 --with-zend-vm=$ZEND_VM \
---enable-opcache=yes \
+--enable-opcache=no \
 --enable-weakref \
 $CONFIGURE_FLAGS >> "$DIR/install.log" 2>&1
 echo -n " compiling..."
@@ -892,7 +887,7 @@ else
 fi
 
 if [ "$IS_CROSSCOMPILE" != "yes" ] && [ "$DO_STATIC" == "no" ]; then
-	echo "zend_extension=opcache.so" >> "$DIR/bin/php7/bin/php.ini"
+	echo ";zend_extension=opcache.so" >> "$DIR/bin/php7/bin/php.ini"
 	echo "opcache.enable=1" >> "$DIR/bin/php7/bin/php.ini"
 	echo "opcache.enable_cli=1" >> "$DIR/bin/php7/bin/php.ini"
 	echo "opcache.save_comments=1" >> "$DIR/bin/php7/bin/php.ini"
@@ -923,8 +918,8 @@ if [[ "$DO_STATIC" != "yes" ]] && [[ "$COMPILE_DEBUG" == "yes" ]]; then
 fi
 
 cd "$DIR"
-if [ "$COMPILE_DEBUG" != "yes" ]; then
-echo -n "[INFO] Cleaning up..."
+if [ "$DO_CLEANUP" == "yes" ]; then
+	echo -n "[INFO] Cleaning up..."
 	rm -r -f install_data/ >> "$DIR/install.log" 2>&1
 	rm -f bin/php7/bin/curl* >> "$DIR/install.log" 2>&1
 	rm -f bin/php7/bin/curl-config* >> "$DIR/install.log" 2>&1
@@ -938,23 +933,34 @@ fi
 
 
 #Composer
-echo -n "[Composer] downloading..."
-EXPECTED_SIGNATURE=$(download_file https://composer.github.io/installer.sig)
-download_file https://getcomposer.org/installer > composer-setup.php
-ACTUAL_SIGNATURE=$($DIR/bin/php7/bin/php -r "echo hash_file('SHA384', 'composer-setup.php');")
+if [ "$IS_CROSSCOMPILE" != "yes" ]; then
+	echo -n "[Composer] downloading..."
+	EXPECTED_SIGNATURE=$(download_file https://composer.github.io/installer.sig)
+	download_file https://getcomposer.org/installer > composer-setup.php
+	ACTUAL_SIGNATURE=$($DIR/bin/php7/bin/php -r "echo hash_file('SHA384', 'composer-setup.php');")
 
-if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
-then
-    >&2 echo ' ERROR: Invalid Composer installer signature'
-    echo 'ERROR: Invalid Composer installer signature' >> "$DIR/install.log" 2>&1
-    rm composer-setup.php
-    exit 1
+	if [ "$EXPECTED_SIGNATURE" != "$ACTUAL_SIGNATURE" ]
+	then
+		>&2 echo ' ERROR: Invalid Composer installer signature'
+		echo 'ERROR: Invalid Composer installer signature' >> "$DIR/install.log" 2>&1
+		rm composer-setup.php
+		exit 1
+	fi
+
+	echo -n " installing..."
+	$DIR/bin/php7/bin/php composer-setup.php --install-dir=bin >> "$DIR/install.log" 2>&1
+	rm composer-setup.php
+
+	echo -n " generating bin/composer script..."
+	echo '#!/bin/bash' > $DIR/bin/composer
+	echo 'DIR="$(cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"' >> $DIR/bin/composer
+	echo '$DIR/php7/bin/php $DIR/composer.phar $@' >> $DIR/bin/composer
+	chmod +x $DIR/bin/composer
+
+	echo " done!"
+else
+	echo "WARNING: Can't get Composer for cross-compile builds, you will need to install Composer manually on the target machine."
 fi
-
-echo -n " installing..."
-$DIR/bin/php7/bin/php composer-setup.php --install-dir=bin >> "$DIR/install.log" 2>&1
-rm composer-setup.php
-echo " done!"
 
 
 date >> "$DIR/install.log" 2>&1

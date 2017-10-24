@@ -1,4 +1,5 @@
 <?php
+
 /*
  *
  *  ____            _        _   __  __ _                  __  __ ____
@@ -17,9 +18,13 @@
  *
  *
 */
+
 declare(strict_types=1);
+
 namespace pocketmine\network\mcpe\protocol\types;
+
 class EntityLink{
+
 	/** @var int */
 	public $fromEntityUniqueId;
 	/** @var int */
@@ -28,4 +33,5 @@ class EntityLink{
 	public $type;
 	/** @var int */
 	public $byte2;
+
 }

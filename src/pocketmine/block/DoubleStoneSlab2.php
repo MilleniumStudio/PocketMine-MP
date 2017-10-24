@@ -21,14 +21,14 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\item;
+namespace pocketmine\block;
 
-use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
+class DoubleStoneSlab2 extends DoubleStoneSlab{
 
-class FlowerPot extends Item{
-	public function __construct(int $meta = 0){
-		$this->block = BlockFactory::get(Block::FLOWER_POT_BLOCK);
-		parent::__construct(self::FLOWER_POT, $meta, "Flower Pot");
+	protected $id = self::DOUBLE_STONE_SLAB2;
+
+	public function getSlabId() : int{
+		return self::STONE_SLAB2;
 	}
+
 }

@@ -523,6 +523,7 @@ abstract class DataPacket extends BinaryStream{
 		$link->toEntityUniqueId = $this->getEntityUniqueId();
 		$link->type = $this->getByte();
 		$link->byte2 = $this->getByte();
+
 		return $link;
 	}
 	/**
@@ -533,5 +534,6 @@ abstract class DataPacket extends BinaryStream{
 		$this->putEntityUniqueId($link->toEntityUniqueId);
 		$this->putByte($link->type);
 		$this->putByte($link->byte2);
+
 	}
 }
