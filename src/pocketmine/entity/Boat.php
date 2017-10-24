@@ -134,7 +134,6 @@ class Boat extends Vehicle
 //            $this->server->getLogger()->debug("Expected tick difference of at least 1, got $tickDiff for " . get_class($this));
             return false;
         }
-
         if (!$this->isAlive()){
             $this->deadTicks += $tickDiff;
             if ($this->deadTicks >= 10){
@@ -146,19 +145,16 @@ class Boat extends Vehicle
             return $this->deadTicks < 10;
         }
         $this->updateRiderPosition($this->seatOffset);
-
-        if (!parent::onUpdate($currentTick))
+        if (parent::onUpdate($currentTick))
         {
             return false;
         }
-
         $hasUpdate = $this->entityBaseTick($tickDiff);
 
         if ($this->level == null)
         {
             return false;
         }
-
         $this->motionY = ($this->level->getBlock(new Vector3($this->x, $this->y, $this->z))->getBoundingBox() != null || $this->isInsideOfWater()) ? $this->gravity : -0.08;
 
         if ($this->checkObstruction($this->x, $this->y, $this->z)) {

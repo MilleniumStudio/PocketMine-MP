@@ -217,12 +217,11 @@ abstract class Vehicle extends Interactable implements Rideable{
         }
 
         $this->move($finalMotion[0], $this->motionY, $finalMotion[1]);
-//        $this->updateMovement();
         return $this->isAlive();
     }
 
     public function onUpdate(int $currentTick):bool {
-        if (!parent::onUpdate($currentTick))
+        if (parent::onUpdate($currentTick))
         {
             return false;
         }

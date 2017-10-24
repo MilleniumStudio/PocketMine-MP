@@ -1347,7 +1347,7 @@ abstract class Entity extends Location implements Metadatable{
                 $this->motionX = 0.0;
                 $this->motionY = 0.0;
                 $this->motionZ = 0.0;
-                $this->onUpdate($this->lastUpdate);
+//                $this->onUpdate($this->lastUpdate);
                 $this->YawDelta += $this->passenger->yaw - $this->passenger->lastYaw;
                 for ($this->PitchDelta += $this->passenger->pitch - $this->passenger->lastPitch ; $this->YawDelta >= 180.0 ; $this->YawDelta -= 360.0) {
                 }
