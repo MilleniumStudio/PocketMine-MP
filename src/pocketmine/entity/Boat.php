@@ -123,7 +123,7 @@ class Boat extends Vehicle
         }
     }
 
-    public function onUpdate(int $currentTick): bool
+    public function onUpdatedffdf(int $currentTick): bool
     {
         if ($this->closed){
             return false;
@@ -131,7 +131,7 @@ class Boat extends Vehicle
 
         $tickDiff = $currentTick - $this->lastUpdate;
         if ($tickDiff <= 0){
-            $this->server->getLogger()->debug("Expected tick difference of at least 1, got $tickDiff for " . get_class($this));
+//            $this->server->getLogger()->debug("Expected tick difference of at least 1, got $tickDiff for " . get_class($this));
             return false;
         }
 
@@ -186,7 +186,14 @@ class Boat extends Vehicle
             $this->server->getPluginManager()->callEvent(new VehicleMoveEvent($this, $from, $to));
         }
 
+        $this->updateRiderPosition($this->seatOffset);
         $this->updateMovement();
+        $subtitle = "";
+        if ($this->passenger !== null && $this->passenger instanceof Player)
+        {
+            "Vehicle : " . $this->x . " / " . $this->y . " / " . $this->z . "";
+            $this->passenger->sendPopup("Position : " . $this->passenger->x . " / " . $this->passenger->y . " / " . $this->passenger->z . "\n" . $subtitle, "");
+        }
         return true;
     }
 

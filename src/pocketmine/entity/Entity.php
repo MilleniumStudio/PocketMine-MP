@@ -59,6 +59,8 @@ use pocketmine\network\mcpe\protocol\MoveEntityPacket;
 use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
 use pocketmine\network\mcpe\protocol\SetEntityDataPacket;
 use pocketmine\network\mcpe\protocol\SetEntityMotionPacket;
+use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
+use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
@@ -249,7 +251,8 @@ abstract class Entity extends Location implements Metadatable{
 
 	protected $changedDataProperties = [];
 
-	public $passenger = null;//linkedEntity
+        public $seatOffset = array(0, 0, 0);
+        public $passenger = null;//linkedEntity
 	public $vehicle = null;//riding
 
 	/** @var Chunk */
@@ -845,6 +848,19 @@ abstract class Entity extends Location implements Metadatable{
 	public function spawnTo(Player $player){
 		if(!isset($this->hasSpawned[$player->getLoaderId()]) and isset($player->usedChunks[Level::chunkHash($this->chunk->getX(), $this->chunk->getZ())])){
 			$this->hasSpawned[$player->getLoaderId()] = $player;
+                        // check vehicle
+                        if ($this->vehicle !== null)
+                        {
+                            $pk = new SetEntityLinkPacket();
+                            $link = new EntityLink();
+                            $link->fromEntityUniqueId = $this->vehicle->getId();
+                            $link->type = self::STATE_SITTING;
+                            $link->toEntityUniqueId = $this->getId();
+                            $link->byte2 = 1;
+
+                            $pk->link = $link;
+                            $player->dataPacket($pk);
+                        }
 		}
 	}
 
@@ -1194,9 +1210,9 @@ abstract class Entity extends Location implements Metadatable{
 
                 if ($this->vehicle !== null)
                 {
-                    $this->x = $this->vehicle + $this->seatOffset[0];
-                    $this->y = $this->vehicle + $this->seatOffset[1];
-                    $this->z = $this->vehicle + $this->seatOffset[2];
+                    $this->motionX = $this->vehicle->motionX;
+                    $this->motionY = $this->vehicle->motionY;
+                    $this->motionZ = $this->vehicle->motionZ;
                 }
 	}
 
@@ -1334,7 +1350,6 @@ abstract class Entity extends Location implements Metadatable{
                 $this->motionY = 0.0;
                 $this->motionZ = 0.0;
                 $this->onUpdate($this->lastUpdate);
-                if ($this->passenger != null) {
                     $this->YawDelta += $this->passenger->yaw - $this->passenger->lastYaw;
                     for ($this->PitchDelta += $this->passenger->pitch - $this->passenger->lastPitch ; $this->YawDelta >= 180.0 ; $this->YawDelta -= 360.0) {
                     }
@@ -1354,16 +1369,16 @@ abstract class Entity extends Location implements Metadatable{
                     $var3 = Math::clamp($var3, -$var5, $var5);
                     $this->YawDelta -= $var1;
                     $this->PitchDelta -= $var3;
-                }
                 return true;
             }
             return false;
         }
 
-        protected function updateRiderPosition(float $offset) {
-            // Messy unknown variables
-            if ($this->updateRidden()) {
-                $this->passenger->setDataProperty(Entity::DATA_RIDER_SEAT_POSITION, Entity::DATA_TYPE_VECTOR3F, array(0, $offset, 0));
+        protected function updateRiderPosition(array $p_SeatOffset)
+        {
+            if ($this->updateRidden())
+            {
+                $this->passenger->setDataProperty(Entity::DATA_RIDER_SEAT_POSITION, Entity::DATA_TYPE_VECTOR3F, $p_SeatOffset);
             }
         }
 

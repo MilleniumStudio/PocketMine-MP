@@ -31,10 +31,6 @@ use pocketmine\event\entity\EntityVehicleExitEvent;
 abstract class Vehicle extends Interactable implements Rideable{
 
     protected $rollingDirection = true;
-    /** @var int */
-    protected $jumpTicks = 0;
-    /** @var float */
-    protected $jumpHeight = 0.08;
     public $seatOffset = array(0, 0, 0);
 
     const STATE_SITTING = 1;
@@ -173,20 +169,17 @@ abstract class Vehicle extends Interactable implements Rideable{
         $p_Rider->vehicle->passenger = null;
         $p_Rider->vehicle = null;
         $p_Rider->onGround = true;
+        $p_Rider->teleport($this);
         return true;
     }
 
     public function doRidingMovement(float $motionX, float $motionZ): bool
     {
-        $this->pitch = $this->passenger->pitch;
+//        $this->pitch = $this->passenger->pitch;
         $this->yaw = $this->passenger->yaw;
 
         $x = $this->getDirectionVector()->x / 2 * $this->getSpeed();
         $z = $this->getDirectionVector()->z / 2 * $this->getSpeed();
-
-        if($this->jumpTicks > 0) {
-            $this->jumpTicks--;
-        }
 
         if(!$this->isOnGround()) {
             if($this->motionY > -$this->gravity * 2) {
@@ -202,58 +195,31 @@ abstract class Vehicle extends Interactable implements Rideable{
         switch($motionZ) {
             case 1:
                 $finalMotion = [$x, $z];
-                if($this->isOnGround()) {
-                    $this->jump();
-                }
                 break;
             case 0:
-                if($this->isOnGround()) {
-                    $this->jump();
-                }
                 break;
             case -1:
                 $finalMotion = [-$x, -$z];
-                if($this->isOnGround()) {
-                    $this->jump();
-                }
                 break;
             default:
                 $average = $x + $z / 2;
                 $finalMotion = [$average / 1.414 * $motionZ, $average / 1.414 * $motionX];
-                if($this->isOnGround()) {
-                    $this->jump();
-                }
                 break;
         }
         switch($motionX) {
             case 1:
                 $finalMotion = [$z, -$x];
-                if($this->isOnGround()) {
-                        $this->jump();
-                }
                 break;
             case 0:
-                if($this->isOnGround()) {
-                        $this->jump();
-                }
                 break;
             case -1:
                 $finalMotion = [-$z, $x];
-                if($this->isOnGround()) {
-                        $this->jump();
-                }
                 break;
         }
 
         $this->move($finalMotion[0], $this->motionY, $finalMotion[1]);
-        $this->updateMovement();
+//        $this->updateMovement();
         return $this->isAlive();
-    }
-
-    public function jump(): void {
-        $this->motionY = $this->jumpHeight * 12 * $this->getScale();
-        $this->move($this->motionX, $this->motionY, $this->motionZ);
-        $this->jumpTicks = 10;
     }
 
     public function onUpdate(int $currentTick):bool {
@@ -271,10 +237,6 @@ abstract class Vehicle extends Interactable implements Rideable{
         }
         // Movement code
         $this->updateMovement();
-        if ($this->passenger !== null)
-        {
-            $this->passenger->updateMovement();
-        }
         return true;
     }
 
@@ -289,7 +251,7 @@ abstract class Vehicle extends Interactable implements Rideable{
         $this->setRollingDirection($this->rollingDirection ? 1 : -1);
         $this->rollingDirection = !$this->rollingDirection;
         $this->setDamage($this->getDamage() + $damage);
-        $this->server->getLogger()->info("Entity " . $this->getId() . " damage " . $this->getDamage());
+        $this->server->getLogger()->info("Entity " . $this->getId() . " damage " . $this->getDamage() . "/" . $this->getHealth());
         return true;
     }
 }
