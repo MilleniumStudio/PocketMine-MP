@@ -1907,6 +1907,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds{
 			$yaw = $yaw ?? $pos->yaw;
 			$pitch = $pitch ?? $pos->pitch;
 		}
+                if ($this->vehicle !== null)
+                {
+                    $this->vehicle->dismount($this);
+                    $this->y = $this-y + 1;
+                }
 		$from = Position::fromObject($this, $this->level);
 		$to = Position::fromObject($pos, $pos instanceof Position ? $pos->getLevel() : $this->level);
 		$this->server->getPluginManager()->callEvent($ev = new EntityTeleportEvent($this, $from, $to));
