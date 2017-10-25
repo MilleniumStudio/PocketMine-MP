@@ -102,7 +102,10 @@ class Boat extends Vehicle
                 $this->kill();
             } else {
 //                if ($this->level->getGameRules()->getBoolean("doEntityDrops")) { // not implemented
-                    $this->level->dropItem($this, new ItemBoat());
+                foreach ($this->getDrops() as $l_Item)
+                {
+                    $this->level->dropItem($this, $l_Item);
+                }
 //                }
                 $this->close();
             }
