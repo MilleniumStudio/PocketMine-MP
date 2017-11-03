@@ -61,7 +61,7 @@ class MoveEntityPacket extends DataPacket{
 		$this->putEntityRuntimeId($this->entityRuntimeId);
 		$this->putVector3Obj($this->position);
 		$this->putByteRotation($this->pitch);
-		$this->putByteRotation($this->headYaw);
+		$this->putByteRotation($this->headYaw??$this->yaw);
 		$this->putByteRotation($this->yaw);
 		$this->putBool($this->onGround);
 		$this->putBool($this->teleported);

@@ -35,6 +35,7 @@ use pocketmine\entity\Item as DroppedItem;
 use pocketmine\entity\Living;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\Skin;
+use pocketmine\entity\Vehicle;
 use pocketmine\event\entity\EntityDamageByBlockEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -1593,7 +1594,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->lastPitch = $from->pitch;
 
 			$this->setPosition($from);
-			$this->sendPosition($from, $from->yaw, $from->pitch, MovePlayerPacket::MODE_RESET);
+//			$this->sendPosition($from, $from->yaw, $from->headYaw, $from->pitch, MovePlayerPacket::MODE_RESET);
+			$this->sendPosition($from, $from->yaw, $from->yaw, $from->pitch, MovePlayerPacket::MODE_RESET);
 		}else{
 			if($distanceSquared != 0 and $this->nextChunkOrderRun > 20){
 				$this->nextChunkOrderRun = 20;
@@ -1708,12 +1710,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				}
 			}
 		}
-//                $subtitle = "";
-//                if ($this->vehicle !== null)
-//                {
-//                    $subtitle = "Vehicle : " . $this->vehicle->x . " / " . $this->vehicle->y . " / " . $this->vehicle->z . "";
-//                }
-//                $this->sendPopup("Position : " . $this->x . " / " . $this->y . " / " . $this->z . "\n" . $subtitle, "");
+                $subtitle = "";
+                if ($this->vehicle !== null)
+                {
+                    $subtitle = "Vehicle : " . $this->vehicle->x . " / " . $this->vehicle->y . " / " . $this->vehicle->z . " -> ".$this->vehicle->yaw;
+                }
+                $this->sendPopup("Position : " . $this->x . " / " . $this->y . " / " . $this->z . " -> ". $this->yaw . "\n" . $subtitle, "");
 
 		$this->updateSpeed();
 
@@ -2164,11 +2166,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$newPos = $packet->position->subtract(0, $this->baseOffset, 0);
 
 		if($this->isTeleporting and $newPos->distanceSquared($this) > 1){  //Tolerate up to 1 block to avoid problems with client-sided physics when spawning in blocks
-			$this->sendPosition($this, null, null, MovePlayerPacket::MODE_RESET);
+			$this->sendPosition($this, null, null, null, MovePlayerPacket::MODE_RESET);
 			$this->server->getLogger()->debug("Got outdated pre-teleport movement from " . $this->getName() . ", received " . $newPos . ", expected " . $this->asVector3());
 			//Still getting movements from before teleport, ignore them
 		}elseif((!$this->isAlive() or $this->spawned !== true) and $newPos->distanceSquared($this) > 0.01){
-			$this->sendPosition($this, null, null, MovePlayerPacket::MODE_RESET);
+			$this->sendPosition($this, null, null, null,MovePlayerPacket::MODE_RESET);
 			$this->server->getLogger()->debug("Reverted movement of " . $this->getName() . " due to not alive or not spawned, received " . $newPos . ", locked at " . $this->asVector3());
 		}else{
 			// Once we get a movement within a reasonable distance, treat it as a teleport ACK and remove position lock
@@ -2607,7 +2609,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 				return false;
 		}
-
 		return true;
 	}
 
@@ -2618,28 +2619,32 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 */
 	public function handlePlayerInput(PlayerInputPacket $packet) : bool
         {
-            if($this->vehicle instanceof entity\Vehicle)
-            {
-                if($packet->motionX !== 0 && $packet->motionY !== 0)
-                {
-                    $this->vehicle->doRidingMovement($packet->motionX, $packet->motionY);
-                }
-            }
+//            if($this->vehicle instanceof entity\Vehicle)
+//            {
+//                if($packet->motionX !== 0 && $packet->motionY !== 0)
+//                {
+//                    $this->vehicle->doRidingMovement($packet->motionX, $packet->motionY);
+//                }
+//            }
             return true;
 	}
 
-        public function handleMoveEntity(MoveEntityPacket $packet) : bool
-        {
-            //TODO MoveEntity
+        public function handleMoveEntity(MoveEntityPacket $packet): bool
+		{
+			//TODO MoveEntity
 //            var_dump($packet);
-            if ($this->vehicle !== null)
-            {
+			if ($this->vehicle !== null) {
                 $this->vehicle->x = $packet->position->x;
-		$this->vehicle->y = $packet->position->y;
-		$this->vehicle->z = $packet->position->z;
-            }
-            return true;
-	}
+				$this->vehicle->y = $packet->position->y;
+				$this->vehicle->z = $packet->position->z;
+				if ($this->vehicle instanceof Vehicle) {
+					if ($packet->position->x !== 0 && $packet->position->z !== 0) {
+						$this->vehicle->doRidingMovement($packet->position->x, $packet->position->y , $packet->position->z, $packet->yaw, $packet->pitch);
+					}
+				}
+			}
+			return true;
+		}
 
         public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool
         {
@@ -3710,15 +3715,16 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 	}
 
-	public function sendPosition(Vector3 $pos, float $yaw = null, float $pitch = null, int $mode = MovePlayerPacket::MODE_NORMAL, array $targets = null){
+	public function sendPosition(Vector3 $pos, float $yaw = null, float $headYaw = null, float $pitch = null, int $mode = MovePlayerPacket::MODE_NORMAL, array $targets = null){
 		$yaw = $yaw ?? $this->yaw;
+		$headYaw = $headYaw ?? $this->headYaw ?? $yaw;
 		$pitch = $pitch ?? $this->pitch;
 
 		$pk = new MovePlayerPacket();
 		$pk->entityRuntimeId = $this->getId();
 		$pk->position = $this->getOffsetPosition($pos);
 		$pk->pitch = $pitch;
-		$pk->headYaw = $yaw;
+		$pk->headYaw = $headYaw;
 		$pk->yaw = $yaw;
 		$pk->mode = $mode;
 
@@ -3739,8 +3745,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 			$this->removeAllWindows();
 
-			$this->sendPosition($this, $this->yaw, $this->pitch, MovePlayerPacket::MODE_TELEPORT);
-			$this->sendPosition($this, $this->yaw, $this->pitch, MovePlayerPacket::MODE_TELEPORT, $this->getViewers());
+			$this->sendPosition($this, $this->yaw, $this->headYaw, $this->pitch, MovePlayerPacket::MODE_TELEPORT);
+			$this->sendPosition($this, $this->yaw, $this->headYaw, $this->pitch, MovePlayerPacket::MODE_TELEPORT, $this->getViewers());
 
 			$this->spawnToAll();
 
