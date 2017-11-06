@@ -41,7 +41,7 @@ class EntityVehicleExitEvent extends EntityEvent implements Cancellable{
 	/**
 	 * @return Vehicle
 	 */
-	public function geVehicle() : Vehicle{
+	public function getVehicle() : Vehicle{
 		return $this->vehicle;
 	}
 }

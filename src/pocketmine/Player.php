@@ -1710,13 +1710,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				}
 			}
 		}
-                $subtitle = "";
-                if ($this->vehicle !== null)
-                {
-                    $subtitle = "Vehicle : " . $this->vehicle->x . " / " . $this->vehicle->y . " / " . $this->vehicle->z . " -> ".$this->vehicle->yaw;
-                }
-                $this->sendPopup("Position : " . $this->x . " / " . $this->y . " / " . $this->z . " -> ". $this->yaw . "\n" . $subtitle, "");
-
 		$this->updateSpeed();
 
 		$this->timings->stopTiming();
