@@ -1518,7 +1518,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 			$diff = ($diffX ** 2 + $diffY ** 2 + $diffZ ** 2) / ($tickDiff ** 2);
 
-			if($this->isSurvival() and !$revert and $diff > 0.0625){
+			if($this->isSurvival() and !$revert and $diff > 0.0625 and $this->vehicle == null){
 				$ev = new PlayerIllegalMoveEvent($this, $newPos, new Vector3($this->lastX, $this->lastY, $this->lastZ));
 				$ev->setCancelled($this->allowMovementCheats);
 

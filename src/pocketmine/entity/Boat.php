@@ -25,19 +25,14 @@ namespace pocketmine\entity;
 
 use pocketmine\event\Timings;
 use pocketmine\item\Item as ItemItem;
-use pocketmine\item\Boat as ItemBoat;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
-use pocketmine\math\AxisAlignedBB;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
 use pocketmine\Player;
 use pocketmine\level\particle\SmokeParticle;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
-use pocketmine\event\entity\VehicleUpdateEvent;
-use pocketmine\event\entity\VehicleMoveEvent;
 use pocketmine\math\Vector3;
-use pocketmine\level\Location;
 use pocketmine\level\Level;
 use pocketmine\nbt\tag\CompoundTag;
 
@@ -55,7 +50,6 @@ class Boat extends Vehicle
 	public function __construct(Level $level, CompoundTag $nbt)
 	{
 		parent::__construct($level, $nbt);
-//		$this->boundingBox = new AxisAlignedBB($this->x, $this->y, $this->z, $this->x + $this->width, $this->y + $this->height, $this->z + $this->width);
 	}
 
 	public function getName(): string
@@ -63,7 +57,6 @@ class Boat extends Vehicle
 		return "Boat";
 	}
 
-//	public function spawnTo(Player $player)
 	protected function sendSpawnPacket(Player $player): void
 	{
 		$pk = new AddEntityPacket();
@@ -75,9 +68,6 @@ class Boat extends Vehicle
 		$pk->pitch = $this->pitch;
 		$pk->metadata = $this->dataProperties;
 		$player->dataPacket($pk);
-
-
-//		parent::spawnTo($player);
 	}
 
 	public function getDrops(): array
@@ -91,27 +81,18 @@ class Boat extends Vehicle
 
 	public function attack(EntityDamageEvent $source)
 	{
-//		if(true) //todo debug
-//		return;
 		$this->performHurtAnimation((int)floor($source->getFinalDamage()));
 		$instantKill = false;
 		if ($source instanceof EntityDamageByEntityEvent && $source->getCause() == EntityDamageEvent::CAUSE_ENTITY_ATTACK) {
 			$instantKill = $source->getDamager() instanceof Player && $source->getDamager()->isCreative();
 		}
 		if ($instantKill || $this->getDamage() > 40) {
-//            if ($this->passenger != null)
-//            {
-//                $this->mountEntity($this->passenger);
-//            }
-
 			if ($instantKill) {
 				$this->kill();
 			} else {
-//                if ($this->level->getGameRules()->getBoolean("doEntityDrops")) { // not implemented
 				foreach ($this->getDrops() as $l_Item) {
 					$this->level->dropItem($this, $l_Item);
 				}
-//                }
 				$this->close();
 			}
 		}
@@ -131,86 +112,8 @@ class Boat extends Vehicle
 		}
 	}
 
-//	public function onUpdate(int $currentTick): bool
-//	{
-//		if ($this->closed) {
-//			return false;
-//		}
-//
-//		$tickDiff = $currentTick - $this->lastUpdate;
-//		if ($tickDiff <= 0) {
-////            $this->server->getLogger()->debug("Expected tick difference of at least 1, got $tickDiff for " . get_class($this));
-//			return false;
-//		}
-//		if (!$this->isAlive()) {
-//			$this->deadTicks += $tickDiff;
-//			if ($this->deadTicks >= 10) {
-//				$this->despawnFromAll();
-//				if (!$this->isPlayer) {
-//					$this->close();
-//				}
-//			}
-//			return $this->deadTicks < 10;
-//		}
-//		$this->updateRiderPosition($this->seatOffset);
-//		if (parent::onUpdate($currentTick)) {
-//			return false;
-//		}
-//		$hasUpdate = $this->entityBaseTick($tickDiff);
-//
-//		if ($this->level == null) {
-//			return false;
-//		}
-//		echo "or: " . $this->motionY . "\n";
-////        $this->motionY = ($this->level->getBlock(new Vector3($this->x, $this->y, $this->z))->getBoundingBox() != null || $this->isInsideOfWater()) ? $this->gravity : -0.08;
-//		$this->motionY = ($this->level->getBlock(new Vector3($this->x, $this->y, $this->z))->getBoundingBox() != null || $this->isInsideOfWater()) ? $this->gravity : 0.0;
-//		echo "mod: " . $this->motionY . "\n";
-//
-//		if ($this->checkObstruction($this->x, $this->y, $this->z)) {
-//			$hasUpdate = true;
-//		}
-//
-//		echo "Obstructed? = " . $hasUpdate . "\n";
-//
-//		$this->move($this->motionX, $this->motionY, $this->motionZ);
-//
-//		$friction = 1 - $this->drag;
-//
-//		if ($this->onGround && (abs($this->motionX) > 0.00001 || abs($this->motionZ) > 0.00001)) {
-//			$friction *= $this->getLevel()->getBlock($this->temporalVector->setComponents((int)floor($this->x), (int)floor($this->y - 1), (int)floor($this->z) - 1))->getFrictionFactor();
-//		}
-//
-//		$this->motionX *= $friction;
-////        $this->motionY *= 1 - $this->drag;
-//		$this->motionZ *= $friction;
-//
-////        if ($this->onGround) {
-////            $this->motionY *= -0.5;
-////        }
-//
-//		$from = new Location($this->lastX, $this->lastY, $this->lastZ, $this->lastYaw, $this->lastPitch, $this->level);
-//		$to = new Location($this->x, $this->y, $this->z, $this->yaw, $this->pitch, $this->level);
-//
-//		$this->server->getPluginManager()->callEvent(new VehicleUpdateEvent($this));
-//
-//		if (!$from->equals($to)) {
-//			$this->server->getPluginManager()->callEvent(new VehicleMoveEvent($this, $from, $to));
-//		}
-//
-//		$this->updateMovement();
-//		return true;
-//	}
 	public function onUpdate(int $currentTick): bool
 	{
-		if($this->passenger != null){
-			$this->passenger->yaw = $this->getYaw();
-			$truc  = $this->passenger;
-			if($truc instanceof Player){
-//				echo "passenger yaw: ".$this->passenger->yaw." - boat yaw: ".$this->getYaw()." - headYaw: ".$truc->headYaw."\n";
-				$this->passenger->headYaw = $this->yaw;
-			}
-			$this->passenger->scheduleUpdate();
-		}
 		$b = parent::onUpdate($currentTick);
 		if ($this->level != null) {
 			$blockId = $this->level->getBlockAt($this->getFloorX(), $this->getFloorY(), $this->getFloorZ())->getId();
@@ -251,18 +154,6 @@ class Boat extends Vehicle
 
 			$this->ySize *= 0.4;
 
-			/*
-			if($this->isColliding){ //With cobweb?
-				$this->isColliding = false;
-				$dx *= 0.25;
-				$dy *= 0.05;
-				$dz *= 0.25;
-				$this->motionX = 0;
-				$this->motionY = 0;
-				$this->motionZ = 0;
-			}
-			*/
-
 			$movX = $dx;
 			$movY = $dy;
 			$movZ = $dz;
@@ -291,10 +182,6 @@ class Boat extends Vehicle
 			}
 
 			$this->boundingBox->offset(0, 0, $dz);
-
-//			if ($this instanceof Boat)
-//				echo "> final boundingBox = $this->boundingBox\n";
-
 
 			if ($this->stepHeight > 0 and $fallingFlag and $this->ySize < 0.05 and ($movX != $dx or $movZ != $dz)) {
 				$cx = $dx;
@@ -369,6 +256,4 @@ class Boat extends Vehicle
 			return true;
 		}
 	}
-
-
 }
