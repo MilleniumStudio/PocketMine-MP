@@ -167,8 +167,8 @@ namespace pocketmine {
 		exit(1);
 	}
 
-	if(version_compare(RakLib::VERSION, "0.8.1") < 0){
-		echo "[CRITICAL] RakLib version 0.8.1 is required, while you have version " . RakLib::VERSION . "." . PHP_EOL;
+	if(version_compare(RakLib::VERSION, "0.8.2") < 0){
+		echo "[CRITICAL] RakLib version 0.8.2 is required, while you have version " . RakLib::VERSION . "." . PHP_EOL;
 		echo "[CRITICAL] Please update your submodules or use provided builds." . PHP_EOL;
 		exit(1);
 	}
@@ -410,6 +410,12 @@ namespace pocketmine {
 		return -1;
 	}
 
+	/**
+	 * @param int        $start
+	 * @param array|null $trace
+	 *
+	 * @return array
+	 */
 	function getTrace($start = 0, $trace = null){
 		if($trace === null){
 			if(function_exists("xdebug_get_function_stack")){

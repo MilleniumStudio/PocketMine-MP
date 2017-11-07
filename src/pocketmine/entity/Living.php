@@ -110,10 +110,7 @@ abstract class Living extends Entity implements Damageable{
 		parent::setHealth($amount);
 		$this->attributeMap->getAttribute(Attribute::HEALTH)->setValue(ceil($this->getHealth()), true);
 		if($this->isAlive() and !$wasAlive){
-			$pk = new EntityEventPacket();
-			$pk->entityRuntimeId = $this->getId();
-			$pk->event = EntityEventPacket::RESPAWN;
-			$this->server->broadcastPacket($this->hasSpawned, $pk);
+			$this->broadcastEntityEvent(EntityEventPacket::RESPAWN);
 		}
 	}
 
@@ -323,7 +320,7 @@ abstract class Living extends Entity implements Damageable{
 	}
 
 	public function fall(float $fallDistance){
-		$damage = floor($fallDistance - 3 - ($this->hasEffect(Effect::JUMP) ? $this->getEffect(Effect::JUMP)->getEffectLevel() : 0));
+		$damage = ceil($fallDistance - 3 - ($this->hasEffect(Effect::JUMP) ? $this->getEffect(Effect::JUMP)->getEffectLevel() : 0));
 		if($damage > 0){
 			$ev = new EntityDamageEvent($this, EntityDamageEvent::CAUSE_FALL, $damage);
 			$this->attack($ev);
@@ -378,10 +375,7 @@ abstract class Living extends Entity implements Damageable{
 
 		$this->setAbsorption(max(0, $this->getAbsorption() + $source->getDamage(EntityDamageEvent::MODIFIER_ABSORPTION)));
 
-		$pk = new EntityEventPacket();
-		$pk->entityRuntimeId = $this->getId();
-		$pk->event = $this->getHealth() <= 0 ? EntityEventPacket::DEATH_ANIMATION : EntityEventPacket::HURT_ANIMATION; //Ouch!
-		$this->server->broadcastPacket($this->hasSpawned, $pk);
+		$this->broadcastEntityEvent($this->getHealth() <= 0 ? EntityEventPacket::DEATH_ANIMATION : EntityEventPacket::HURT_ANIMATION); //Ouch!
 
 		$this->attackTime = 10; //0.5 seconds cooldown
 	}
@@ -465,9 +459,12 @@ abstract class Living extends Entity implements Damageable{
 				if($effect->canTick()){
 					$effect->applyEffect($this);
 				}
-				$effect->setDuration($effect->getDuration() - $tickDiff);
-				if($effect->getDuration() <= 0){
+
+				$duration = $effect->getDuration() - $tickDiff;
+				if($duration <= 0){
 					$this->removeEffect($effect->getId());
+				}else{
+					$effect->setDuration($duration);
 				}
 			}
 		}
