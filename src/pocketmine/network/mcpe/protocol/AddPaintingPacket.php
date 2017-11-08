@@ -35,12 +35,8 @@ class AddPaintingPacket extends DataPacket{
 	public $entityUniqueId = null; //TODO
 	/** @var int */
 	public $entityRuntimeId;
-	/** @var int */
-	public $x;
-	/** @var int */
-	public $y;
-	/** @var int */
-	public $z;
+	/** @var Vector3 */
+	public $position;
 	/** @var int */
 	public $direction;
 	/** @var string */
@@ -57,7 +53,7 @@ class AddPaintingPacket extends DataPacket{
 	protected function encodePayload(){
 		$this->putEntityUniqueId($this->entityUniqueId ?? $this->entityRuntimeId);
 		$this->putEntityRuntimeId($this->entityRuntimeId);
-		$this->putBlockPosition($this->x, $this->y, $this->z);
+		$this->putVector3Obj($this->position);
 		$this->putVarInt($this->direction);
 		$this->putString($this->title);
 	}
