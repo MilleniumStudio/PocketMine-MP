@@ -113,7 +113,7 @@ abstract class Vehicle extends Interactable implements Rideable{
         $link->fromEntityUniqueId = $this->getId();
         $link->type = self::STATE_SITTING;
         $link->toEntityUniqueId = $p_Rider->getId();
-        $link->byte2 = 1;
+        $link->bool1 = TRUE;
 
         $pk->link = $link;
         $this->server->broadcastPacket($this->server->getOnlinePlayers(), $pk);
@@ -123,7 +123,7 @@ abstract class Vehicle extends Interactable implements Rideable{
         $link->fromEntityUniqueId = $this->getId();
         $link->type = self::STATE_SITTING;
         $link->toEntityUniqueId = 0;
-        $link->byte2 = 1;
+        $link->bool1 = TRUE;
 
         $pk->link = $link;
         $p_Rider->dataPacket($pk);
@@ -147,7 +147,7 @@ abstract class Vehicle extends Interactable implements Rideable{
         $link->fromEntityUniqueId = $p_Rider->vehicle->getId();
         $link->type = self::STATE_STANDING;
         $link->toEntityUniqueId = $p_Rider->getId();
-        $link->byte2 = 1;
+        $link->bool1 = TRUE;
 
         $pk->link = $link;
         $this->server->broadcastPacket($this->level->getPlayers(), $pk);
@@ -158,7 +158,7 @@ abstract class Vehicle extends Interactable implements Rideable{
         $link->fromEntityUniqueId = $p_Rider->getId();
         $link->type = self::STATE_STANDING;
         $link->toEntityUniqueId = 0;
-        $link->byte2 = 1;
+        $link->bool1 = TRUE;
 
         $pk->link = $link;
         $p_Rider->dataPacket($pk);
