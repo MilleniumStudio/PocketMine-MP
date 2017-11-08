@@ -35,6 +35,8 @@ class PopulationTask extends AsyncTask{
 	public $levelId;
 	public $chunk;
 
+	public $generatorValue;
+
 	public $chunk0;
 	public $chunk1;
 	public $chunk2;
@@ -53,6 +55,8 @@ class PopulationTask extends AsyncTask{
 		foreach($level->getAdjacentChunks($chunk->getX(), $chunk->getZ()) as $i => $c){
 			$this->{"chunk$i"} = $c !== null ? $c->fastSerialize() : null;
 		}
+		$this->generatorValue =	$level->getServer()->getConfigString("generator-settings", "");
+
 	}
 
 	public function onRun(){
@@ -91,7 +95,8 @@ class PopulationTask extends AsyncTask{
 
 		$manager->setChunk($chunk->getX(), $chunk->getZ(), $chunk);
 		if(!$chunk->isGenerated()){
-			$generator->generateChunk($chunk->getX(), $chunk->getZ());
+			if ($this->generatorValue != 0 || $this->generatorValue != "0;0;")
+				$generator->generateChunk($chunk->getX(), $chunk->getZ());
 			$chunk->setGenerated();
 		}
 
@@ -99,7 +104,8 @@ class PopulationTask extends AsyncTask{
 			if($c !== null){
 				$manager->setChunk($c->getX(), $c->getZ(), $c);
 				if(!$c->isGenerated()){
-					$generator->generateChunk($c->getX(), $c->getZ());
+					if ($this->generatorValue != 0 || $this->generatorValue != "0;0;")
+						$generator->generateChunk($c->getX(), $c->getZ());
 					$c = $manager->getChunk($c->getX(), $c->getZ());
 					$c->setGenerated();
 				}
