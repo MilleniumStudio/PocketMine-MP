@@ -245,6 +245,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 		Entity::registerEntity(Human::class, true);
 		Entity::registerEntity(Boat::class, true);
+		Entity::registerEntity(Painting::class, true);
 	}
 
 
