@@ -105,7 +105,7 @@ class Item extends Entity{
 
 		$hasUpdate = parent::entityBaseTick($tickDiff);
 
-		if($this->isAlive()){
+		if(!$this->isFlaggedForDespawn()){
 			if($this->pickupDelay > 0 and $this->pickupDelay < 32767){ //Infinite delay
 				$this->pickupDelay -= $tickDiff;
 				if($this->pickupDelay < 0){
@@ -118,7 +118,7 @@ class Item extends Entity{
 				if($ev->isCancelled()){
 					$this->age = 0;
 				}else{
-					$this->kill();
+					$this->flagForDespawn();
 					$hasUpdate = true;
 				}
 			}

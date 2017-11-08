@@ -87,11 +87,11 @@ class PrimedTNT extends Entity implements Explosive{
 			$this->setDataProperty(self::DATA_FUSE_LENGTH, self::DATA_TYPE_INT, $this->fuse);
 		}
 
-		if($this->isAlive()){
+		if(!$this->isFlaggedForDespawn()){
 			$this->fuse -= $tickDiff;
 
 			if($this->fuse <= 0){
-				$this->kill();
+				$this->flagForDespawn();
 				$this->explode();
 			}
 		}

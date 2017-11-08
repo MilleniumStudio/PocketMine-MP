@@ -61,6 +61,7 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\tag\ShortTag;
 use pocketmine\nbt\tag\StringTag;
 use pocketmine\network\mcpe\protocol\AddEntityPacket;
+use pocketmine\network\mcpe\protocol\EntityEventPacket;
 use pocketmine\network\mcpe\protocol\MoveEntityPacket;
 use pocketmine\network\mcpe\protocol\RemoveEntityPacket;
 use pocketmine\network\mcpe\protocol\SetEntityDataPacket;
@@ -282,10 +283,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 	 *
 	 * @return bool
 	 */
-	public static function registerEntity(string $className, bool $force = false, array $saveNames = []): bool
-	{
-		assert(is_a($className, Entity::class, true));
-
+	public static function registerEntity(string $className, bool $force = false, array $saveNames = []) : bool{
 		/** @var Entity $className */
 
 		$class = new \ReflectionClass($className);
@@ -491,6 +489,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 	/** @var bool */
 	protected $closed = false;
+	/** @var bool */
+	private $needsDespawn = false;
 
 	/** @var TimingsHandler */
 	protected $timings;
@@ -1391,15 +1391,20 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 		$this->lastUpdate = $currentTick;
 
-		if (!$this->isAlive()) {
+		if($this->needsDespawn){
+			$this->close();
+			return false;
+		}
+
+		if(!$this->isAlive()){
 			$this->deadTicks += $tickDiff;
 			if ($this->deadTicks >= $this->maxDeadTicks) {
 				$this->despawnFromAll();
-				if (!$this->isPlayer) {
-					$this->close();
+				if(!$this->isPlayer){
+					$this->flagForDespawn();
 				}
 			}
-			return $this->deadTicks < $this->maxDeadTicks;
+			return true;
 		}
 
 
@@ -2147,6 +2152,17 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 	}
 
 	/**
+	 * Flags the entity to be removed from the world on the next tick.
+	 */
+	public function flagForDespawn() : void{
+		$this->needsDespawn = true;
+	}
+
+	public function isFlaggedForDespawn() : bool{
+		return $this->needsDespawn;
+	}
+
+	/**
 	 * Returns whether the entity has been "closed".
 	 * @return bool
 	 */
@@ -2305,8 +2321,16 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		}
 	}
 
-	public function __destruct()
-	{
+	public function broadcastEntityEvent(int $eventId, ?int $eventData = null, ?array $players = null) : void{
+		$pk = new EntityEventPacket();
+		$pk->entityRuntimeId = $this->id;
+		$pk->event = $eventId;
+		$pk->data = $eventData ?? 0;
+
+		$this->server->broadcastPacket($players ?? $this->getViewers(), $pk);
+	}
+
+	public function __destruct(){
 		$this->close();
 	}
 
