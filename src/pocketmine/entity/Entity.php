@@ -1994,7 +1994,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		}
 		if ($this->vehicle !== null) {
 			$this->vehicle->dismount($this);
-			$this->y = $this - y + 1;
+			$this->y = $this->y + 1;
 		}
 		$from = Position::fromObject($this, $this->level);
 		$to = Position::fromObject($pos, $pos instanceof Position ? $pos->getLevel() : $this->level);

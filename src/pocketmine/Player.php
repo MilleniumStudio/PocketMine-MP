@@ -1537,7 +1537,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 		$revert = false;
 
-		if(($distanceSquared / ($tickDiff ** 2)) > 100){
+		if(($distanceSquared / ($tickDiff ** 2)) > 100 && $this->vehicle == null){
 			$this->server->getLogger()->warning($this->getName() . " moved too fast, reverting movement");
 			$this->server->getLogger()->debug("Old position: " . $this->asVector3() . ", new position: " . $this->newPosition);
 			$revert = true;
