@@ -26,7 +26,16 @@ namespace pocketmine\item;
 use pocketmine\block\Block;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\nbt\tag\DoubleTag;
+use pocketmine\nbt\tag\FloatTag;
+use pocketmine\nbt\tag\ListTag;
+use \pocketmine\nbt\tag\IntTag;
+use \pocketmine\nbt\tag\ByteTag;
+use \pocketmine\nbt\tag\StringTag;
 use pocketmine\Player;
+use pocketmine\entity\Entity;
+use pocketmine\entity\Painting as EntityPainting;
 
 class Painting extends Item{
 	public function __construct(int $meta = 0){
@@ -34,13 +43,12 @@ class Painting extends Item{
 	}
 
 	public function onActivate(Level $level, Player $player, Block $blockReplace, Block $blockClicked, int $face, Vector3 $clickVector) : bool{
-		if($blockClicked->isTransparent() === false and $face > 1 and $blockReplace->isSolid() === false){
+		if(!$blockClicked->isTransparent() and $face > 1 and !$blockReplace->isSolid()){
 			$faces = [
-				2 => 1,
-				3 => 3,
-				4 => 0,
-				5 => 2,
-
+				2 => 2, // SIDE_NORTH
+				3 => 0, // SIDE_SOUTH
+				4 => 1, // SIDE_WEST
+				5 => 3, // SIDE_EAST
 			];
 			$motives = [
 				// Motive Width Height
@@ -63,7 +71,7 @@ class Painting extends Item{
 				["Stage", 2, 2],
 				["Void", 2, 2],
 				["SkullAndRoses", 2, 2],
-				//array("Wither", 2, 2),
+                                ["Wither", 2, 2],
 				["Fighters", 4, 2],
 				["Skeleton", 4, 3],
 				["DonkeyKong", 4, 3],
@@ -72,21 +80,39 @@ class Painting extends Item{
 				["Flaming Skull", 4, 4],
 			];
 			$motive = $motives[mt_rand(0, count($motives) - 1)];
-			$data = [
-				"x" => $blockClicked->x,
-				"y" => $blockClicked->y,
-				"z" => $blockClicked->z,
-				"yaw" => $faces[$face] * 90,
-				"Motive" => $motive[0],
-			];
-			//TODO
-			//$e = $server->api->entity->add($level, ENTITY_OBJECT, OBJECT_PAINTING, $data);
-			//$e->spawnToAll();
-			/*if(($player->gamemode & 0x01) === 0x00){
-				$player->removeItem(Item::get($this->getId(), $this->getDamage(), 1));
-			}*/
 
-			return true;
+                        // TODO calculate space
+
+			$data = [
+				"facing" => $faces[$face],
+				"motive" => $motive
+			];
+                        $nbt = new CompoundTag("", [
+                            new ByteTag("Direction", $faces[$face]),
+                            new StringTag("Motive", $motive[0]),
+                            new ListTag("Pos", [
+                                new DoubleTag("", $blockClicked->getX()),
+                                new DoubleTag("", $blockClicked->getY()),
+                                new DoubleTag("", $blockClicked->getZ())
+                                    ]),
+                            new ListTag("Motion", [
+                                new DoubleTag("", 0),
+                                new DoubleTag("", 0),
+                                new DoubleTag("", 0)
+                                    ]),
+                            new ListTag("Rotation", [
+                                new FloatTag("", $faces[$face] * 90),
+                                new FloatTag("", 0)
+                                    ]),
+                            new IntTag("TileX", $blockClicked->getX()),
+                            new IntTag("TileY", $blockClicked->getY()),
+                            new IntTag("TileZ", $blockClicked->getZ())
+                        ]);
+
+                    $entity = Entity::createEntity(EntityPainting::NETWORK_ID, $level, $nbt, $data);
+                    $entity->setCanSaveWithChunk(false);
+                    $entity->spawnToAll();
+                    return true;
 		}
 
 		return false;
