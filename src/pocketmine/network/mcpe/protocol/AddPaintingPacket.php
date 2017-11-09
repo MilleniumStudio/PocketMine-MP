@@ -53,7 +53,7 @@ class AddPaintingPacket extends DataPacket{
 	protected function encodePayload(){
 		$this->putEntityUniqueId($this->entityUniqueId ?? $this->entityRuntimeId);
 		$this->putEntityRuntimeId($this->entityRuntimeId);
-		$this->putVector3Obj($this->position);
+		$this->putBlockPosition($this->position->getFloorX(), $this->position->getFloorY(), $this->position->getFloorZ());
 		$this->putVarInt($this->direction);
 		$this->putString($this->title);
 	}
