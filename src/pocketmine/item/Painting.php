@@ -50,69 +50,60 @@ class Painting extends Item{
 				4 => 1, // SIDE_WEST
 				5 => 3, // SIDE_EAST
 			];
-			$motives = [
-				// Motive Width Height
-				["Kebab", 1, 1],
-				["Aztec", 1, 1],
-				["Alban", 1, 1],
-				["Aztec2", 1, 1],
-				["Bomb", 1, 1],
-				["Plant", 1, 1],
-				["Wasteland", 1, 1],
-				["Wanderer", 1, 2],
-				["Graham", 1, 2],
-				["Pool", 2, 1],
-				["Courbet", 2, 1],
-				["Sunset", 2, 1],
-				["Sea", 2, 1],
-				["Creebet", 2, 1],
-				["Match", 2, 2],
-				["Bust", 2, 2],
-				["Stage", 2, 2],
-				["Void", 2, 2],
-				["SkullAndRoses", 2, 2],
-                                ["Wither", 2, 2],
-				["Fighters", 4, 2],
-				["Skeleton", 4, 3],
-				["DonkeyKong", 4, 3],
-				["Pointer", 4, 4],
-				["Pigscene", 4, 4],
-				["Flaming Skull", 4, 4],
-			];
-			$motive = $motives[mt_rand(0, count($motives) - 1)];
 
-                        // TODO calculate space
+                        $validMotives = array();
+                        foreach (EntityPainting::$motives as $motive)
+                        {
+                            $isValid = true;
+                            for ($x = 0; $x < $motive[1]; $x++)
+                            {
+                                for ($y = 0; $y < $motive[2]; $y++)
+                                {
+                                    if ($blockClicked->getSide($face, $x)->isTransparent() or $blockClicked->getSide(Vector3::SIDE_UP, $y)->isTransparent())
+                                    {
+                                        if ($blockReplace->getSide($face, $x)->isSolid() or $blockReplace->getSide(Vector3::SIDE_UP, $y)->isSolid())
+                                        {
+                                            $isValid = false;
+                                        }
+                                    }
+                                }
+                            }
+                            if ($isValid)
+                            {
+                                $validMotives[] = $motive;
+                            }
+                        }
 
-			$data = [
-				"facing" => $faces[$face],
-				"motive" => $motive
-			];
-                        $nbt = new CompoundTag("", [
-                            new ByteTag("Direction", $faces[$face]),
-                            new StringTag("Motive", $motive[0]),
-                            new ListTag("Pos", [
-                                new DoubleTag("", $blockClicked->getX()),
-                                new DoubleTag("", $blockClicked->getY()),
-                                new DoubleTag("", $blockClicked->getZ())
-                                    ]),
-                            new ListTag("Motion", [
-                                new DoubleTag("", 0),
-                                new DoubleTag("", 0),
-                                new DoubleTag("", 0)
-                                    ]),
-                            new ListTag("Rotation", [
-                                new FloatTag("", $faces[$face] * 90),
-                                new FloatTag("", 0)
-                                    ]),
-                            new IntTag("TileX", $blockClicked->getX()),
-                            new IntTag("TileY", $blockClicked->getY()),
-                            new IntTag("TileZ", $blockClicked->getZ())
-                        ]);
+                        if (count($validMotives) > 0)
+                        {
+                            $motive = $validMotives[mt_rand(0, count($validMotives) - 1)];
 
-                    $entity = Entity::createEntity(EntityPainting::NETWORK_ID, $level, $nbt, $data);
-                    $entity->setCanSaveWithChunk(false);
-                    $entity->spawnToAll();
-                    return true;
+                            $nbt = new CompoundTag("", [
+                                new ByteTag("Direction", $faces[$face]),
+                                new StringTag("Motive", $motive[0]),
+                                new ListTag("Pos", [
+                                    new DoubleTag("", $blockClicked->getX()),
+                                    new DoubleTag("", $blockClicked->getY()),
+                                    new DoubleTag("", $blockClicked->getZ())
+                                        ]),
+                                new ListTag("Motion", [
+                                    new DoubleTag("", 0),
+                                    new DoubleTag("", 0),
+                                    new DoubleTag("", 0)
+                                        ]),
+                                new ListTag("Rotation", [
+                                    new FloatTag("", $faces[$face] * 90),
+                                    new FloatTag("", 0)
+                                        ]),
+                                new IntTag("TileX", $blockClicked->getFloorX()),
+                                new IntTag("TileY", $blockClicked->getFloorY()),
+                                new IntTag("TileZ", $blockClicked->getFloorZ())
+                            ]);
+
+                            $entity = Entity::createEntity(EntityPainting::NETWORK_ID, $level, $nbt);
+                            $entity->spawnToAll();
+                            return true;
+                        }
 		}
 
 		return false;

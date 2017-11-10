@@ -7,51 +7,70 @@ namespace pocketmine\entity;
 use pocketmine\network\mcpe\protocol\AddPaintingPacket;
 use pocketmine\Player;
 use pocketmine\item\Item;
+use pocketmine\item\ItemIds;
+use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
+use pocketmine\level\particle\ItemBreakParticle;
 use pocketmine\nbt\tag\CompoundTag;
+use \pocketmine\nbt\tag\IntTag;
+use \pocketmine\nbt\tag\ByteTag;
+use \pocketmine\nbt\tag\StringTag;
 
 class Painting extends Entity{
     const NETWORK_ID = self::PAINTING;
 
-    public $motive = ["Kebab", 1, 1];
+    public static $motives = [
+            // Motive Width Height
+            ["Kebab", 1, 1],
+            ["Aztec", 1, 1],
+            ["Alban", 1, 1],
+            ["Aztec2", 1, 1],
+            ["Bomb", 1, 1],
+            ["Plant", 1, 1],
+            ["Wasteland", 1, 1],
+            ["Wanderer", 1, 2],
+            ["Graham", 1, 2],
+            ["Pool", 2, 1],
+            ["Courbet", 2, 1],
+            ["Sunset", 2, 1],
+            ["Sea", 2, 1],
+            ["Creebet", 2, 1],
+            ["Match", 2, 2],
+            ["Bust", 2, 2],
+            ["Stage", 2, 2],
+            ["Void", 2, 2],
+            ["SkullAndRoses", 2, 2],
+            ["Wither", 2, 2],
+            ["Fighters", 4, 2],
+            ["Skeleton", 4, 3],
+            ["DonkeyKong", 4, 3],
+            ["Pointer", 4, 4],
+            ["Pigscene", 4, 4],
+            ["Flaming Skull", 4, 4],
+    ];
+
+    public $motive = "Kebab";
     public $facing = 2;
 
-    public function __construct(Level $level, CompoundTag $nbt, $data = array())
+    public function __construct(Level $level, CompoundTag $nbt)
     {
-        $this->gravity = 0;
-        if (isset($data["motive"]))
-        {
-            $this->motive = $data["motive"];
-            $this->widht = $data["motive"][1];
-            $this->height = $data["motive"][2];
-        }
-        if (isset($data["facing"]))
-        {
-            $this->facing = $data["facing"];
-        }
-        if (isset($data["x"]))
-        {
-            $this->x = $data["x"];
-        }
-        if (isset($data["y"]))
-        {
-            $this->y = $data["y"];
-        }
-        if (isset($data["z"]))
-        {
-            $this->z = $data["z"];
-        }
-        $this->setCanSaveWithChunk(false);
         parent::__construct($level, $nbt);
     }
 
     protected function initEntity(){
         parent::initEntity();
-    }
 
-    public function saveNBT()
-    {
-        //
+        $this->setMaxHealth(1);
+        $this->setHealth(1);
+
+        if (isset($this->namedtag->Motive))
+        {
+            $this->motive = $this->namedtag["Motive"];
+        }
+        if (isset($this->namedtag->Direction))
+        {
+            $this->facing = $this->namedtag["Direction"];
+        }
     }
 
     public function onUpdate(int $currentTick): bool
@@ -64,19 +83,36 @@ class Painting extends Entity{
         return false;
     }
 
+    public function getDrops(): array
+    {
+            $drops = [
+                    ItemFactory::get(ItemIds::PAINTING, 0, 1)
+            ];
+
+            return $drops;
+    }
+
     public function onInteract(Player $player, Item $item): bool
     {
-        if ($item == null)
+        if ($player->getGamemode() == 0)
         {
-            $this->close();
+            foreach ($this->getDrops() as $l_Item) {
+                $this->level->dropItem($this->asVector3(), $l_Item);
+            }
         }
-        // TODO roll painting
+        if ($player->getGamemode() == 2)
+        {
+            return false;
+        }
+        $this->getLevel()->addParticle(new ItemBreakParticle($this->asVector3(), ItemFactory::get(ItemIds::PAINTING)));
+        $this->close();
+
         return true;
     }
 
     public function getTitle() : string
     {
-        return $this->motive[0];
+        return $this->motive;
     }
 
     public function getFacing(): int
@@ -84,7 +120,8 @@ class Painting extends Entity{
         return $this->facing;
     }
 
-    protected function sendSpawnPacket(Player $player) : void{
+    protected function sendSpawnPacket(Player $player) : void
+    {
         $pk = new AddPaintingPacket();
         $pk->entityUniqueId = $this->getId();
         $pk->entityRuntimeId = $this->getId();
