@@ -1142,7 +1142,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 	protected function updateMovement()
 	{
-//		echo "> updateMovement\n";
 		$diffPosition = ($this->x - $this->lastX) ** 2 + ($this->y - $this->lastY) ** 2 + ($this->z - $this->lastZ) ** 2;
 		$diffRotation = ($this->yaw - $this->lastYaw) ** 2 + ($this->pitch - $this->lastPitch) ** 2;
 
@@ -1180,15 +1179,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$pk->position = $this->getOffsetPosition($this);
 		$pk->yaw = $this->yaw;
 		$pk->pitch = $this->pitch;
-		if($this instanceof Living) {
+		if($this instanceof Living && $this->headYaw != null) {
 			$pk->headYaw = $this->headYaw;
-//			echo "headYaw ".$this->headYaw."\n";
 		}
 		else
 			$pk->headYaw = $this->yaw; //TODO
-
-//		if($this instanceof Boat)
-//		echo "move: " . $this->getOffsetPosition($this) . "\n";
 
 		$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
 	}
@@ -1198,8 +1193,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$pk = new SetEntityMotionPacket();
 		$pk->entityRuntimeId = $this->id;
 		$pk->motion = $this->getMotion();
-
-//		echo "motion: " . $this->getMotion() . "\n";
 
 		$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
 	}
