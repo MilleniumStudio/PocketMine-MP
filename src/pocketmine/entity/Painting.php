@@ -12,9 +12,6 @@ use pocketmine\item\ItemFactory;
 use pocketmine\level\Level;
 use pocketmine\level\particle\ItemBreakParticle;
 use pocketmine\nbt\tag\CompoundTag;
-use \pocketmine\nbt\tag\IntTag;
-use \pocketmine\nbt\tag\ByteTag;
-use \pocketmine\nbt\tag\StringTag;
 
 class Painting extends Entity{
     const NETWORK_ID = self::PAINTING;
