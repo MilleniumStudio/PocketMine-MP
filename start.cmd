@@ -26,3 +26,4 @@ if exist bin\mintty.exe (
 ) else (
 	%PHP_BINARY% -c bin\php %POCKETMINE_FILE% %*
 )
+
