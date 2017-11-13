@@ -46,7 +46,7 @@ class Painting extends Entity{
             ["DonkeyKong", 4, 3],
             ["Pointer", 4, 4],
             ["Pigscene", 4, 4],
-            ["Flaming Skull", 4, 4],
+            ["BurningSkull", 4, 4],
     ];
 
     public $motive = "Kebab";
