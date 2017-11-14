@@ -150,7 +150,7 @@ abstract class Vehicle extends Interactable implements Rideable{
         $link->bool1 = TRUE;
 
         $pk->link = $link;
-        $this->server->broadcastPacket($this->level->getPlayers(), $pk);
+        $this->server->broadcastPacket($this->server->getOnlinePlayers(), $pk);
 
         $pk = new SetEntityLinkPacket();
 
