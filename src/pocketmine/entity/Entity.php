@@ -71,7 +71,7 @@ use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
-use pocketmine\item\Item;
+use pocketmine\item\Item as ItemItem;
 
 abstract class Entity extends Location implements Metadatable, EntityIds
 {
@@ -1580,7 +1580,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 	}
 
-	public function onInteract(Player $player, Item $item): bool
+	public function onInteract(Player $player, ItemItem $item): bool
 	{
 		return false;
 	}
