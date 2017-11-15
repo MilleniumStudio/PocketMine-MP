@@ -135,6 +135,7 @@ class TimingsCommand extends VanillaCommand{
 							$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsUpload", ["http://paste.ubuntu.com/" . $pasteId . "/"]));
 							$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.timingsRead",
 								["http://" . $sender->getServer()->getProperty("timings.host", "timings.pmmp.io") . "/?url=$pasteId"]));
+                                                        $sender->getServer()->getLogger()->warning("http://" . $sender->getServer()->getProperty("timings.host", "timings.pmmp.io") . "/?url=$pasteId");
 						}else{
 							$sender->sendMessage(new TranslationContainer("pocketmine.command.timings.pasteError"));
 						}
