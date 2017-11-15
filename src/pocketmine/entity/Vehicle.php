@@ -175,7 +175,6 @@ abstract class Vehicle extends Interactable implements Rideable{
         $p_Rider->vehicle->passenger = null;
         $p_Rider->vehicle = null;
         $p_Rider->onGround = true;
-        $p_Rider->teleport($this);
         return true;
     }
 
