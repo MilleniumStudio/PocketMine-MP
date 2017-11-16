@@ -1635,7 +1635,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->speed = new Vector3(0, 0, 0);
 		}
 
-		if($revert){
+		if($revert && $this->vehicle == null){
 
 			$this->lastX = $from->x;
 			$this->lastY = $from->y;
@@ -1762,6 +1762,9 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			}
 		}
 		$this->updateSpeed();
+
+//                if ($currentTick % 20 == 0)
+//                    $this->getServer()->getLogger()->warning("Player " . $this->getName() . " usedChunks : " . count($this->usedChunks)  . " chunkLoadCount : " . $this->chunkLoadCount . " loadQueue : " . count($this->loadQueue));
 
 		$this->timings->stopTiming();
 
