@@ -34,7 +34,7 @@ class EntityLink{
 	/** @var bool */
 	public $bool1;
 
-	public function __construct(int $fromEntityUniqueId = null, int $toEntityUniqueId = null, int $type = null, bool $bool1 = null){
+	public function __construct(int $fromEntityUniqueId = null, int $toEntityUniqueId = null, int $type = null, bool $bool1 = TRUE){
 		$this->fromEntityUniqueId = $fromEntityUniqueId;
 		$this->toEntityUniqueId = $toEntityUniqueId;
 		$this->type = $type;
