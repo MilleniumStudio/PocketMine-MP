@@ -167,6 +167,17 @@ use pocketmine\event\entity\EntityInteractEvent;
  */
 class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
+	const DEVICE_INPUT_MOUSE = 1;
+	const DEVICE_INPUT_TOUCH = 2;
+	const DEVICE_INPUT_GAMEPAD = 3;
+
+	const DEVICE_OS_WIN10 = 7;
+	const DEVICE_OS_IOS = 2;
+//	const DEVICE_OS_ANDROID = ?;
+//	const DEVICE_OS_PLAYSTATION = ?;
+//	const DEVICE_OS_SWITCH = ?;
+//	const DEVICE_OS_XBOX = ?;
+
 	const SURVIVAL = 0;
 	const CREATIVE = 1;
 	const ADVENTURE = 2;
@@ -305,6 +316,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 	/** @var string */
 	protected $locale = "en_US";
+
+	// DEVICE INFO
+	/** @var int */
+	public $inputMode; //ex: Player::DEVICE_INPUT_MOUSE
+	/** @var string */
+	public $deviceModel = ""; //ex: "Gigabyte Technology Co., Ltd. H81M-D2V" or "iPad5,3"
+	/** @var int */
+	public $deviceOs; //ex: Player::DEVICE_OS_WIN10
 
 	/**
 	 * @var int
@@ -759,6 +778,30 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 */
 	public function getLocale() : string{
 		return $this->locale;
+	}
+
+	/**
+	 * Returns the player's device input mode, ex: Player::DEVICE_INPUT_TOUCH
+	 * @return int
+	 */
+	public function getDeviceInputMode() : int{
+		return $this->inputMode;
+	}
+
+	/**
+	 * Returns the player's device model, ex: "iPad5,3"
+	 * @return string
+	 */
+	public function getDeviceModel() : string{
+		return $this->deviceModel;
+	}
+
+	/**
+	 * Returns the player's device os, ex: Player::DEVICE_OS_WIN10
+	 * @return int
+	 */
+	public function getDeviceOS() : int{
+		return $this->deviceOs;
 	}
 
 	/**
@@ -2053,6 +2096,13 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if($packet->locale !== null){
 			$this->locale = $packet->locale;
 		}
+
+		if($packet->inputMode !== null)
+			$this->inputMode = $packet->inputMode;
+		if($packet->deviceModel !== null)
+			$this->deviceModel = $packet->deviceModel;
+		if($packet->deviceOs !== null)
+			$this->deviceOs = $packet->deviceOs;
 
 		if(count($this->server->getOnlinePlayers()) >= $this->server->getMaxPlayers() and $this->kick("disconnectionScreen.serverFull", false)){
 			return true;
