@@ -179,7 +179,7 @@ class PlayerNetworkSessionAdapter extends NetworkSession{
 	}
 
 	public function handlePlayerHotbar(PlayerHotbarPacket $packet) : bool{
-		return $this->player->handlePlayerHotbar($packet);
+		return true; //this packet is useless
 	}
 
 	public function handleCraftingEvent(CraftingEventPacket $packet) : bool{

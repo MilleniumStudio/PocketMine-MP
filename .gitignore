@@ -31,3 +31,6 @@ Desktop.ini
 
 # Travis files
 test_data/*
+
+# Doxygen
+Documentation/*
