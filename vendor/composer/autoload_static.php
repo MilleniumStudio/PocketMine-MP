@@ -8,13 +8,69 @@ class ComposerStaticInit3161354c6a3b66a25beb2fba6274119f
 {
     public static $fallbackDirsPsr0 = array (
         0 => __DIR__ . '/../..' . '/src',
-        1 => __DIR__ . '/../..' . '/src/spl',
+    );
+
+    public static $classMap = array (
+        'ArrayOutOfBoundsException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/ArrayOutOfBoundsException.php',
+        'AttachableLogger' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/AttachableLogger.php',
+        'AttachableThreadedLogger' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/AttachableThreadedLogger.php',
+        'BaseClassLoader' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/BaseClassLoader.php',
+        'ClassCastException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/ClassCastException.php',
+        'ClassLoader' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/ClassLoader.php',
+        'ClassNotFoundException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/ClassNotFoundException.php',
+        'InvalidArgumentCountException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/InvalidArgumentCountException.php',
+        'InvalidKeyException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/InvalidKeyException.php',
+        'InvalidStateException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/InvalidStateException.php',
+        'LogLevel' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/LogLevel.php',
+        'Logger' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/Logger.php',
+        'LoggerAttachment' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/LoggerAttachment.php',
+        'SplFixedByteArray' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/SplFixedByteArray.php',
+        'StringOutOfBoundsException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/StringOutOfBoundsException.php',
+        'ThreadException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/ThreadException.php',
+        'ThreadedLogger' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/ThreadedLogger.php',
+        'ThreadedLoggerAttachment' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/ThreadedLoggerAttachment.php',
+        'UndefinedConstantException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/UndefinedConstantException.php',
+        'UndefinedPropertyException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/UndefinedPropertyException.php',
+        'UndefinedVariableException' => __DIR__ . '/..' . '/pmmp/pocketmine-spl/UndefinedVariableException.php',
+        'raklib\\Binary' => __DIR__ . '/..' . '/pmmp/raklib/Binary.php',
+        'raklib\\RakLib' => __DIR__ . '/..' . '/pmmp/raklib/RakLib.php',
+        'raklib\\protocol\\ACK' => __DIR__ . '/..' . '/pmmp/raklib/protocol/ACK.php',
+        'raklib\\protocol\\AcknowledgePacket' => __DIR__ . '/..' . '/pmmp/raklib/protocol/AcknowledgePacket.php',
+        'raklib\\protocol\\AdvertiseSystem' => __DIR__ . '/..' . '/pmmp/raklib/protocol/AdvertiseSystem.php',
+        'raklib\\protocol\\ConnectedPing' => __DIR__ . '/..' . '/pmmp/raklib/protocol/ConnectedPing.php',
+        'raklib\\protocol\\ConnectedPong' => __DIR__ . '/..' . '/pmmp/raklib/protocol/ConnectedPong.php',
+        'raklib\\protocol\\ConnectionRequest' => __DIR__ . '/..' . '/pmmp/raklib/protocol/ConnectionRequest.php',
+        'raklib\\protocol\\ConnectionRequestAccepted' => __DIR__ . '/..' . '/pmmp/raklib/protocol/ConnectionRequestAccepted.php',
+        'raklib\\protocol\\Datagram' => __DIR__ . '/..' . '/pmmp/raklib/protocol/Datagram.php',
+        'raklib\\protocol\\DisconnectionNotification' => __DIR__ . '/..' . '/pmmp/raklib/protocol/DisconnectionNotification.php',
+        'raklib\\protocol\\EncapsulatedPacket' => __DIR__ . '/..' . '/pmmp/raklib/protocol/EncapsulatedPacket.php',
+        'raklib\\protocol\\MessageIdentifiers' => __DIR__ . '/..' . '/pmmp/raklib/protocol/MessageIdentifiers.php',
+        'raklib\\protocol\\NACK' => __DIR__ . '/..' . '/pmmp/raklib/protocol/NACK.php',
+        'raklib\\protocol\\NewIncomingConnection' => __DIR__ . '/..' . '/pmmp/raklib/protocol/NewIncomingConnection.php',
+        'raklib\\protocol\\OfflineMessage' => __DIR__ . '/..' . '/pmmp/raklib/protocol/OfflineMessage.php',
+        'raklib\\protocol\\OpenConnectionReply1' => __DIR__ . '/..' . '/pmmp/raklib/protocol/OpenConnectionReply1.php',
+        'raklib\\protocol\\OpenConnectionReply2' => __DIR__ . '/..' . '/pmmp/raklib/protocol/OpenConnectionReply2.php',
+        'raklib\\protocol\\OpenConnectionRequest1' => __DIR__ . '/..' . '/pmmp/raklib/protocol/OpenConnectionRequest1.php',
+        'raklib\\protocol\\OpenConnectionRequest2' => __DIR__ . '/..' . '/pmmp/raklib/protocol/OpenConnectionRequest2.php',
+        'raklib\\protocol\\Packet' => __DIR__ . '/..' . '/pmmp/raklib/protocol/Packet.php',
+        'raklib\\protocol\\PacketReliability' => __DIR__ . '/..' . '/pmmp/raklib/protocol/PacketReliability.php',
+        'raklib\\protocol\\UnconnectedPing' => __DIR__ . '/..' . '/pmmp/raklib/protocol/UnconnectedPing.php',
+        'raklib\\protocol\\UnconnectedPingOpenConnections' => __DIR__ . '/..' . '/pmmp/raklib/protocol/UnconnectedPingOpenConnections.php',
+        'raklib\\protocol\\UnconnectedPong' => __DIR__ . '/..' . '/pmmp/raklib/protocol/UnconnectedPong.php',
+        'raklib\\server\\OfflineMessageHandler' => __DIR__ . '/..' . '/pmmp/raklib/server/OfflineMessageHandler.php',
+        'raklib\\server\\RakLibServer' => __DIR__ . '/..' . '/pmmp/raklib/server/RakLibServer.php',
+        'raklib\\server\\ServerHandler' => __DIR__ . '/..' . '/pmmp/raklib/server/ServerHandler.php',
+        'raklib\\server\\ServerInstance' => __DIR__ . '/..' . '/pmmp/raklib/server/ServerInstance.php',
+        'raklib\\server\\Session' => __DIR__ . '/..' . '/pmmp/raklib/server/Session.php',
+        'raklib\\server\\SessionManager' => __DIR__ . '/..' . '/pmmp/raklib/server/SessionManager.php',
+        'raklib\\server\\UDPServerSocket' => __DIR__ . '/..' . '/pmmp/raklib/server/UDPServerSocket.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
             $loader->fallbackDirsPsr0 = ComposerStaticInit3161354c6a3b66a25beb2fba6274119f::$fallbackDirsPsr0;
+            $loader->classMap = ComposerStaticInit3161354c6a3b66a25beb2fba6274119f::$classMap;
 
         }, null, ClassLoader::class);
     }
