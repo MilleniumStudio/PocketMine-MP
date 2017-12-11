@@ -413,10 +413,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 	/** @var bool */
 	public $onGround;
 	/** @var int */
-	public $deadTicks = 0;
-	/** @var int */
-	protected $maxDeadTicks = 0;
-	/** @var int */
 	protected $age = 0;
 
 	/** @var float */
@@ -447,8 +443,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 	public $ticksLived = 0;
 	/** @var int */
 	public $lastUpdate;
-	/** @var int */
-	public $maxFireTicks;
 	/** @var int */
 	public $fireTicks = 0;
 	/** @var CompoundTag */
@@ -970,8 +964,17 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$this->scheduleUpdate();
 	}
 
-	public function isAlive(): bool
-	{
+	/**
+	 * Called to tick entities while dead. Returns whether the entity should be flagged for despawn yet.
+	 *
+	 * @param int $tickDiff
+	 * @return bool
+	 */
+	protected function onDeathUpdate(int $tickDiff) : bool{
+		return true;
+	}
+
+	public function isAlive() : bool{
 		return $this->health > 0;
 	}
 
@@ -1101,8 +1104,21 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$this->setGenericFlag(self::DATA_FLAG_ONFIRE, true);
 	}
 
-	public function extinguish()
-	{
+	/**
+	 * @return int
+	 */
+	public function getFireTicks() : int{
+		return $this->fireTicks;
+	}
+
+	/**
+	 * @param int $fireTicks
+	 */
+	public function setFireTicks(int $fireTicks) : void{
+		$this->fireTicks = $fireTicks;
+	}
+
+	public function extinguish(){
 		$this->fireTicks = 0;
 		$this->setGenericFlag(self::DATA_FLAG_ONFIRE, false);
 	}
@@ -1120,8 +1136,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 			$this->fireTicks -= $tickDiff;
 		}
 
-
-		if (($this->fireTicks % 20 === 0) or $tickDiff > 20) {
+		if(($this->fireTicks % 20 === 0) or $tickDiff > 20){
 			$this->dealFireDamage();
 		}
 
@@ -1401,10 +1416,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 			$this->deadTicks += $tickDiff;
 			if ($this->deadTicks >= $this->maxDeadTicks) {
 				$this->despawnFromAll();
-				if(!$this->isPlayer){
-					$this->flagForDespawn();
-				}
+					$this->flagForDespawn(); // is this useless ? it needs more investigations
+				$this->flagForDespawn();
 			}
+
 			return true;
 		}
 
