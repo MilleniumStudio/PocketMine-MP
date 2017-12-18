@@ -1412,7 +1412,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 			return false;
 		}
 
-		if(!$this->isAlive()){
+		if( !($this instanceof Boat) && !$this->isAlive()){
+			echo "health : " . $this->health . "\n";
+			echo "nametag : " . $this->getNameTag() . "\n";
 			$this->deadTicks += $tickDiff;
 			if ($this->deadTicks >= $this->maxDeadTicks) {
 				$this->despawnFromAll();

@@ -33,4 +33,10 @@ class StainedGlass extends Glass{
 		return ColorBlockMetaHelper::getColorFromMeta($this->meta) . " Stained Glass";
 	}
 
+	public function getFrictionFactor() : float{
+		if ($this->meta == 5)
+			return 0.86;
+		return 0.6;
+	}
+
 }
