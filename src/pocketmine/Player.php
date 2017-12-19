@@ -1637,8 +1637,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->lastPitch = $from->pitch;
 
 			$this->setPosition($from);
-//			$this->sendPosition($from, $from->yaw, $from->headYaw, $from->pitch, MovePlayerPacket::MODE_RESET);
-			$this->sendPosition($from, $from->yaw, $from->pitch, MovePlayerPacket::MODE_RESET);
+			$this->sendPosition($from, $from->yaw, $from->headYaw, $from->pitch, MovePlayerPacket::MODE_RESET);
+			//$this->sendPosition($from, $from->yaw, $from->pitch, MovePlayerPacket::MODE_RESET);
 		}else{
 			if($distanceSquared != 0 and $this->nextChunkOrderRun > 20){
 				$this->nextChunkOrderRun = 20;
