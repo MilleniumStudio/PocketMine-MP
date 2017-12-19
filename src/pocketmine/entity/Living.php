@@ -44,6 +44,7 @@ use pocketmine\network\mcpe\protocol\MobEffectPacket;
 use pocketmine\Player;
 use pocketmine\utils\Binary;
 use pocketmine\utils\BlockIterator;
+use pocketmine\utils\Color;
 
 abstract class Living extends Entity implements Damageable{
 
@@ -96,7 +97,7 @@ abstract class Living extends Entity implements Damageable{
 					continue;
 				}
 
-				$effect->setAmplifier($amplifier)->setDuration($e->getInt("Duration"))->setVisible($e->getByte("ShowParticles", 1) > 0);
+				$effect->setAmplifier($amplifier)->setDuration($e->getInt("Duration"))->setVisible($e->getByte("ShowParticles", 1) > 0)->setAmbient($e->getByte("Ambient", 0) !== 0);
 
 				$this->addEffect($effect);
 			}
@@ -148,7 +149,7 @@ abstract class Living extends Entity implements Damageable{
 					new ByteTag("Id", $effect->getId()),
 					new ByteTag("Amplifier", Binary::signByte($effect->getAmplifier())),
 					new IntTag("Duration", $effect->getDuration()),
-					new ByteTag("Ambient", 0),
+					new ByteTag("Ambient", $effect->isAmbient() ? 1 : 0),
 					new ByteTag("ShowParticles", $effect->isVisible() ? 1 : 0)
 				]);
 			}
@@ -278,29 +279,25 @@ abstract class Living extends Entity implements Damageable{
 	 * Recalculates the mob's potion bubbles colour based on the active effects.
 	 */
 	protected function recalculateEffectColor(){
-		//TODO: add transparency values
-		$color = [0, 0, 0]; //RGB
-		$count = 0;
+		/** @var Color[] $colors */
+		$colors = [];
 		$ambient = true;
 		foreach($this->effects as $effect){
 			if($effect->isVisible() and $effect->hasBubbles()){
-				$c = $effect->getColor();
-				$color[0] += $c[0] * $effect->getEffectLevel();
-				$color[1] += $c[1] * $effect->getEffectLevel();
-				$color[2] += $c[2] * $effect->getEffectLevel();
-				$count += $effect->getEffectLevel();
+				$level = $effect->getEffectLevel();
+				$color = $effect->getColor();
+				for($i = 0; $i < $level; ++$i){
+					$colors[] = $color;
+				}
+
 				if(!$effect->isAmbient()){
 					$ambient = false;
 				}
 			}
 		}
 
-		if($count > 0){
-			$r = ($color[0] / $count) & 0xff;
-			$g = ($color[1] / $count) & 0xff;
-			$b = ($color[2] / $count) & 0xff;
-
-			$this->setDataProperty(Entity::DATA_POTION_COLOR, Entity::DATA_TYPE_INT, 0xff000000 | ($r << 16) | ($g << 8) | $b);
+		if(!empty($colors)){
+			$this->setDataProperty(Entity::DATA_POTION_COLOR, Entity::DATA_TYPE_INT, Color::mix(...$colors)->toARGB());
 			$this->setDataProperty(Entity::DATA_POTION_AMBIENT, Entity::DATA_TYPE_BYTE, $ambient ? 1 : 0);
 		}else{
 			$this->setDataProperty(Entity::DATA_POTION_COLOR, Entity::DATA_TYPE_INT, 0);
@@ -352,6 +349,49 @@ abstract class Living extends Entity implements Damageable{
 		}
 	}
 
+	/**
+	 * Returns how many armour points this mob has. Armour points provide a percentage reduction to damage.
+	 * For mobs which can wear armour, this should return the sum total of the armour points provided by their
+	 * equipment.
+	 *
+	 * @return int
+	 */
+	public function getArmorPoints() : int{
+		return 0;
+	}
+
+	/**
+	 * Called prior to EntityDamageEvent execution to apply modifications to the event's damage, such as reduction due
+	 * to effects or armour.
+	 *
+	 * @param EntityDamageEvent $source
+	 */
+	public function applyDamageModifiers(EntityDamageEvent $source) : void{
+		if($source->canBeReducedByArmor()){
+			//MCPE uses the same system as PC did pre-1.9
+			$source->setDamage(-$source->getFinalDamage() * $this->getArmorPoints() * 0.04, EntityDamageEvent::MODIFIER_ARMOR);
+		}
+
+		$cause = $source->getCause();
+		if($this->hasEffect(Effect::DAMAGE_RESISTANCE) and $cause !== EntityDamageEvent::CAUSE_VOID and $cause !== EntityDamageEvent::CAUSE_SUICIDE){
+			$source->setDamage(-($source->getFinalDamage() * 0.20 * $this->getEffect(Effect::DAMAGE_RESISTANCE)->getEffectLevel()), EntityDamageEvent::MODIFIER_RESISTANCE);
+		}
+
+		//TODO: armour protection enchantments should be checked here (after effect damage reduction)
+
+		$source->setDamage(-min($this->getAbsorption(), $source->getFinalDamage()), EntityDamageEvent::MODIFIER_ABSORPTION);
+	}
+
+	/**
+	 * Called after EntityDamageEvent execution to apply post-hurt effects, such as reducing absorption or modifying
+	 * armour durability.
+	 *
+	 * @param EntityDamageEvent $source
+	 */
+	protected function applyPostDamageEffects(EntityDamageEvent $source) : void{
+		$this->setAbsorption(max(0, $this->getAbsorption() + $source->getDamage(EntityDamageEvent::MODIFIER_ABSORPTION)));
+	}
+
 	public function attack(EntityDamageEvent $source){
 		if($this->attackTime > 0 or $this->noDamageTicks > 0){
 			$lastCause = $this->getLastDamageCause();
@@ -369,11 +409,7 @@ abstract class Living extends Entity implements Damageable{
 			$source->setCancelled();
 		}
 
-		$source->setDamage(-min($this->getAbsorption(), $source->getFinalDamage()), EntityDamageEvent::MODIFIER_ABSORPTION);
-
-		if($this->hasEffect(Effect::DAMAGE_RESISTANCE)){
-			$source->setDamage(-($source->getFinalDamage() * 0.20 * $this->getEffect(Effect::DAMAGE_RESISTANCE)->getEffectLevel()), EntityDamageEvent::MODIFIER_RESISTANCE);
-		}
+		$this->applyDamageModifiers($source);
 
 		parent::attack($source);
 
@@ -398,7 +434,7 @@ abstract class Living extends Entity implements Damageable{
 			}
 		}
 
-		$this->setAbsorption(max(0, $this->getAbsorption() + $source->getDamage(EntityDamageEvent::MODIFIER_ABSORPTION)));
+		$this->applyPostDamageEffects($source);
 
 		if($this->isAlive()){
 			$this->doHitAnimation();

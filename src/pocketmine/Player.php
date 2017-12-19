@@ -1734,7 +1734,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 							$expectedVelocity = (-$this->gravity) / $this->drag - ((-$this->gravity) / $this->drag) * exp(-$this->drag * ($this->inAirTicks - $this->startAirTicks));
 							$diff = ($this->speed->y - $expectedVelocity) ** 2;
 
-							if(!$this->hasEffect(Effect::JUMP) and $diff > 0.6 and $expectedVelocity < $this->speed->y and !$this->server->getAllowFlight()){
+							if(!$this->hasEffect(Effect::JUMP) and !$this->hasEffect(Effect::LEVITATION) and $diff > 0.6 and $expectedVelocity < $this->speed->y and !$this->server->getAllowFlight()){
 								if($this->inAirTicks < 100){
 									$this->setMotion(new Vector3(0, $expectedVelocity, 0));
 								}elseif($this->kick($this->server->getLanguage()->translateString("kick.reason.cheat", ["%ability.flight"]))){
@@ -2472,34 +2472,18 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 						}
 
 						$cancelled = false;
-						if($target instanceof Player and $this->server->getConfigBool("pvp", true) === false){
-							$cancelled = true;
-						}
 
 						$heldItem = $this->inventory->getItemInHand();
-
-						$damage = [
-							EntityDamageEvent::MODIFIER_BASE => $heldItem->getAttackPoints()
-						];
 
 						if(!$this->canInteract($target, 8)){
 							$cancelled = true;
 						}elseif($target instanceof Player){
-							if(($target->getGamemode() & 0x01) > 0){
-								return true;
-							}elseif($this->server->getConfigBool("pvp") !== true){
+							if($this->server->getConfigBool("pvp") !== true){
 								$cancelled = true;
 							}
-
-							$points = 0;
-							foreach($target->getInventory()->getArmorContents() as $armorItem){
-								$points += $armorItem->getDefensePoints();
-							}
-
-							$damage[EntityDamageEvent::MODIFIER_ARMOR] = -($damage[EntityDamageEvent::MODIFIER_BASE] * $points * 0.04);
 						}
 
-						$ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $damage);
+						$ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $heldItem->getAttackPoints());
 						if($cancelled){
 							$ev->setCancelled();
 						}
@@ -3718,6 +3702,21 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return false; //never flag players for despawn
 	}
 
+	public function getArmorPoints() : int{
+		$total = 0;
+		foreach($this->inventory->getArmorContents() as $item){
+			$total += $item->getDefensePoints();
+		}
+
+		return $total;
+	}
+
+	protected function applyPostDamageEffects(EntityDamageEvent $source) : void{
+		parent::applyPostDamageEffects($source);
+
+		$this->exhaust(0.3, PlayerExhaustEvent::CAUSE_DAMAGE);
+	}
+
 	public function attack(EntityDamageEvent $source){
 		if(!$this->isAlive()){
 			return;
@@ -3733,13 +3732,12 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		}
 
 		parent::attack($source);
+	}
 
-		if($source->isCancelled()){
-			return;
-		}elseif($this->getLastDamageCause() === $source and $this->spawned){
+	protected function doHitAnimation() : void{
+		parent::doHitAnimation();
+		if($this->spawned){
 			$this->broadcastEntityEvent(EntityEventPacket::HURT_ANIMATION, null, [$this]);
-
-			$this->exhaust(0.3, PlayerExhaustEvent::CAUSE_DAMAGE);
 		}
 	}
 

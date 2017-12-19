@@ -145,7 +145,7 @@ class Level implements ChunkManager, Metadatable{
 	public $updateEntities = [];
 	/** @var Tile[] */
 	public $updateTiles = [];
-	/** @var Block[] */
+	/** @var Block[][] */
 	private $blockCache = [];
 
 	/** @var BatchPacket[] */
@@ -1468,14 +1468,21 @@ class Level implements ChunkManager, Metadatable{
 	 */
 	public function getBlockAt(int $x, int $y, int $z, bool $cached = true, bool $addToCache = true) : Block{
 		$fullState = 0;
-		$index = null;
+		$blockHash = null;
+		$chunkHash = Level::chunkHash($x >> 4, $z >> 4);
 
 		if($this->isInWorld($x, $y, $z)){
-			$index = Level::blockHash($x, $y, $z);
-			if($cached and isset($this->blockCache[$index])){
-				return $this->blockCache[$index];
-			}elseif(isset($this->chunks[$chunkIndex = Level::chunkHash($x >> 4, $z >> 4)])){
-				$fullState = $this->chunks[$chunkIndex]->getFullBlock($x & 0x0f, $y, $z & 0x0f);
+			$blockHash = Level::blockHash($x, $y, $z);
+
+			if($cached and isset($this->blockCache[$chunkHash][$blockHash])){
+				return $this->blockCache[$chunkHash][$blockHash];
+			}
+
+			$chunk = $this->chunks[$chunkHash] ?? null;
+			if($chunk !== null){
+				$fullState = $chunk->getFullBlock($x & 0x0f, $y, $z & 0x0f);
+			}else{
+				$addToCache = false;
 			}
 		}
 
@@ -1486,8 +1493,8 @@ class Level implements ChunkManager, Metadatable{
 		$block->z = $z;
 		$block->level = $this;
 
-		if($addToCache and $index !== null){
-			$this->blockCache[$index] = $block;
+		if($addToCache and $blockHash !== null){
+			$this->blockCache[$chunkHash][$blockHash] = $block;
 		}
 
 		return $block;
@@ -1625,19 +1632,21 @@ class Level implements ChunkManager, Metadatable{
 
 			$block->position($pos);
 			$block->clearCaches();
-			unset($this->blockCache[Level::blockHash($pos->x, $pos->y, $pos->z)]);
 
-			$index = Level::chunkHash($pos->x >> 4, $pos->z >> 4);
+			$chunkHash = Level::chunkHash($pos->x >> 4, $pos->z >> 4);
+			$blockHash = Level::blockHash($pos->x, $pos->y, $pos->z);
+
+			unset($this->blockCache[$chunkHash][$blockHash]);
 
 			if($direct === true){
 				$this->sendBlocks($this->getChunkPlayers($pos->x >> 4, $pos->z >> 4), [$block], UpdateBlockPacket::FLAG_ALL_PRIORITY);
-				unset($this->chunkCache[$index]);
+				unset($this->chunkCache[$chunkHash]);
 			}else{
-				if(!isset($this->changedBlocks[$index])){
-					$this->changedBlocks[$index] = [];
+				if(!isset($this->changedBlocks[$chunkHash])){
+					$this->changedBlocks[$chunkHash] = [];
 				}
 
-				$this->changedBlocks[$index][Level::blockHash($block->x, $block->y, $block->z)] = clone $block;
+				$this->changedBlocks[$chunkHash][$blockHash] = clone $block;
 			}
 
 			foreach($this->getChunkLoaders($pos->x >> 4, $pos->z >> 4) as $loader){
@@ -1739,7 +1748,7 @@ class Level implements ChunkManager, Metadatable{
 		if($player !== null){
 			$ev = new BlockBreakEvent($player, $target, $item, $player->isCreative() or $player->allowInstaBreak());
 
-			if(($player->isSurvival() and $item instanceof Item and !$target->isBreakable($item)) or $player->isSpectator()){
+			if(($player->isSurvival() and !$target->isBreakable($item)) or $player->isSpectator()){
 				$ev->setCancelled();
 			}elseif($this->checkSpawnProtection($player, $target)){
 				$ev->setCancelled(); //set it to cancelled so plugins can bypass this
@@ -1792,7 +1801,7 @@ class Level implements ChunkManager, Metadatable{
 
 			$drops = $ev->getDrops();
 
-		}elseif($item !== null and !$target->isBreakable($item)){
+		}elseif(!$target->isBreakable($item)){
 			return false;
 		}else{
 			$drops = $target->getDrops($item); //Fixes tile entities being deleted before getting drops
@@ -1822,9 +1831,7 @@ class Level implements ChunkManager, Metadatable{
 			$tile->close();
 		}
 
-		if($item !== null){
-			$item->useOn($target);
-		}
+		$item->useOn($target);
 
 		if($player === null or $player->isSurvival()){
 			foreach($drops as $drop){
@@ -2161,13 +2168,13 @@ class Level implements ChunkManager, Metadatable{
 	 * @param int $id 0-255
 	 */
 	public function setBlockIdAt(int $x, int $y, int $z, int $id){
-		unset($this->blockCache[Level::blockHash($x, $y, $z)]);
+		unset($this->blockCache[$chunkHash = Level::chunkHash($x >> 4, $z >> 4)][$blockHash = Level::blockHash($x, $y, $z)]);
 		$this->getChunk($x >> 4, $z >> 4, true)->setBlockId($x & 0x0f, $y, $z & 0x0f, $id & 0xff);
 
-		if(!isset($this->changedBlocks[$index = Level::chunkHash($x >> 4, $z >> 4)])){
-			$this->changedBlocks[$index] = [];
+		if(!isset($this->changedBlocks[$chunkHash])){
+			$this->changedBlocks[$chunkHash] = [];
 		}
-		$this->changedBlocks[$index][Level::blockHash($x, $y, $z)] = $v = new Vector3($x, $y, $z);
+		$this->changedBlocks[$chunkHash][$blockHash] = $v = new Vector3($x, $y, $z);
 		foreach($this->getChunkLoaders($x >> 4, $z >> 4) as $loader){
 			$loader->onBlockChanged($v);
 		}
@@ -2223,13 +2230,14 @@ class Level implements ChunkManager, Metadatable{
 	 * @param int $data 0-15
 	 */
 	public function setBlockDataAt(int $x, int $y, int $z, int $data){
-		unset($this->blockCache[Level::blockHash($x, $y, $z)]);
+		unset($this->blockCache[$chunkHash = Level::chunkHash($x >> 4, $z >> 4)][$blockHash = Level::blockHash($x, $y, $z)]);
+
 		$this->getChunk($x >> 4, $z >> 4, true)->setBlockData($x & 0x0f, $y, $z & 0x0f, $data & 0x0f);
 
-		if(!isset($this->changedBlocks[$index = Level::chunkHash($x >> 4, $z >> 4)])){
-			$this->changedBlocks[$index] = [];
+		if(!isset($this->changedBlocks[$chunkHash])){
+			$this->changedBlocks[$chunkHash] = [];
 		}
-		$this->changedBlocks[$index][Level::blockHash($x, $y, $z)] = $v = new Vector3($x, $y, $z);
+		$this->changedBlocks[$chunkHash][$blockHash] = $v = new Vector3($x, $y, $z);
 		foreach($this->getChunkLoaders($x >> 4, $z >> 4) as $loader){
 			$loader->onBlockChanged($v);
 		}
@@ -2411,13 +2419,10 @@ class Level implements ChunkManager, Metadatable{
 		if($chunk === null){
 			return;
 		}
-		$index = Level::chunkHash($chunkX, $chunkZ);
+		$chunkHash = Level::chunkHash($chunkX, $chunkZ);
 		$oldChunk = $this->getChunk($chunkX, $chunkZ, false);
 		if($unload and $oldChunk !== null){
 			$this->unloadChunk($chunkX, $chunkZ, false, false);
-
-			$this->provider->setChunk($chunkX, $chunkZ, $chunk);
-			$this->chunks[$index] = $chunk;
 		}else{
 			$oldEntities = $oldChunk !== null ? $oldChunk->getEntities() : [];
 			$oldTiles = $oldChunk !== null ? $oldChunk->getTiles() : [];
@@ -2433,12 +2438,13 @@ class Level implements ChunkManager, Metadatable{
 				$oldChunk->removeTile($tile);
 				$tile->chunk = $chunk;
 			}
-
-			$this->provider->setChunk($chunkX, $chunkZ, $chunk);
-			$this->chunks[$index] = $chunk;
 		}
 
-		unset($this->chunkCache[$index]);
+		$this->provider->setChunk($chunkX, $chunkZ, $chunk);
+		$this->chunks[$chunkHash] = $chunk;
+
+		unset($this->blockCache[$chunkHash]);
+		unset($this->chunkCache[$chunkHash]);
 		$chunk->setChanged();
 
 		if(!$this->isChunkInUse($chunkX, $chunkZ)){
@@ -2680,7 +2686,7 @@ class Level implements ChunkManager, Metadatable{
 	 * @throws \InvalidStateException
 	 */
 	public function loadChunk(int $x, int $z, bool $generate = true) : bool{
-		if(isset($this->chunks[$index = Level::chunkHash($x, $z)])){
+		if(isset($this->chunks[$chunkHash = Level::chunkHash($x, $z)])){
 			return true;
 		}
 
@@ -2696,7 +2702,9 @@ class Level implements ChunkManager, Metadatable{
 			return false;
 		}
 
-		$this->chunks[$index] = $chunk;
+		$this->chunks[$chunkHash] = $chunk;
+		unset($this->blockCache[$chunkHash]);
+
 		$chunk->initChunk($this);
 
 		$this->server->getPluginManager()->callEvent(new ChunkLoadEvent($this, $chunk, !$chunk->isGenerated()));
@@ -2748,9 +2756,9 @@ class Level implements ChunkManager, Metadatable{
 
 		$this->timings->doChunkUnload->startTiming();
 
-		$index = Level::chunkHash($x, $z);
+		$chunkHash = Level::chunkHash($x, $z);
 
-		$chunk = $this->chunks[$index] ?? null;
+		$chunk = $this->chunks[$chunkHash] ?? null;
 
 		if($chunk !== null){
 			$this->server->getPluginManager()->callEvent($ev = new ChunkUnloadEvent($this, $chunk));
@@ -2780,9 +2788,10 @@ class Level implements ChunkManager, Metadatable{
 			$logger->logException($e);
 		}
 
-		unset($this->chunks[$index]);
-		unset($this->chunkTickList[$index]);
-		unset($this->chunkCache[$index]);
+		unset($this->chunks[$chunkHash]);
+		unset($this->chunkTickList[$chunkHash]);
+		unset($this->chunkCache[$chunkHash]);
+		unset($this->blockCache[$chunkHash]);
 
 		$this->timings->doChunkUnload->stopTiming();
 

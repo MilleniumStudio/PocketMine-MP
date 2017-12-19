@@ -127,11 +127,17 @@ class Enchantment{
 		return null;
 	}
 
+	/** @var int */
 	private $id;
+	/** @var int */
 	private $level = 1;
+	/** @var string */
 	private $name;
+	/** @var int */
 	private $rarity;
+	/** @var int */
 	private $activationType;
+	/** @var int */
 	private $slot;
 
 	/**
@@ -203,7 +209,7 @@ class Enchantment{
 	 * Returns the level of the enchantment.
 	 * @return int
 	 */
-	public function getLevel(): int{
+	public function getLevel() : int{
 		return $this->level;
 	}
 
