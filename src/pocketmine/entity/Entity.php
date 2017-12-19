@@ -1412,17 +1412,17 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 			return false;
 		}
 
-		if(!$this->isAlive()){
-			$this->deadTicks += $tickDiff;
-			if ($this->deadTicks >= $this->maxDeadTicks) {
-				$this->despawnFromAll();
-					$this->flagForDespawn(); // is this useless ? it needs more investigations
-				$this->flagForDespawn();
+		if(!$this->isAlive()){ // not necessary instance of Living
+			echo "suppose to be dead\n";
+			if ($this instanceof Living)
+			{
+				if ($this->deadTicks >= $this->maxDeadTicks)
+					$this->flagForDespawn();
 			}
-
+			else
+				$this->flagForDespawn();
 			return true;
 		}
-
 
 		$this->timings->startTiming();
 

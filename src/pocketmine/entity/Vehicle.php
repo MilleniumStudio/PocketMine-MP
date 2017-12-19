@@ -261,18 +261,12 @@ abstract class Vehicle extends Interactable implements Rideable{
 //        return true;
 //    }
 
-    protected function performHurtAnimation(int $damage) {
-        if ($damage >= $this->getHealth()) {
-            return false;
-        }
-
+    protected function performHurtAnimation() {
         // Vehicle does not respond hurt animation on packets
         // It only respond on vehicle data flags. Such as these
         $this->setRollingAmplitude(10);
         $this->setRollingDirection($this->rollingDirection ? 1 : -1);
         $this->rollingDirection = !$this->rollingDirection;
-        $this->setDamage($this->getDamage() + $damage);
-//        $this->server->getLogger()->debug("Entity " . $this->getId() . " damage " . $this->getDamage() . "/" . $this->getHealth());
         return true;
     }
 }
