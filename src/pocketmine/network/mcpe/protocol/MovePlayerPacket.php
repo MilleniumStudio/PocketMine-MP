@@ -78,7 +78,7 @@ class MovePlayerPacket extends DataPacket{
 		$this->putVector3Obj($this->position);
 		$this->putLFloat($this->pitch);
 		$this->putLFloat($this->yaw);
-		$this->putLFloat($this->headYaw); //TODO
+		$this->putLFloat($this->headYaw??$this->yaw); //TODO
 		$this->putByte($this->mode);
 		$this->putBool($this->onGround);
 		$this->putEntityRuntimeId($this->ridingEid);

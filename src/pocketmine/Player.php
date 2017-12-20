@@ -3754,6 +3754,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function sendPosition(Vector3 $pos, float $yaw = null, float $headYaw = null, float $pitch = null, int $mode = MovePlayerPacket::MODE_NORMAL, array $targets = null){
 		$yaw = $yaw ?? $this->yaw;
 		$pitch = $pitch ?? $this->pitch;
+		if ($headYaw == null)
 
 		$pk = new MovePlayerPacket();
 		$pk->entityRuntimeId = $this->getId();
@@ -3781,7 +3782,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->removeAllWindows();
 
 			$this->sendPosition($this, $this->yaw, $this->pitch, MovePlayerPacket::MODE_TELEPORT);
-			$this->sendPosition($this, $this->yaw, $this->pitch, MovePlayerPacket::MODE_TELEPORT, $this->getViewers());
+			$this->sendPosition($this, $this->yaw, $this->headYaw, $this->pitch, MovePlayerPacket::MODE_TELEPORT, $this->getViewers());
 
 			$this->spawnToAll();
 

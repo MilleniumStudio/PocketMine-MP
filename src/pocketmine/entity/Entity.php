@@ -1415,7 +1415,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		}
 
 		if(!$this->isAlive()){ // not necessary instance of Living
-			echo "suppose to be dead\n";
 			if ($this instanceof Living)
 			{
 				if ($this->deadTicks >= $this->maxDeadTicks)
