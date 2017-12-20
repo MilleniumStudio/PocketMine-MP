@@ -28,6 +28,7 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
+use pocketmine\entity\Boat;
 use pocketmine\entity\Effect;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
@@ -1637,8 +1638,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->lastPitch = $from->pitch;
 
 			$this->setPosition($from);
-//			$this->sendPosition($from, $from->yaw, $from->headYaw, $from->pitch, MovePlayerPacket::MODE_RESET);
-			$this->sendPosition($from, $from->yaw, $from->pitch, MovePlayerPacket::MODE_RESET);
+			$this->sendPosition($from, $from->yaw, $this->headYaw, $from->pitch, MovePlayerPacket::MODE_RESET);
+			//$this->sendPosition($from, $from->yaw, $from->pitch, MovePlayerPacket::MODE_RESET);
 		}else{
 			if($distanceSquared != 0 and $this->nextChunkOrderRun > 20){
 				$this->nextChunkOrderRun = 20;
@@ -2213,7 +2214,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			if($this->isTeleporting){
 				$this->isTeleporting = false;
 			}
-
+			if ($this->vehicle != null)
+				return true;
 			$packet->yaw %= 360;
 			$packet->pitch %= 360;
 
@@ -2222,9 +2224,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			}
 
 			$this->setRotation($packet->yaw, $packet->pitch);
+			$this->headYaw = $packet->headYaw;
 			$this->newPosition = $newPos;
+			//var_dump($packet);
 		}
-
 		return true;
 	}
 
@@ -2646,11 +2649,11 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
         public function handleMoveEntity(MoveEntityPacket $packet): bool
 		{
 			//TODO MoveEntity
-//            var_dump($packet);
 			if ($this->vehicle !== null) {
                 $this->vehicle->x = $packet->position->x;
 				$this->vehicle->y = $packet->position->y;
 				$this->vehicle->z = $packet->position->z;
+				$this->headYaw = $packet->headYaw;
 				if ($this->vehicle instanceof Vehicle) {
 					if ($packet->position->x !== 0 && $packet->position->z !== 0) {
 						$this->vehicle->doRidingMovement($packet->position->x, $packet->position->y , $packet->position->z, $packet->yaw, $packet->pitch);
@@ -2662,14 +2665,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
         public function handleSetEntityMotion(SetEntityMotionPacket $packet) : bool
         {
+            //echo "reveived motion packet\n";
             //TODO SetEntityMotion
-//            var_dump($packet);
+            //var_dump($packet);
             if ($this->vehicle !== null)
             {
-//                $this->vehicle->setMotion($packet->motion);
+                //$this->vehicle->setMotion($packet->motion);
                 $this->vehicle->motionX = $packet->motion->x;
-		$this->vehicle->motionY = $packet->motion->y;
-		$this->vehicle->motionZ = $packet->motion->z;
+				$this->vehicle->motionY = $packet->motion->y;
+				$this->vehicle->motionZ = $packet->motion->z;
             }
             return true;
 	}
@@ -3747,9 +3751,8 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $result;
 	}
 
-	public function sendPosition(Vector3 $pos, float $yaw = null, float $pitch = null, int $mode = MovePlayerPacket::MODE_NORMAL, array $targets = null){
+	public function sendPosition(Vector3 $pos, float $yaw = null, float $headYaw = null, float $pitch = null, int $mode = MovePlayerPacket::MODE_NORMAL, array $targets = null){
 		$yaw = $yaw ?? $this->yaw;
-		$headYaw = $headYaw ?? $this->headYaw ?? $yaw;
 		$pitch = $pitch ?? $this->pitch;
 
 		$pk = new MovePlayerPacket();

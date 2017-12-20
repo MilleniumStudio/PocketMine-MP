@@ -1178,6 +1178,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 			$this->lastYaw = $this->yaw;
 			$this->lastPitch = $this->pitch;
 
+			if ($this instanceof Boat &&  $this->passenger != null) {
+				$this->passenger->yaw = 0;
+				$this->passenger->headYaw = 0;
+			}
+			if ($this instanceof Player) {
+				echo "is player update movement";
+			}
 			$this->broadcastMovement();
 		}
 
@@ -1202,11 +1209,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$pk->position = $this->getOffsetPosition($this);
 		$pk->yaw = $this->yaw;
 		$pk->pitch = $this->pitch;
-		if($this instanceof Living && $this->headYaw != null) {
-			$pk->headYaw = $this->headYaw;
-		}
-		else
-			$pk->headYaw = $this->yaw; //TODO
 
 		$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
 	}
@@ -1412,19 +1414,17 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 			return false;
 		}
 
-		if( !($this instanceof Boat) && !$this->isAlive()){
-			echo "health : " . $this->health . "\n";
-			echo "nametag : " . $this->getNameTag() . "\n";
-			$this->deadTicks += $tickDiff;
-			if ($this->deadTicks >= $this->maxDeadTicks) {
-				$this->despawnFromAll();
-					$this->flagForDespawn(); // is this useless ? it needs more investigations
-				$this->flagForDespawn();
+		if(!$this->isAlive()){ // not necessary instance of Living
+			echo "suppose to be dead\n";
+			if ($this instanceof Living)
+			{
+				if ($this->deadTicks >= $this->maxDeadTicks)
+					$this->flagForDespawn();
 			}
-
+			else
+				$this->flagForDespawn();
 			return true;
 		}
-
 
 		$this->timings->startTiming();
 
@@ -1707,8 +1707,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		if($dx == 0 and $dz == 0 and $dy == 0){
 			return true;
 		}
-/*<<<<<<< HEAD
-=======*/
 
 		Timings::$entityMoveTimer->startTiming();
 
@@ -1716,14 +1714,9 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$movY = $dy;
 		$movZ = $dz;
 
-//>>>>>>> public/master
 		if($this->keepMovement){
 			$this->boundingBox->offset($dx, $dy, $dz);
 		}else{
-/*<<<<<<< HEAD
-			Timings::$entityMoveTimer->startTiming();
-=======
->>>>>>> public/master*/
 			$this->ySize *= 0.4;
 			/*
 			if($this->isColliding){ //With cobweb?
@@ -1736,13 +1729,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 				$this->motionZ = 0;
 			}
 			*/
-/*<<<<<<< HEAD
-			$movX = $dx;
-			$movY = $dy;
-			$movZ = $dz;
-=======
 
->>>>>>> public/master*/
 			$axisalignedbb = clone $this->boundingBox;
 			/*$sneakFlag = $this->onGround and $this instanceof Player;
 			if($sneakFlag){

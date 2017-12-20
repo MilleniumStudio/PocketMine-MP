@@ -81,20 +81,24 @@ class Boat extends Vehicle
 
 	public function attack(EntityDamageEvent $source)
 	{
-		$this->performHurtAnimation((int)floor($source->getFinalDamage()));
+		$damage = (int)floor($source->getFinalDamage());
+
+		$this->performHurtAnimation();
+		$this->setDamage($this->getDamage() + $damage);
+		$this->setHealth($this->getHealth() - $damage);
+		echo "Entity " . $this->getId() . " damage " . $this->getDamage() . "/" . $this->getMaxHealth() . "\n";
+
 		$instantKill = false;
 		if ($source instanceof EntityDamageByEntityEvent && $source->getCause() == EntityDamageEvent::CAUSE_ENTITY_ATTACK) {
 			$instantKill = $source->getDamager() instanceof Player && $source->getDamager()->isCreative();
 		}
-		if ($instantKill || $this->getDamage() > 40) {
-			if ($instantKill) {
+		if ($instantKill)
 				$this->kill();
-			} else {
-				foreach ($this->getDrops() as $l_Item) {
-					$this->level->dropItem($this, $l_Item);
-				}
-				$this->close();
+		if ($this->getDamage() >= $this->getMaxHealth()){
+			foreach ($this->getDrops() as $l_Item) {
+				$this->level->dropItem($this, $l_Item);
 			}
+			$this->close();
 		}
 		return true;
 	}
