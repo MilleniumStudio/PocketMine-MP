@@ -1178,6 +1178,13 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 			$this->lastYaw = $this->yaw;
 			$this->lastPitch = $this->pitch;
 
+			if ($this instanceof Boat &&  $this->passenger != null) {
+				$this->passenger->yaw = 0;
+				$this->passenger->headYaw = 0;
+			}
+			if ($this instanceof Player) {
+				echo "is player update movement";
+			}
 			$this->broadcastMovement();
 		}
 
@@ -1202,11 +1209,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$pk->position = $this->getOffsetPosition($this);
 		$pk->yaw = $this->yaw;
 		$pk->pitch = $this->pitch;
-		if($this instanceof Living && $this->headYaw != null) {
-			$pk->headYaw = $this->headYaw;
-		}
-		else
-			$pk->headYaw = $this->yaw; //TODO
 
 		$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
 	}

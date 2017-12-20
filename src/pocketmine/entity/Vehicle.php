@@ -104,8 +104,8 @@ abstract class Vehicle extends Interactable implements Rideable{
         $p_Rider->setDataProperty(self::DATA_RIDER_SEAT_POSITION, self::DATA_TYPE_VECTOR3F, $this->seatOffset);
         $p_Rider->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_RIDING, true);
         $p_Rider->setDataProperty(self::DATA_RIDER_ROTATION_LOCKED, self::DATA_TYPE_BYTE, 1);
-        $p_Rider->setDataProperty(self::DATA_RIDER_MIN_ROTATION, self::DATA_TYPE_FLOAT, -90);
-        $p_Rider->setDataProperty(self::DATA_RIDER_MAX_ROTATION, self::DATA_TYPE_FLOAT, 90);
+        $p_Rider->setDataProperty(self::DATA_RIDER_MIN_ROTATION, self::DATA_TYPE_FLOAT, -180);
+        $p_Rider->setDataProperty(self::DATA_RIDER_MAX_ROTATION, self::DATA_TYPE_FLOAT, 0);
 //        $this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_SADDLED, true);
 
         $pk = new SetEntityLinkPacket();
@@ -180,7 +180,7 @@ abstract class Vehicle extends Interactable implements Rideable{
 
     public function doRidingMovement(float $motionX, float $motionY, float $motionZ, float $yaw, float $pitch): bool
     {
-//    	echo "Vehicle::doRidingMovement()\n";
+        //echo "Vehicle::doRidingMovement()\n";
         $this->yaw = $yaw;
         $this->pitch = $pitch;
 
