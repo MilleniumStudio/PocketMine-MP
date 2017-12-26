@@ -3754,13 +3754,15 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function sendPosition(Vector3 $pos, float $yaw = null, float $headYaw = null, float $pitch = null, int $mode = MovePlayerPacket::MODE_NORMAL, array $targets = null){
 		$yaw = $yaw ?? $this->yaw;
 		$pitch = $pitch ?? $this->pitch;
-		if ($headYaw == null)
 
 		$pk = new MovePlayerPacket();
 		$pk->entityRuntimeId = $this->getId();
 		$pk->position = $this->getOffsetPosition($pos);
 		$pk->pitch = $pitch;
-		$pk->headYaw = $headYaw;
+		if ($headYaw != null)
+			$pk->headYaw = $headYaw;
+		else
+			$pk->headYaw = $yaw;
 		$pk->yaw = $yaw;
 		$pk->mode = $mode;
 
