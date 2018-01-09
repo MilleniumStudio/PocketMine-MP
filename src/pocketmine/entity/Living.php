@@ -32,6 +32,7 @@ use pocketmine\event\entity\EntityEffectAddEvent;
 use pocketmine\event\entity\EntityEffectRemoveEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\event\Timings;
+use pocketmine\item\Consumable;
 use pocketmine\item\Item as ItemItem;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
@@ -323,6 +324,23 @@ abstract class Living extends Entity implements Damageable{
 		}
 	}
 
+	/**
+	 * Causes the mob to consume the given Consumable object, applying applicable effects, health bonuses, food bonuses,
+	 * etc.
+	 *
+	 * @param Consumable $consumable
+	 *
+	 * @return bool
+	 */
+	public function consumeObject(Consumable $consumable) : bool{
+		foreach($consumable->getAdditionalEffects() as $effect){
+			$this->addEffect($effect);
+		}
+
+		$consumable->onConsume($this);
+
+		return true;
+	}
 
 	/**
 	 * Returns the initial upwards velocity of a jumping entity in blocks/tick, including additional velocity due to effects.
@@ -493,7 +511,9 @@ abstract class Living extends Entity implements Damageable{
 			$this->deadTicks += $tickDiff;
 			if($this->deadTicks >= $this->maxDeadTicks){
 				$this->endDeathAnimation();
-				//TODO: spawn experience orbs here
+
+				//TODO: check death conditions (must have been damaged by player < 5 seconds from death)
+				$this->level->dropExperience($this, $this->getXpDropAmount());
 			}
 		}
 
@@ -545,12 +565,9 @@ abstract class Living extends Entity implements Damageable{
 			if($effect->canTick()){
 				$effect->applyEffect($this);
 			}
-
-			$duration = $effect->getDuration() - $tickDiff;
-			if($duration <= 0){
+			$effect->setDuration(max(0, $effect->getDuration() - $tickDiff));
+			if($effect->getDuration() <= 0){
 				$this->removeEffect($effect->getId());
-			}else{
-				$effect->setDuration($duration);
 			}
 		}
 	}
@@ -644,6 +661,14 @@ abstract class Living extends Entity implements Damageable{
 	 */
 	public function getDrops() : array{
 		return [];
+	}
+
+	/**
+	 * Returns the amount of XP this mob will drop on death.
+	 * @return int
+	 */
+	public function getXpDropAmount() : int{
+		return 0;
 	}
 
 	/**

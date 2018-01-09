@@ -39,10 +39,10 @@ class Effect{
 	public const STRENGTH = 5;
 	public const INSTANT_HEALTH = 6, HEALING = 6;
 	public const INSTANT_DAMAGE = 7, HARMING = 7;
-	public const JUMP = 8;
+	public const JUMP_BOOST = 8, JUMP = 8;
 	public const NAUSEA = 9, CONFUSION = 9;
 	public const REGENERATION = 10;
-	public const DAMAGE_RESISTANCE = 11;
+	public const RESISTANCE = 11, DAMAGE_RESISTANCE = 11;
 	public const FIRE_RESISTANCE = 12;
 	public const WATER_BREATHING = 13;
 	public const INVISIBILITY = 14;
@@ -314,15 +314,10 @@ class Effect{
 				}
 				return true;
 			case Effect::HUNGER:
-				if($this->amplifier < 0){ // prevents hacking with amplifier -1
-					return false;
-				}
-				if(($interval = 20) > 0){
-					return ($this->duration % $interval) === 0;
-				}
 				return true;
 			case Effect::INSTANT_DAMAGE:
 			case Effect::INSTANT_HEALTH:
+			case Effect::SATURATION:
 				//If forced to last longer than 1 tick, these apply every tick.
 				return true;
 		}
@@ -360,20 +355,24 @@ class Effect{
 
 			case Effect::HUNGER:
 				if($entity instanceof Human){
-					$entity->exhaust(0.5 * $this->getEffectLevel(), PlayerExhaustEvent::CAUSE_POTION);
+					$entity->exhaust(0.025 * $this->getEffectLevel(), PlayerExhaustEvent::CAUSE_POTION);
 				}
 				break;
 			case Effect::INSTANT_HEALTH:
 				//TODO: add particles (witch spell)
 				if($entity->getHealth() < $entity->getMaxHealth()){
-					$amount = 2 * (2 ** ($this->getEffectLevel() % 32));
-					$entity->heal(new EntityRegainHealthEvent($entity, $amount, EntityRegainHealthEvent::CAUSE_MAGIC));
+					$entity->heal(new EntityRegainHealthEvent($entity, 4 << $this->amplifier, EntityRegainHealthEvent::CAUSE_MAGIC));
 				}
 				break;
 			case Effect::INSTANT_DAMAGE:
 				//TODO: add particles (witch spell)
-				$amount = 2 * (2 ** ($this->getEffectLevel() % 32));
-				$entity->attack(new EntityDamageEvent($entity, EntityDamageEvent::CAUSE_MAGIC, $amount));
+				$entity->attack(new EntityDamageEvent($entity, EntityDamageEvent::CAUSE_MAGIC, 4 << $this->amplifier));
+				break;
+			case Effect::SATURATION:
+				if($entity instanceof Human){
+					$entity->addFood($this->getEffectLevel());
+					$entity->addSaturation($this->getEffectLevel() * 2);
+				}
 				break;
 		}
 	}

@@ -31,8 +31,10 @@ use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockToolType;
 use pocketmine\entity\Entity;
 use pocketmine\item\enchantment\Enchantment;
+use pocketmine\item\enchantment\EnchantmentInstance;
 use pocketmine\level\Level;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\LittleEndianNBTStream;
 use pocketmine\nbt\NBT;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
@@ -54,7 +56,7 @@ class Item implements ItemIds, \JsonSerializable{
 	public const TAG_DISPLAY_LORE = "Lore";
 
 
-	/** @var NBT */
+	/** @var LittleEndianNBTStream */
 	private static $cachedParser = null;
 
 	private static function parseCompoundTag(string $tag) : CompoundTag{
@@ -63,7 +65,7 @@ class Item implements ItemIds, \JsonSerializable{
 		}
 
 		if(self::$cachedParser === null){
-			self::$cachedParser = new NBT(NBT::LITTLE_ENDIAN);
+			self::$cachedParser = new LittleEndianNBTStream();
 		}
 
 		self::$cachedParser->read($tag);
@@ -78,7 +80,7 @@ class Item implements ItemIds, \JsonSerializable{
 
 	private static function writeCompoundTag(CompoundTag $tag) : string{
 		if(self::$cachedParser === null){
-			self::$cachedParser = new NBT(NBT::LITTLE_ENDIAN);
+			self::$cachedParser = new LittleEndianNBTStream();
 		}
 
 		self::$cachedParser->setData($tag);
@@ -310,9 +312,9 @@ class Item implements ItemIds, \JsonSerializable{
 	/**
 	 * @param int $id
 	 *
-	 * @return Enchantment|null
+	 * @return EnchantmentInstance|null
 	 */
-	public function getEnchantment(int $id) : ?Enchantment{
+	public function getEnchantment(int $id) : ?EnchantmentInstance{
 		$ench = $this->getNamedTagEntry(self::TAG_ENCH);
 		if(!($ench instanceof ListTag)){
 			return null;
@@ -323,8 +325,7 @@ class Item implements ItemIds, \JsonSerializable{
 			if($entry->getShort("id") === $id){
 				$e = Enchantment::getEnchantment($entry->getShort("id"));
 				if($e !== null){
-					$e->setLevel($entry->getShort("lvl"));
-					return $e;
+					return new EnchantmentInstance($e, $entry->getShort("lvl"));
 				}
 			}
 		}
@@ -358,9 +359,9 @@ class Item implements ItemIds, \JsonSerializable{
 	}
 
 	/**
-	 * @param Enchantment $enchantment
+	 * @param EnchantmentInstance $enchantment
 	 */
-	public function addEnchantment(Enchantment $enchantment) : void{
+	public function addEnchantment(EnchantmentInstance $enchantment) : void{
 		$found = false;
 
 		$ench = $this->getNamedTagEntry(self::TAG_ENCH);
@@ -391,10 +392,10 @@ class Item implements ItemIds, \JsonSerializable{
 	}
 
 	/**
-	 * @return Enchantment[]
+	 * @return EnchantmentInstance[]
 	 */
 	public function getEnchantments() : array{
-		/** @var Enchantment[] $enchantments */
+		/** @var EnchantmentInstance[] $enchantments */
 		$enchantments = [];
 
 		$ench = $this->getNamedTagEntry(self::TAG_ENCH);
@@ -403,8 +404,7 @@ class Item implements ItemIds, \JsonSerializable{
 			foreach($ench as $entry){
 				$e = Enchantment::getEnchantment($entry->getShort("id"));
 				if($e !== null){
-					$e->setLevel($entry->getShort("lvl"));
-					$enchantments[] = $e;
+					$enchantments[] = new EnchantmentInstance($e, $entry->getShort("lvl"));
 				}
 			}
 		}
@@ -620,32 +620,6 @@ class Item implements ItemIds, \JsonSerializable{
 	 */
 	final public function canBePlaced() : bool{
 		return $this->block !== null and $this->block->canBePlaced();
-	}
-
-	/**
-	 * Returns whether an entity can eat or drink this item.
-	 * @return bool
-	 */
-	public function canBeConsumed() : bool{
-		return false;
-	}
-
-	/**
-	 * Returns whether this item can be consumed by the supplied Entity.
-	 * @param Entity $entity
-	 *
-	 * @return bool
-	 */
-	public function canBeConsumedBy(Entity $entity) : bool{
-		return $this->canBeConsumed();
-	}
-
-	/**
-	 * Called when the item is consumed by an Entity.
-	 * @param Entity $entity
-	 */
-	public function onConsume(Entity $entity){
-
 	}
 
 	/**

@@ -31,6 +31,7 @@ use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockIds;
 use pocketmine\block\Water;
+use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\Snowball;
@@ -236,6 +237,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 		Entity::registerEntity(Arrow::class, false, ['Arrow', 'minecraft:arrow']);
 		Entity::registerEntity(Egg::class, false, ['Egg', 'minecraft:egg']);
+		Entity::registerEntity(ExperienceOrb::class, false, ['XPOrb', 'minecraft:xp_orb']);
 		Entity::registerEntity(FallingSand::class, false, ['FallingSand', 'minecraft:falling_block']);
 		Entity::registerEntity(Item::class, false, ['Item', 'minecraft:item']);
 		Entity::registerEntity(PrimedTNT::class, false, ['PrimedTnt', 'PrimedTNT', 'minecraft:tnt']);
@@ -365,7 +367,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 	public $passenger = null;//linkedEntity
 	public $vehicle = null;//riding
 
-	/** @var Chunk */
+	/** @var Chunk|null */
 	public $chunk;
 
 	/** @var EntityDamageEvent|null */
@@ -526,19 +528,15 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$pos = $this->namedtag->getListTag("Pos")->getAllValues();
 
 		$this->chunk = $level->getChunk(((int) $pos[0]) >> 4, ((int) $pos[2]) >> 4, true);
-		assert($this->chunk !== null);
+		if($this->chunk === null){
+			throw new \InvalidStateException("Cannot create entities in unloaded chunks");
+		}
+
 		$this->setLevel($level);
 		$this->server = $level->getServer();
 
 		$this->boundingBox = new AxisAlignedBB(0, 0, 0, 0, 0, 0);
 
-//<<<<<<< HEAD
-		if (isset($this->namedtag->Motion)) {
-			$this->setMotion($this->temporalVector->setComponents($this->namedtag["Motion"][0], $this->namedtag["Motion"][1], $this->namedtag["Motion"][2]));
-		} else {
-			$this->setMotion($this->temporalVector->setComponents(0, 0, 0));
-		}
-//=======
 		/** @var float[] $rotation */
 		$rotation = $this->namedtag->getListTag("Rotation")->getAllValues();
 
@@ -548,7 +546,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$motion = [0, 0, 0];
 		if($this->namedtag->hasTag("Motion", ListTag::class)){
 			$motion = $this->namedtag->getListTag("Motion")->getAllValues();
-//>>>>>>> public/master
 		}
 
 		$this->setMotion($this->temporalVector->setComponents(...$motion));
@@ -871,8 +868,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 	 *
 	 * @return string
 	 */
-	public function getSaveId()
-	{
+
+	public function getSaveId(){
+		if(!isset(self::$saveNames[static::class])){
+			throw new \InvalidStateException("Entity is not registered");
+		}
 		reset(self::$saveNames[static::class]);
 		return current(self::$saveNames[static::class]);
 	}
@@ -1202,24 +1202,27 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		return new Vector3($vector3->x, $vector3->y + $this->baseOffset, $vector3->z);
 	}
 
-	protected function broadcastMovement()
-	{
-		$pk = new MoveEntityPacket();
-		$pk->entityRuntimeId = $this->id;
-		$pk->position = $this->getOffsetPosition($this);
-		$pk->yaw = $this->yaw;
-		$pk->pitch = $this->pitch;
+	protected function broadcastMovement(){
+		if($this->chunk !== null){
+			$pk = new MoveEntityPacket();
+			$pk->entityRuntimeId = $this->id;
+			$pk->position = $this->getOffsetPosition($this);
+			$pk->yaw = $this->yaw;
+			$pk->pitch = $this->pitch;
+			$pk->headYaw = $this->yaw; //TODO
 
-		$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
+			$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
+		}
 	}
 
-	protected function broadcastMotion()
-	{
-		$pk = new SetEntityMotionPacket();
-		$pk->entityRuntimeId = $this->id;
-		$pk->motion = $this->getMotion();
+	protected function broadcastMotion(){
+		if($this->chunk !== null){
+			$pk = new SetEntityMotionPacket();
+			$pk->entityRuntimeId = $this->id;
+			$pk->motion = $this->getMotion();
 
-		$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
+			$this->level->addChunkPacket($this->chunk->getX(), $this->chunk->getZ(), $pk);
+		}
 	}
 
 	protected function applyDragBeforeGravity(): bool
@@ -2105,6 +2108,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		$pk->motion = $this->getMotion();
 		$pk->yaw = $this->yaw;
 		$pk->pitch = $this->pitch;
+		$pk->attributes = $this->attributeMap->getAll();
 		$pk->metadata = $this->dataProperties;
 
 		$player->dataPacket($pk);
@@ -2113,9 +2117,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 	/**
 	 * @param Player $player
 	 */
-	public function spawnTo(Player $player)
-	{
-		if (!isset($this->hasSpawned[$player->getLoaderId()]) and isset($player->usedChunks[Level::chunkHash($this->chunk->getX(), $this->chunk->getZ())])) {
+	public function spawnTo(Player $player){
+		if(!isset($this->hasSpawned[$player->getLoaderId()]) and $this->chunk !== null and isset($player->usedChunks[Level::chunkHash($this->chunk->getX(), $this->chunk->getZ())])){
 			$this->hasSpawned[$player->getLoaderId()] = $player;
 
 			$this->sendSpawnPacket($player);
