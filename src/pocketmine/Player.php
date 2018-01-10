@@ -1536,6 +1536,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				if($chunk === null or !$chunk->isGenerated()){
 					$revert = true;
 					$this->nextChunkOrderRun = 0;
+					echo ("1\n");
 				}else{
 					if($this->chunk !== null){
 						$this->chunk->removeEntity($this);
@@ -1690,7 +1691,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		if(!$this->loggedIn){
 			return false;
 		}
-
 		$tickDiff = $currentTick - $this->lastUpdate;
 
 		if($tickDiff <= 0){
@@ -2211,6 +2211,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				$this->isTeleporting = false;
 			}
 
+			$this->newPosition = $newPos;
 			if ($this->vehicle != null)
 				return true;
 
@@ -2223,7 +2224,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 			$this->setRotation($packet->yaw, $packet->pitch);
 			$this->headYaw = $packet->headYaw;
-			$this->newPosition = $newPos;
 		}
 		return true;
 	}
@@ -2767,6 +2767,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 				}else{
 					$this->setPosition($realSpawn); //The client will move to the position of its own accord once chunks are sent
 					$this->nextChunkOrderRun = 0;
+					echo ("3\n");
 					$this->isTeleporting = true;
 					$this->newPosition = null;
 				}
@@ -3777,6 +3778,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 
 			$this->resetFallDistance();
 			$this->nextChunkOrderRun = 0;
+			echo ("4\n");
 			$this->newPosition = null;
 			$this->stopSleep();
 
@@ -3974,6 +3976,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 			$this->usedChunks[$hash] = false;
 			if(!$this->spawned){
 				$this->nextChunkOrderRun = 0;
+				echo ("5\n");
 			}
 		}
 	}
