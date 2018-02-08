@@ -95,7 +95,7 @@ class StartGamePacket extends DataPacket{
 	/** @var int */
 	public $defaultPlayerPermission = PlayerPermissions::MEMBER; //TODO
 	/** @var int */
-	public $xboxLiveBroadcastMode = 0; //TODO: find values
+	public $xboxLiveBroadcastMode = 4; //TODO: find values
 
 	/** @var string */
 	public $levelId = ""; //base64 string, usually the same as world folder name in vanilla
@@ -143,6 +143,7 @@ class StartGamePacket extends DataPacket{
 		$this->hasTrustPlayersEnabled = $this->getBool();
 		$this->defaultPlayerPermission = $this->getVarInt();
 		$this->xboxLiveBroadcastMode = $this->getVarInt();
+		$this->serverChunkTickRadius = $this->getLInt();
 
 		$this->levelId = $this->getString();
 		$this->worldName = $this->getString();
@@ -186,6 +187,7 @@ class StartGamePacket extends DataPacket{
 		$this->putBool($this->hasTrustPlayersEnabled);
 		$this->putVarInt($this->defaultPlayerPermission);
 		$this->putVarInt($this->xboxLiveBroadcastMode);
+		$this->putLInt($this->serverChunkTickRadius);
 
 		$this->putString($this->levelId);
 		$this->putString($this->worldName);
