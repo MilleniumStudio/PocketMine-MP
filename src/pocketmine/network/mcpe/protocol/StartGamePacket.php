@@ -143,7 +143,7 @@ class StartGamePacket extends DataPacket{
 		$this->hasTrustPlayersEnabled = $this->getBool();
 		$this->defaultPlayerPermission = $this->getVarInt();
 		$this->xboxLiveBroadcastMode = $this->getVarInt();
-		$this->serverChunkTickRadius = $this->getLInt();
+		//$this->serverChunkTickRadius = $this->getLInt();
 
 		$this->levelId = $this->getString();
 		$this->worldName = $this->getString();
@@ -187,7 +187,7 @@ class StartGamePacket extends DataPacket{
 		$this->putBool($this->hasTrustPlayersEnabled);
 		$this->putVarInt($this->defaultPlayerPermission);
 		$this->putVarInt($this->xboxLiveBroadcastMode);
-		$this->putLInt($this->serverChunkTickRadius);
+		$this->putLInt(4); //hackfix
 
 		$this->putString($this->levelId);
 		$this->putString($this->worldName);
