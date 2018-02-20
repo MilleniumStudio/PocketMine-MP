@@ -126,7 +126,7 @@ class Effect{
 	/** @var Color */
 	protected $color;
 	/** @var bool */
-	protected $visible = true;
+	protected $visible = false;
 	/** @var bool */
 	protected $ambient = false;
 	/** @var bool */
@@ -134,7 +134,7 @@ class Effect{
 	/** @var int */
 	protected $defaultDuration = 300 * 20;
 	/** @var bool */
-	protected $hasBubbles = true;
+	protected $hasBubbles = false;
 
 	/**
 	 * @param int    $id Effect ID as per Minecraft PE
