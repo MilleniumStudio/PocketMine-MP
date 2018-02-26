@@ -1173,9 +1173,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	 * Sets the spawnpoint of the player (and the compass direction) to a Vector3, or set it on another world with a
 	 * Position object
 	 *
-	 * @param Vector3|Position $pos
+     * @param Vector3|Position $pos
+     * @param bool|Spawntype $spawnType
 	 */
-	public function setSpawn(Vector3 $pos){
+	public function setSpawn(Vector3 $pos, int $spawnType = SetSpawnPositionPacket::TYPE_PLAYER_SPAWN){
 		if(!($pos instanceof Position)){
 			$level = $this->level;
 		}else{
@@ -1186,7 +1187,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk->x = (int) $this->spawnPosition->x;
 		$pk->y = (int) $this->spawnPosition->y;
 		$pk->z = (int) $this->spawnPosition->z;
-		$pk->spawnType = SetSpawnPositionPacket::TYPE_PLAYER_SPAWN;
+		$pk->spawnType = $spawnType;
 		$pk->spawnForced = false;
 		$this->dataPacket($pk);
 	}

@@ -391,6 +391,12 @@ abstract class Living extends Entity implements Damageable{
 		}
 
 		$cause = $source->getCause();
+
+		if ($this->hasEffect(Effect::DAMAGE_RESISTANCE) && $cause == EntityDamageEvent::CAUSE_FALL)
+        {
+            $source->setDamage(0);
+            return;
+        }
 		if($this->hasEffect(Effect::DAMAGE_RESISTANCE) and $cause !== EntityDamageEvent::CAUSE_VOID and $cause !== EntityDamageEvent::CAUSE_SUICIDE){
 			$source->setDamage(-($source->getFinalDamage() * 0.20 * $this->getEffect(Effect::DAMAGE_RESISTANCE)->getEffectLevel()), EntityDamageEvent::MODIFIER_RESISTANCE);
 		}
