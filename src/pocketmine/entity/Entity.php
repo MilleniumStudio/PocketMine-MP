@@ -2386,7 +2386,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 	public function __toString()
 	{
-		return (new \ReflectionClass($this))->getShortName() . "(" . $this->getId() . ")";
+        Base::getInstance()->getLogger()->critical("mystery call possible getId() == null". print_r($this, true) . "\n");
+        return (new \ReflectionClass($this))->getShortName()/* . "(" . $this->getId() . ")"*/;
 	}
 
 }
