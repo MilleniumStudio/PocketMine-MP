@@ -73,6 +73,7 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\item\Item as ItemItem;
+use SalmonDE\StatsPE\Base;
 
 abstract class Entity extends Location implements Metadatable, EntityIds
 {
