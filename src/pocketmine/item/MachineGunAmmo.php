@@ -23,22 +23,22 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-use pocketmine\Player;
+use pocketmine\event\entity\ProjectileLaunchEvent;
 
-class Snowball extends ProjectileItem{
-	public function __construct(int $meta = 0){
-		parent::__construct(self::SNOWBALL, $meta, "Snowball");
-	}
+class MachineGunAmmo extends ProjectileItem{
+    public function __construct(int $meta = 0){
+        parent::__construct(self::CHORUS_FRUIT_POPPED, $meta, "Machine gun ammo");
+    }
 
-	public function getMaxStackSize() : int{
-		return 16;
-	}
+    public function getMaxStackSize() : int{
+        return 200;
+    }
 
-	public function getProjectileEntityType() : string{
-		return "MachineGunAmmo";
-	}
+    public function getProjectileEntityType() : string{
+        return "MachineGunAmmo";
+    }
 
-	public function getThrowForce() : float{
-		return 5;
-	}
+    public function getThrowForce() : float{
+        return 5;
+    }
 }

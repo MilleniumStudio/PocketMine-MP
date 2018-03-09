@@ -34,6 +34,9 @@ use pocketmine\block\Water;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
+use pocketmine\entity\projectile\MachineGunAmmo;
+use pocketmine\entity\projectile\Grenada;
+use pocketmine\entity\projectile\SniperAmmo;
 use pocketmine\entity\projectile\Snowball;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDespawnEvent;
@@ -237,7 +240,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		//TODO: index them by version to allow proper multi-save compatibility
 
 		Entity::registerEntity(Arrow::class, false, ['Arrow', 'minecraft:arrow']);
-		Entity::registerEntity(Egg::class, false, ['Egg', 'minecraft:egg']);
+		Entity::registerEntity(SniperAmmo::class, false, ['SniperAmmo', 'minecraft:arrow']);
+		Entity::registerEntity(Egg::class, false, ['Grenada1', 'Grenada2']);
+		Entity::registerEntity(MachineGunAmmo::class, false, ['MachineGunAmmo', 'minecraft:chorus_fruit_pop']);
+		Entity::registerEntity(Grenada::class, false, ['Grenada', 'Grenada']);
 		Entity::registerEntity(ExperienceOrb::class, false, ['XPOrb', 'minecraft:xp_orb']);
 		Entity::registerEntity(FallingSand::class, false, ['FallingSand', 'minecraft:falling_block']);
 		Entity::registerEntity(Item::class, false, ['Item', 'minecraft:item']);

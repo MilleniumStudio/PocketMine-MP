@@ -40,6 +40,9 @@ abstract class Tool extends Durable{
 	 * @return bool
 	 */
 	public function useOn($object){
+	    if ($this->getDamage() == 0)
+	        $this->applyDamage(1);
+
 		if($this->isUnbreakable()){
 			return true;
 		}

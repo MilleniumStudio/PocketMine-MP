@@ -168,6 +168,7 @@ class ItemFactory{
 			self::registerItem(new SpawnEgg());
 			//TODO: BOTTLE_O_ENCHANTING
 			//TODO: FIREBALL
+			self::registerItem(new Item(Item::FIREBALL, 0, "FireBall"));
 			self::registerItem(new WritableBook());
 			self::registerItem(new WrittenBook());
 			self::registerItem(new Item(Item::EMERALD, 0, "Emerald"));
@@ -215,7 +216,7 @@ class ItemFactory{
 			self::registerItem(new ItemBlock(Block::ACACIA_DOOR_BLOCK, 0, Item::ACACIA_DOOR));
 			self::registerItem(new ItemBlock(Block::DARK_OAK_DOOR_BLOCK, 0, Item::DARK_OAK_DOOR));
 			self::registerItem(new ChorusFruit());
-			self::registerItem(new Item(Item::CHORUS_FRUIT_POPPED, 0, "Popped Chorus Fruit"));
+			self::registerItem(new Item(Item::CHORUS_FRUIT_POPPED, 0, "Machine gun ammo"));
 
 			//TODO: DRAGON_BREATH
 			//TODO: SPLASH_POTION
