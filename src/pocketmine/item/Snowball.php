@@ -23,8 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
-use pocketmine\Player;
-
 class Snowball extends ProjectileItem{
 	public function __construct(int $meta = 0){
 		parent::__construct(self::SNOWBALL, $meta, "Snowball");
@@ -35,10 +33,10 @@ class Snowball extends ProjectileItem{
 	}
 
 	public function getProjectileEntityType() : string{
-		return "MachineGunAmmo";
+		return "Snowball";
 	}
 
 	public function getThrowForce() : float{
-		return 5;
+		return 1.5;
 	}
 }

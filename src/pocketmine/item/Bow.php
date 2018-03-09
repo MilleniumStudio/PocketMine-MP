@@ -58,10 +58,11 @@ class Bow extends Tool{
 		$nbt->setShort("Fire", $player->isOnFire() ? 45 * 60 : 0);
 
 		$diff = $player->getItemUseDuration();
-		$force = 5;
+		$p = $diff / 20;
+		$force = min((($p ** 2) + $p * 2) / 3, 1) * 2;
 
 
-		$entity = Entity::createEntity("SniperAmmo", $player->getLevel(), $nbt, $player, $force == 10);
+		$entity = Entity::createEntity("Arrow", $player->getLevel(), $nbt, $player, $force == 2);
 		if($entity instanceof Projectile){
 			$ev = new EntityShootBowEvent($player, $this, $entity, $force);
 
@@ -80,6 +81,7 @@ class Bow extends Tool{
 				$entity->setMotion($entity->getMotion()->multiply($ev->getForce()));
 				if($player->isSurvival()){
 					$player->getInventory()->removeItem(ItemFactory::get(Item::ARROW, 0, 1));
+					$this->applyDamage(1);
 				}
 
 				if($entity instanceof Projectile){

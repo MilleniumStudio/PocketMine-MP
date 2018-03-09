@@ -34,7 +34,6 @@ use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\event\Timings;
 use pocketmine\item\Consumable;
 use pocketmine\item\Item as ItemItem;
-use pocketmine\item\ItemIds;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\ByteTag;
 use pocketmine\nbt\tag\CompoundTag;
@@ -393,22 +392,13 @@ abstract class Living extends Entity implements Damageable{
 
 		$cause = $source->getCause();
 
-		if ($this instanceof Player && (($this->hasEffect(Effect::DAMAGE_RESISTANCE) && $cause == EntityDamageEvent::CAUSE_FALL) ||
-                ($cause == EntityDamageEvent::CAUSE_FALL && $this->getInventory()->getChestplate()->getId() == ItemIds::ELYTRA)))
+		if ($this->hasEffect(Effect::DAMAGE_RESISTANCE) && $cause == EntityDamageEvent::CAUSE_FALL)
         {
             $source->setDamage(0);
             return;
         }
-		if($this->hasEffect(Effect::DAMAGE_RESISTANCE) and $cause !== EntityDamageEvent::CAUSE_VOID and $cause !== EntityDamageEvent::CAUSE_SUICIDE)
-		{
-		    $dammage = -($source->getFinalDamage() * 0.20 * $this->getEffect(Effect::DAMAGE_RESISTANCE)->getEffectLevel());
-		    if ($dammage > 0)
-    			$source->setDamage($dammage, EntityDamageEvent::MODIFIER_RESISTANCE);
-		    else
-            {
-                $source->setDamage(0);
-                return;
-            }
+		if($this->hasEffect(Effect::DAMAGE_RESISTANCE) and $cause !== EntityDamageEvent::CAUSE_VOID and $cause !== EntityDamageEvent::CAUSE_SUICIDE){
+			$source->setDamage(-($source->getFinalDamage() * 0.20 * $this->getEffect(Effect::DAMAGE_RESISTANCE)->getEffectLevel()), EntityDamageEvent::MODIFIER_RESISTANCE);
 		}
 
 		//TODO: armour protection enchantments should be checked here (after effect damage reduction)

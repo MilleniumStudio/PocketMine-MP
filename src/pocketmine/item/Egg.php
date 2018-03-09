@@ -26,14 +26,14 @@ namespace pocketmine\item;
 class Egg extends ProjectileItem{
 	public function __construct(int $meta = 0){
 		parent::__construct(self::EGG, $meta, "Egg");
-    }
+	}
 
 	public function getMaxStackSize() : int{
 		return 16;
 	}
 
 	public function getProjectileEntityType() : string{
-		return "Grenada";
+		return "Egg";
 	}
 
 	public function getThrowForce() : float{

@@ -167,7 +167,7 @@ class Explosion{
 
 				$impact = (1 - $distance) * ($exposure = 1);
 
-				$damage = (int) ((($impact * $impact + $impact) / 2) * 4 * $explosionSize + 1);
+				$damage = (int) ((($impact * $impact + $impact) / 2) * 8 * $explosionSize + 1);
 
 				if($this->what instanceof Entity){
 					$ev = new EntityDamageByEntityEvent($this->what, $entity, EntityDamageEvent::CAUSE_ENTITY_EXPLOSION, $damage);
