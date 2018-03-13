@@ -34,16 +34,13 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\TakeItemEntityPacket;
 use pocketmine\Player;
 
-class MachineGunAmmo extends Projectile{
+class ShotgunAmmo extends Projectile{
     public const NETWORK_ID = self::SMALL_FIREBALL;
 
     //static public $CHORUS_FRUIT_POP = 433;
 
     protected $gravity = 0.01;
     protected $drag = 0.01;
-
-    public $width = 0.05;
-    public $height = 0.05;
 
     public $scale = 0.5;
 

@@ -315,7 +315,10 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	/** @var int */
 	public $deviceOs; //ex: Player::DEVICE_OS_WIN10
 
-	/**
+    /** @var int */
+    private $shotGunTimer = 0;
+
+    /**
 	 * @var int
 	 * Last measurement of player's latency in milliseconds.
 	 */
@@ -4005,4 +4008,14 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 	public function isLoaderActive() : bool{
 		return $this->isConnected();
 	}
+
+    public function setShotgunCooldown(float $p_val)
+    {
+        $this->shotGunTimer = $p_val;
+    }
+
+    public function getShotgunCooldown() : float
+    {
+        return $this->shotGunTimer;
+    }
 }

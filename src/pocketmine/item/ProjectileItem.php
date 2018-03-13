@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use fatutils\players\PlayersManager;
 use pocketmine\entity\Entity;
 use pocketmine\entity\projectile\Grenada;
 use pocketmine\entity\projectile\Projectile;
@@ -38,8 +39,10 @@ abstract class ProjectileItem extends Item{
 
 	abstract public function getThrowForce() : float;
 
-    public function onClickAir(Player $player, Vector3 $directionVector) : bool{
-		$nbt = Entity::createBaseNBT($player->add(0, $player->getEyeHeight(), 0), $directionVector, $player->yaw, $player->pitch);
+    public function onClickAir(Player $player, Vector3 $directionVector) : bool
+    {
+        echo("yo " . $this->getProjectileEntityType() . "\n");
+		$nbt = Entity::createBaseNBT($player->add(0, $player->getEyeHeight() + 0.1, 0), $directionVector, $player->yaw, $player->pitch);
 
 		if ($this->getProjectileEntityType() == "MachineGunAmmo") //
         {
@@ -49,13 +52,17 @@ abstract class ProjectileItem extends Item{
         {
             return $this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::ARROW);
         }
+        if ($this->getProjectileEntityType() == "ShotgunAmmo")
+        {
+            return $this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::GUNPOWDER);
+        }
 
         $projectile = Entity::createEntity($this->getProjectileEntityType(), $player->getLevel(), $nbt, $player);
 
 		if($projectile !== null){
 			$projectile->setMotion($projectile->getMotion()->multiply($this->getThrowForce()));
 		}
-        echo ("proj item : " . $this->getProjectileEntityType() . "\n");
+        echo("yo proj item : " . $this->getProjectileEntityType() . "\n");
 		$this->count--;
 
         if ($projectile instanceof Grenada) //  item/MachineGunAmmo
@@ -89,46 +96,84 @@ abstract class ProjectileItem extends Item{
         return $i;
     }
 
+    private function getNewBulletVector(Vector3 $originVector, int $dispersionAngle ) : Vector3
+    {
+        $x = (rand(($originVector->x * 100 % 100) - $dispersionAngle, ($originVector->x * 100 % 100) + $dispersionAngle)) / 100;
+        $y = (rand(($originVector->y * 100 % 100) - $dispersionAngle, ($originVector->y * 100 % 100) + $dispersionAngle)) / 100;
+        $z = (rand(($originVector->z * 100 % 100) - $dispersionAngle, ($originVector->z * 100 % 100) + $dispersionAngle)) / 100;
+
+        if ($x > 1)
+            $x = 1 - ($x - 1);
+        if ($y > 1)
+            $y = 1 - ($y - 1);
+        if ($z > 1)
+            $z = 1 - ($z - 1);
+
+        if ($x < -1)
+            $x = -1 - ($x + 1);
+        if ($y < -1)
+            $y = -1 - ($y + 1);
+        if ($z < -1)
+            $z = -1 - ($z + 1);
+
+        return new Vector3($x, $y, $z);
+    }
+
 	private function PUBGBulletAmmoBehavior(Player $player, Vector3 $directionVector, CompoundTag $nbt, int $ItemId) : bool
     {
         if (!$player->getInventory()->contains(ItemFactory::get($ItemId, 0, 1)))
         {
-            //echo("set count 1\n");
             $this->count = 1;
             return true;
         }
-        $projectile = Entity::createEntity($this->getProjectileEntityType(), $player->getLevel(), $nbt, $player);
 
-        if($projectile !== null){
-            $projectile->setMotion($projectile->getMotion()->multiply($this->getThrowForce()));
-        }
-        //echo ("Machine gun ammo behavior : " . $this->getProjectileEntityType() . "\n");
-
-        $ammoLeft = $this->getAmmoLeft($player, $ItemId);
-        if (($ammoLeft - 3) <= 1)
+        $isShotgun = false;
+        $nbBullets = 1;
+        if ($this->getProjectileEntityType() == "ShotgunAmmo")
         {
-            $this->count = 1;
+            if (microtime(true) < $player->getShotgunCooldown())
+                return false;
+            $player->setShotgunCooldown(microtime(true) + 1);
+            $nbBullets = 15;
+            $isShotgun = true;
         }
-        else
-            $this->count = $ammoLeft - 3;
 
-        if($projectile instanceof Projectile){
-            $player->getServer()->getPluginManager()->callEvent($projectileEv = new ProjectileLaunchEvent($projectile));
-            if($projectileEv->isCancelled()){
-                $projectile->flagForDespawn();
-            }else {
-                if (isset($projectile->scale))
-                    $projectile->setScale($projectile->scale);
-                $projectile->spawnToAll();
-                $player->getLevel()->addSound(new LaunchSound($player), $player->getViewers());
-                if ($player->isSurvival()) {
-                    $player->getInventory()->removeItem(ItemFactory::get($ItemId, 0, 1));
+        while ($nbBullets > 0)
+        {
+            $projectile = Entity::createEntity($this->getProjectileEntityType(), $player->getLevel(), $nbt, $player);
+            $bulletDirection = $projectile->getMotion();
+
+            if ($isShotgun)
+                $bulletDirection = $this->getNewBulletVector($bulletDirection, 20);
+
+            if ($projectile !== null) {
+                $projectile->setMotion($bulletDirection->multiply($this->getThrowForce()));
+            }
+
+            $ammoLeft = $this->getAmmoLeft($player, $ItemId);
+            if (($ammoLeft - 3) <= 1) {
+                $this->count = 1;
+            } else
+                $this->count = $ammoLeft - 3;
+
+            if ($projectile instanceof Projectile) {
+                $player->getServer()->getPluginManager()->callEvent($projectileEv = new ProjectileLaunchEvent($projectile));
+                if ($projectileEv->isCancelled()) {
+                    $projectile->flagForDespawn();
+                } else {
+                    if (isset($projectile->scale))
+                        $projectile->setScale($projectile->scale);
+                    $projectile->spawnToAll();
+                    $player->getLevel()->addSound(new LaunchSound($player), $player->getViewers());
 
                 }
+            } else {
+                $projectile->spawnToAll();
             }
-        }else{
-            $projectile->spawnToAll();
+            $nbBullets--;
         }
+        if ($player->isSurvival())
+                $player->getInventory()->removeItem(ItemFactory::get($ItemId, 0, 1));
         return true;
     }
 

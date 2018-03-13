@@ -36,6 +36,8 @@ use pocketmine\entity\projectile\Arrow;
 use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\MachineGunAmmo;
 use pocketmine\entity\projectile\Grenada;
+use pocketmine\entity\projectile\Projectile;
+use pocketmine\entity\projectile\ShotgunAmmo;
 use pocketmine\entity\projectile\SniperAmmo;
 use pocketmine\entity\projectile\Snowball;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -241,9 +243,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 		Entity::registerEntity(Arrow::class, false, ['Arrow', 'minecraft:arrow']);
 		Entity::registerEntity(SniperAmmo::class, false, ['SniperAmmo', 'minecraft:arrow']);
-		Entity::registerEntity(Egg::class, false, ['Grenada1', 'Grenada2']);
+		//Entity::registerEntity(Egg::class, false, ['Grenada1', 'Grenada2']);
 		Entity::registerEntity(MachineGunAmmo::class, false, ['MachineGunAmmo', 'minecraft:chorus_fruit_pop']);
 		Entity::registerEntity(Grenada::class, false, ['Grenada', 'Grenada']);
+		Entity::registerEntity(ShotgunAmmo::class, false, ['ShotgunAmmo', 'minecraft:ender_pearl']);
 		Entity::registerEntity(ExperienceOrb::class, false, ['XPOrb', 'minecraft:xp_orb']);
 		Entity::registerEntity(FallingSand::class, false, ['FallingSand', 'minecraft:falling_block']);
 		Entity::registerEntity(Item::class, false, ['Item', 'minecraft:item']);
@@ -1764,8 +1767,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 			}*/
 			assert(abs($dx) <= 20 and abs($dy) <= 20 and abs($dz) <= 20, "Movement distance is excessive: dx=$dx, dy=$dy, dz=$dz");
 			$list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->getOffsetBoundingBox($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz), false);
+
 			foreach($list as $bb){
-				$dy = $bb->calculateYOffset($this->boundingBox, $dy);
+			    if ($this instanceof Projectile)
+			        break;
+			    $dy = $bb->calculateYOffset($this->boundingBox, $dy);
 			}
 			$this->boundingBox->offset(0, $dy, 0);
 			$fallingFlag = ($this->onGround or ($dy != $movY and $movY < 0));

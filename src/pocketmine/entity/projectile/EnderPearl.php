@@ -21,42 +21,9 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\entity\projectile;
 
-use pocketmine\item\Item;
-use pocketmine\item\ItemFactory;
-use pocketmine\item\TieredTool;
-
-class Snow extends Solid{
-
-	protected $id = self::SNOW_BLOCK;
-
-	public function __construct(int $meta = 0){
-		$this->meta = $meta;
-	}
-
-	public function getHardness() : float{
-		return 0.2;
-	}
-
-	public function getToolType() : int{
-		return BlockToolType::TYPE_SHOVEL;
-	}
-
-	public function getToolHarvestLevel() : int{
-		return TieredTool::TIER_WOODEN;
-	}
-
-	public function getName() : string{
-		return "Snow Block";
-	}
-
-	// Snowballs are used as a weapon, so loot is disabled
-/*	public function getDropsForCompatibleTool(Item $item) : array{
-		return [
-			ItemFactory::get(Item::SNOWBALL, 0, 4)
-		];
-	}
-*/
+class Snowball extends Throwable{
+	public const NETWORK_ID = self::ENDER_PEARL;
 
 }
