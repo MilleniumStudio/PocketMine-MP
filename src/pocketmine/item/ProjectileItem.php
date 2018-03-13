@@ -133,7 +133,7 @@ abstract class ProjectileItem extends Item{
         {
             if (microtime(true) < $player->getShotgunCooldown())
                 return false;
-            $player->setShotgunCooldown(microtime(true) + 1);
+            $player->setShotgunCooldown(microtime(true) + 1,1);
             $nbBullets = 15;
             $isShotgun = true;
         }
