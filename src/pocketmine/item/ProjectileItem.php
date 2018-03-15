@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use fatcraft\loadbalancer\LoadBalancer;
 use fatutils\players\PlayersManager;
 use pocketmine\entity\Entity;
 use pocketmine\entity\projectile\Grenada;
@@ -31,6 +32,7 @@ use pocketmine\event\entity\ProjectileLaunchEvent;
 use pocketmine\level\sound\LaunchSound;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 
 abstract class ProjectileItem extends Item{
@@ -46,15 +48,15 @@ abstract class ProjectileItem extends Item{
 
 		if ($this->getProjectileEntityType() == "MachineGunAmmo") //
         {
-            return $this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::CHORUS_FRUIT_POPPED);
-        }
-        if ($this->getProjectileEntityType() == "SniperAmmo")
-        {
-            return $this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::ARROW);
+            if ($this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::CHORUS_FRUIT_POPPED))
+                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_BURP, 1, 0x10000000);
+            return true;
         }
         if ($this->getProjectileEntityType() == "ShotgunAmmo")
         {
-            return $this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::GUNPOWDER);
+            if ($this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::GUNPOWDER))
+                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_SHULKERBOX_OPEN, 1, 0x10000000);
+            return true;
         }
 
         $projectile = Entity::createEntity($this->getProjectileEntityType(), $player->getLevel(), $nbt, $player);
@@ -124,7 +126,7 @@ abstract class ProjectileItem extends Item{
         if (!$player->getInventory()->contains(ItemFactory::get($ItemId, 0, 1)))
         {
             $this->count = 1;
-            return true;
+            return false;
         }
 
         $isShotgun = false;

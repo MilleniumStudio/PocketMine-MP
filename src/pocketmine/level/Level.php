@@ -549,7 +549,7 @@ class Level implements ChunkManager, Metadatable{
 		$pk->unknownBool = $unknown;
 		$pk->disableRelativeVolume = $disableRelativeVolume;
 		$pk->position = $pos->asVector3();
-		$this->addChunkPacket($pos->x >> 4, $pos->z >> 4, $pk);
+        $this->addChunkPacket($pos->getFloorX() >> 4, $pos->getFloorZ() >> 4, $pk);
 	}
 
 	public function getAutoSave() : bool{

@@ -23,11 +23,13 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use fatcraft\loadbalancer\LoadBalancer;
 use pocketmine\entity\Entity;
 use pocketmine\entity\projectile\Projectile;
 use pocketmine\event\entity\EntityShootBowEvent;
 use pocketmine\event\entity\ProjectileLaunchEvent;
 use pocketmine\level\sound\LaunchSound;
+use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\Player;
 
 class Bow extends Tool{
@@ -60,7 +62,6 @@ class Bow extends Tool{
 		$diff = $player->getItemUseDuration();
 		$force = 5;
 
-
 		$entity = Entity::createEntity("SniperAmmo", $player->getLevel(), $nbt, $player, $force == 10);
 		if($entity instanceof Projectile){
 			$ev = new EntityShootBowEvent($player, $this, $entity, $force);
@@ -81,6 +82,7 @@ class Bow extends Tool{
 				if($player->isSurvival()){
 					$player->getInventory()->removeItem(ItemFactory::get(Item::ARROW, 0, 1));
 				}
+                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_SHULKERBOX_CLOSED, 1, 0x10000000);
 
 				if($entity instanceof Projectile){
 					$player->getServer()->getPluginManager()->callEvent($projectileEv = new ProjectileLaunchEvent($entity));
