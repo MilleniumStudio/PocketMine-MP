@@ -32,6 +32,7 @@ use pocketmine\entity\Entity;
 use pocketmine\entity\Item as DroppedItem;
 use pocketmine\entity\object\ExperienceOrb;
 use pocketmine\entity\projectile\Arrow;
+use pocketmine\entity\projectile\Projectile;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\block\BlockPlaceEvent;
 use pocketmine\event\block\BlockUpdateEvent;
@@ -1230,38 +1231,222 @@ class Level implements ChunkManager, Metadatable{
 	 *
 	 * @return AxisAlignedBB[]
 	 */
-	public function getCollisionCubes(Entity $entity, AxisAlignedBB $bb, bool $entities = true) : array{
-		$bbPlusOne = $bb->grow(1, 1, 1);
-		$minX = Math::floorFloat($bbPlusOne->minX);
-		$minY = Math::floorFloat($bbPlusOne->minY);
-		$minZ = Math::floorFloat($bbPlusOne->minZ);
-		$maxX = Math::ceilFloat($bbPlusOne->maxX);
-		$maxY = Math::ceilFloat($bbPlusOne->maxY);
-		$maxZ = Math::ceilFloat($bbPlusOne->maxZ);
+	public function getCollisionCubes(Entity $entity, AxisAlignedBB $bb, bool $entities = true) : array
+    {
+        $collides = [];
 
-		$collides = [];
+        $bbPlusOne = $bb->grow(1, 1, 1);
 
-		for($z = $minZ; $z <= $maxZ; ++$z){
-			for($x = $minX; $x <= $maxX; ++$x){
-				for($y = $minY; $y <= $maxY; ++$y){
-					$block = $this->getBlockAt($x, $y, $z);
-					if(!$block->canPassThrough() and $block->collidesWithBB($bb)){
-						foreach($block->getCollisionBoxes() as $blockBB){
-							$collides[] = $blockBB;
-						}
-					}
-				}
-			}
-		}
+        $minX = Math::floorFloat($bbPlusOne->minX);
+        $minY = Math::floorFloat($bbPlusOne->minY);
+        $minZ = Math::floorFloat($bbPlusOne->minZ);
+        $maxX = Math::ceilFloat($bbPlusOne->maxX);
+        $maxY = Math::ceilFloat($bbPlusOne->maxY);
+        $maxZ = Math::ceilFloat($bbPlusOne->maxZ);
 
-		if($entities){
-			foreach($this->getCollidingEntities($bb->grow(0.25, 0.25, 0.25), $entity) as $ent){
-				$collides[] = clone $ent->boundingBox;
-			}
-		}
+        for ($z = $minZ; $z <= $maxZ; ++$z) {
+            for ($x = $minX; $x <= $maxX; ++$x) {
+                for ($y = $minY; $y <= $maxY; ++$y) {
+                    $block = $this->getBlockAt($x, $y, $z);
+                    if (!$block->canPassThrough() and $block->collidesWithBB($bb)) {
+                        foreach ($block->getCollisionBoxes() as $blockBB) {
+                            $collides[] = $blockBB;
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($entities) {
+            foreach ($this->getCollidingEntities($bb->grow(0.25, 0.25, 0.25), $entity) as $ent) {
+                $collides[] = clone $ent->boundingBox;
+            }
+        }
 
 		return $collides;
 	}
+
+    public function getCollisionCubesForProjectile(Entity $entity, AxisAlignedBB $bb) : array
+    {
+        $collides = [];
+
+        //echo ("=========================================\n");
+
+        $startX = Math::floorFloat($bb->minX);
+        $startY = Math::floorFloat($bb->minY);
+        $startZ = Math::floorFloat($bb->minZ);
+        $endX = Math::floorFloat($bb->maxX);
+        $endY = Math::floorFloat($bb->maxY);
+        $endZ = Math::floorFloat($bb->maxZ);
+
+        $minX = min($startX, $endX);
+        $minY = min($startY, $endY);
+        $minZ = min($startZ, $endZ);
+        $maxX = max($startX, $endX);
+        $maxY = max($startY, $endY);
+        $maxZ = max($startZ, $endZ);
+
+        //echo ("Float Bullet Vector: \n minX > " . $bb->minX . "\n minY > " . $bb->minY . "\n minZ > " . $bb->minZ . "\n maxX > " . $bb->maxX . "\n maxY > " . $bb->maxY . "\n maxZ > " . $bb->maxZ . "\n");
+        //echo ("Bullet Vector: \n minX > " . $minX . "\n minY > " . $minY . "\n minZ > " . $minZ . "\n maxX > " . $maxX . "\n maxY > " . $maxY . "\n maxZ > " . $maxZ . "\n");
+
+        $a = $bb->maxX - $bb->minX;
+        $b = $bb->maxY - $bb->minY;
+        $c = $bb->maxZ - $bb->minZ;
+
+        //echo ("== X Axis == \n");
+        for ($x = $startX + 1; $x < $endX; ++$x)
+        {
+            $t = (floatval($x) - $bb->minX) / $a;
+
+            $y = ($b * $t) + $bb->minY;
+            $z = ($c * $t) + $bb->minZ;
+
+            $intY = Math::floorFloat($y);
+            $intZ = Math::floorFloat($z);
+
+            for ($intX = $x; $intX >= $x - 1; --$intX)
+            {
+                $block = $this->getBlockAt($intX, $intY, $intZ);
+
+                if (!$block->canPassThrough())
+                    $collides[] = $block;
+            }
+        }
+
+        for ($x = $startX; $x > $endX; --$x)
+        {
+            $t = (floatval($x) - $bb->minX) / $a;
+
+            $y = ($b * $t) + $bb->minY;
+            $z = ($c * $t) + $bb->minZ;
+
+            $intY = Math::floorFloat($y);
+            $intZ = Math::floorFloat($z);
+
+            for ($intX = $x; $intX >= $x - 1; --$intX)
+            {
+                $block = $this->getBlockAt($intX, $intY, $intZ);
+
+                if (!$block->canPassThrough())
+                    $collides[] = $block;
+            }
+        }
+
+
+        //echo ("== Y Axis == \n");
+        for ($y = $startY; $y < $endY; ++$y)
+        {
+            $t = (floatval($y) - $bb->minY) / $b;
+
+            $x = ($a * $t) + $bb->minX;
+            $z = ($c * $t) + $bb->minZ;
+
+            $intX = Math::floorFloat($x);
+            $intZ = Math::floorFloat($z);
+
+            for ($intY = $y; $intY >= $y - 1; --$intY)
+            {
+                $block = $this->getBlockAt($intX, $intY, $intZ);
+
+                if (!$block->canPassThrough())
+                    $collides[] = $block;
+            }
+        }
+
+        for ($y = $startY; $y > $endY; --$y)
+        {
+            $t = (floatval($y) - $bb->minY) / $b;
+
+            $x = ($a * $t) + $bb->minX;
+            $z = ($c * $t) + $bb->minZ;
+
+            $intX = Math::floorFloat($x);
+            $intZ = Math::floorFloat($z);
+
+            for ($intY = $y; $intY >= $y - 1; --$intY)
+            {
+                $block = $this->getBlockAt($intX, $intY, $intZ);
+
+                if (!$block->canPassThrough())
+                    $collides[] = $block;
+            }
+        }
+
+        //echo ("== Z Axis == \n");
+        for ($z = $startZ + 1; $z < $endZ; ++$z)
+        {
+            $t = (floatval($z) - $bb->minZ) / $c;
+
+            $x = ($a * $t) + $bb->minX;
+            $y = ($b * $t) + $bb->minY;
+
+            $intX = Math::floorFloat($x);
+            $intY = Math::floorFloat($y);
+
+            for ($intZ = $z; $intZ >= $z - 1; --$intZ)
+            {
+                $block = $this->getBlockAt($intX, $intY, $intZ);
+
+                if (!$block->canPassThrough())
+                    $collides[] = $block;
+            }
+        }
+
+        for ($z = $startZ; $z > $endZ; --$z)
+        {
+            $t = (floatval($z) - $bb->minZ) / $c;
+
+            $x = ($a * $t) + $bb->minX;
+            $y = ($b * $t) + $bb->minY;
+
+            $intX = Math::floorFloat($x);
+            $intY = Math::floorFloat($y);
+
+            for ($intZ = $z; $intZ >= $z - 1; --$intZ)
+            {
+                $block = $this->getBlockAt($intX, $intY, $intZ);
+
+                if (!$block->canPassThrough())
+                    $collides[] = $block;
+            }
+        }
+        //echo ("=========================================\n");
+
+        $intersection = new Vector3(0,0,0);
+        $minIntersectDist = 0;
+        $intersected = false;
+        foreach ($collides as $intersect)
+        {
+            if ($intersect instanceof Block)
+            {
+                $intersectDist = $entity->distanceSquared(new Vector3($intersect->x, $intersect->y, $intersect->z));
+                if (!$intersected || ($intersectDist < $minIntersectDist))
+                {
+                    $intersection = $intersect;
+                    $minIntersectDist = $intersectDist;
+                    $intersected = true;
+                }
+            }
+        }
+
+        $retCollides = [];
+
+        if ($intersected)
+        {
+            echo("detect::collide\n");
+
+            foreach ($collides as $bloock)
+            {
+//                $block = $this->getBlockAt(Math::floorFloat($intersection->x), Math::floorFloat($intersection->y), Math::floorFloat($intersection->z));
+                foreach ($bloock->getCollisionBoxes() as $blockBB) {
+                    $retCollides[] = $blockBB;
+                }
+            }
+            $this->setBlock(new Position(Math::floorFloat($intersection->x), Math::floorFloat($intersection->y), Math::floorFloat($intersection->z)), new Block(168));
+        }
+
+        return $retCollides;
+    }
 
 	/*
 	public function rayTraceBlocks(Vector3 $pos1, Vector3 $pos2, $flag = false, $flag1 = false, $flag2 = false){
@@ -2065,12 +2250,12 @@ class Level implements ChunkManager, Metadatable{
 
 			for($x = $minX; $x <= $maxX; ++$x){
 				for($z = $minZ; $z <= $maxZ; ++$z){
-					foreach($this->getChunkEntities($x, $z) as $ent){
-						/** @var Entity|null $entity */
-						if(($entity === null or ($ent !== $entity and $entity->canCollideWith($ent))) and $ent->boundingBox->intersectsWith($bb)){
-							$nearby[] = $ent;
-						}
-					}
+                    foreach($this->getChunkEntities($x, $z) as $ent) {
+                        /** @var Entity|null $entity */
+                        if (($entity === null or ($ent !== $entity and $entity->canCollideWith($ent))) and $ent->boundingBox->intersectsWith($bb)) {
+                            $nearby[] = $ent;
+                        }
+                    }
 				}
 			}
 		}

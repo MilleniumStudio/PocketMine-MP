@@ -221,8 +221,9 @@ class ItemFactory{
 
 			//TODO: DRAGON_BREATH
 			//TODO: SPLASH_POTION
+            self::registerItem(new SplashPotion());
 
-			//TODO: LINGERING_POTION
+            //TODO: LINGERING_POTION
 
 			//TODO: COMMAND_BLOCK_MINECART
 			self::registerItem(new Item(Item::ELYTRA, 0, "Elytra"));

@@ -139,4 +139,12 @@ class Position extends Vector3{
 		}
 		return parent::equals($v);
 	}
+
+    public function getAngleTo(Position $p_position) : float
+    {
+        $dx = $p_position->x - $this->x;
+        $dz = $p_position->z - $this->z;
+
+        return (atan2($dx, $dz));
+    }
 }

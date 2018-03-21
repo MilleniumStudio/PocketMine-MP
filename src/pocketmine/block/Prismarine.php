@@ -38,7 +38,7 @@ class Prismarine extends Solid{
 	}
 
 	public function getHardness() : float{
-		return 1.5;
+		return 0.1;
 	}
 
 	public function getName() : string{

@@ -27,8 +27,10 @@ use fatcraft\loadbalancer\LoadBalancer;
 use fatutils\players\PlayersManager;
 use pocketmine\entity\Entity;
 use pocketmine\entity\projectile\Grenada;
+use pocketmine\entity\projectile\SplashPotion;
 use pocketmine\entity\projectile\Projectile;
 use pocketmine\event\entity\ProjectileLaunchEvent;
+use pocketmine\level\Position;
 use pocketmine\level\sound\LaunchSound;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -41,10 +43,35 @@ abstract class ProjectileItem extends Item{
 
 	abstract public function getThrowForce() : float;
 
+    public function relocationByAngle(Entity $p_Origin, float $p_Angle, float $p_Dist, bool $p_Relative, bool $p_UseMinecraftAngle) : Position
+    {
+        if ($p_UseMinecraftAngle)
+        {
+            echo("angle " . $p_Angle . "\n");
+            $p_Angle = -deg2rad($p_Angle);
+            echo("angler " . $p_Angle . "\n");
+        }
+
+        if ($p_Relative)
+        {
+            $z = ($p_Dist * cos($p_Angle));
+            $x = ($p_Dist * sin($p_Angle));
+        }
+        else
+        {
+            $z = $p_Origin->z + ($p_Dist * cos($p_Angle));
+            $x = $p_Origin->x + ($p_Dist * sin($p_Angle));
+        }
+
+        return new Position($x, $p_Origin->y, $z);
+    }
+
     public function onClickAir(Player $player, Vector3 $directionVector) : bool
     {
-        echo("yo " . $this->getProjectileEntityType() . "\n");
-		$nbt = Entity::createBaseNBT($player->add(0, $player->getEyeHeight() + 0.1, 0), $directionVector, $player->yaw, $player->pitch);
+        echo("yo " . $player->yaw.  "! hey yo " . $player->headYaw . "\n");
+        $nbt = Entity::createBaseNBT($player->add(0, $player->getEyeHeight() + 0.1, 0), $directionVector, $player->yaw, $player->pitch);
+        //$relocation = $this->relocationByAngle($player, $player->yaw, 0.3, true, true);
+		//$nbt = Entity::createBaseNBT($player->add($relocation->x, $player->getEyeHeight() - 0.1, $relocation->z), $directionVector, $player->yaw, $player->pitch);
 
 		if ($this->getProjectileEntityType() == "MachineGunAmmo") //
         {
@@ -66,6 +93,15 @@ abstract class ProjectileItem extends Item{
 		}
         echo("yo proj item : " . $this->getProjectileEntityType() . "\n");
 		$this->count--;
+
+        if ($projectile instanceof SplashPotion)
+        {
+            echo ("it's a SplashPotion !\n");
+            $projectile->setOwningEntity($player);
+            $projectile->setOriginLaunchPoint($player->getPosition());
+            if ($this instanceof \pocketmine\item\SplashPotion)
+                $projectile->metaData = $this->metaData;
+        }
 
         if ($projectile instanceof Grenada) //  item/MachineGunAmmo
         {
@@ -177,6 +213,11 @@ abstract class ProjectileItem extends Item{
         if ($player->isSurvival())
                 $player->getInventory()->removeItem(ItemFactory::get($ItemId, 0, 1));
         return true;
+    }
+
+    private function SplashWall()
+    {
+
     }
 
 }

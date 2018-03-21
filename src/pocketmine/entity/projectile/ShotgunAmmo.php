@@ -37,8 +37,6 @@ use pocketmine\Player;
 class ShotgunAmmo extends Projectile{
     public const NETWORK_ID = self::SMALL_FIREBALL;
 
-    //static public $CHORUS_FRUIT_POP = 433;
-
     protected $gravity = 0.01;
     protected $drag = 0.01;
 
