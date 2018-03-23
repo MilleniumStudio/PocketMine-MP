@@ -40,6 +40,7 @@ use pocketmine\entity\projectile\Projectile;
 use pocketmine\entity\projectile\ShotgunAmmo;
 use pocketmine\entity\projectile\SniperAmmo;
 use pocketmine\entity\projectile\Snowball;
+use pocketmine\entity\projectile\SplashPotion;
 use pocketmine\event\entity\EntityDamageEvent;
 use pocketmine\event\entity\EntityDespawnEvent;
 use pocketmine\event\entity\EntityLevelChangeEvent;
@@ -253,6 +254,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		Entity::registerEntity(Item::class, false, ['Item', 'minecraft:item']);
 		Entity::registerEntity(PrimedTNT::class, false, ['PrimedTnt', 'PrimedTNT', 'minecraft:tnt']);
         Entity::registerEntity(Snowball::class, false, ['Snowball', 'minecraft:snowball']);
+        Entity::registerEntity(SplashPotion::class, false, ['SplashPotion', 'minecraft:splash_potion']);
         Entity::registerEntity(EnderPearl::class, false, ['EnderPearl', 'minecraft:ender_pearl']);
 		Entity::registerEntity(Squid::class, false, ['Squid', 'minecraft:squid']);
 		Entity::registerEntity(Villager::class, false, ['Villager', 'minecraft:villager']);
@@ -1451,6 +1453,8 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		if ($this->hasMovementUpdate()) {
 //			echo "> hasMovementUpdate\n";
 			$this->tryChangeMovement();
+			if ($this instanceof Projectile)
+                $this->entityBaseTick($tickDiff);
 			$this->move($this->motionX, $this->motionY, $this->motionZ);
 
 			if (abs($this->motionX) <= self::MOTION_THRESHOLD) {
@@ -1768,11 +1772,19 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 				//TODO: big messy loop
 			}*/
 			assert(abs($dx) <= 20 and abs($dy) <= 20 and abs($dz) <= 20, "Movement distance is excessive: dx=$dx, dy=$dy, dz=$dz");
-			$list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->getOffsetBoundingBox($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz), false);
+
+            if ($this instanceof Projectile)
+            {
+                $blockbb = $this->boundingBox;
+                $blockbb->setBounds($blockbb->minX, $blockbb->minY, $blockbb->minZ, $blockbb->minX + $dx, $blockbb->minY + $dy, $blockbb->minZ + $dz);
+                //echo ("ENTITY " . $this->ticksLived . "  motion :  x : " . $this->motionX . " y : " .  $this->motionY . " z : " .  $this->motionZ . "\n");
+
+                $list = $this->level->getCollisionCubesForProjectile($this, $blockbb);
+            }
+            else
+			    $list = $this->level->getCollisionCubes($this, $this->level->getTickRate() > 1 ? $this->boundingBox->getOffsetBoundingBox($dx, $dy, $dz) : $this->boundingBox->addCoord($dx, $dy, $dz), false);
 
 			foreach($list as $bb){
-			    if ($this instanceof Projectile)
-			        break;
 			    $dy = $bb->calculateYOffset($this->boundingBox, $dy);
 			}
 			$this->boundingBox->offset(0, $dy, 0);

@@ -123,7 +123,7 @@ abstract class Projectile extends Entity{
 			$movingObjectPosition = null;
 
 			$moveVector = new Vector3($this->x + $this->motionX, $this->y + $this->motionY, $this->z + $this->motionZ);
-
+            //echo ("TICK " . $this->ticksLived . "  motion :  x : " . $this->motionX . " y : " .  $this->motionY . " z : " .  $this->motionZ . "\n");
             $list = $this->getLevel()->getCollidingEntities($this->boundingBox->addCoord($this->motionX, $this->motionY, $this->motionZ)->expand(1, 1, 1), $this);
 
             $nearDistance = PHP_INT_MAX;
@@ -131,7 +131,7 @@ abstract class Projectile extends Entity{
 
 			foreach($list as $entity){
 				if(/*!$entity->canCollideWith($this) or */
-				($entity->getId() === $this->getOwningEntityId() and $this->ticksLived < 5)
+				($entity->getId() === $this->getOwningEntityId() && $this->ticksLived < 5)
 				){
 					continue;
 				}

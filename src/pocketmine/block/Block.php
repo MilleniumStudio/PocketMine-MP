@@ -398,6 +398,10 @@ class Block extends Position implements BlockIds, Metadatable{
 		return false;
 	}
 
+    public function canBulletPassThrough() : bool{
+        return false;
+    }
+
 	/**
 	 * Returns whether entities can climb up this block.
 	 * @return bool

@@ -52,5 +52,10 @@ class IronBars extends Thin{
 	public function getVariantBitmask() : int{
 		return 0;
 	}
+
+	public function canBulletPassThrough() : bool
+    {
+        return true;
+    }
 }
 

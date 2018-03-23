@@ -44,4 +44,20 @@ class GlassPane extends Thin{
 	public function getDropsForCompatibleTool(Item $item) : array{
 		return [];
 	}
+
+    public function canBulletPassThrough() : bool
+    {
+        switch ($this->meta) {
+            case (0):
+            case (1):
+            case (2):
+            case (6):
+            case (7):
+            case (8):
+            case (15):
+                return true;
+            }
+        return false;
+    }
+
 }

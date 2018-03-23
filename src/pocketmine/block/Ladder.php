@@ -63,6 +63,11 @@ class Ladder extends Transparent{
 		$entity->onGround = true;
 	}
 
+    public function canBulletPassThrough() : bool
+    {
+        return true;
+    }
+
 	protected function recalculateBoundingBox() : ?AxisAlignedBB{
 		$f = 0.1875;
 

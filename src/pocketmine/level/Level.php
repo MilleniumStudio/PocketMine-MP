@@ -1308,7 +1308,7 @@ class Level implements ChunkManager, Metadatable{
             {
                 $block = $this->getBlockAt($intX, $intY, $intZ);
 
-                if (!$block->canPassThrough())
+                if (!$block->canBulletPassThrough() && !$block->canPassThrough())
                     $collides[] = $block;
             }
         }
@@ -1327,7 +1327,7 @@ class Level implements ChunkManager, Metadatable{
             {
                 $block = $this->getBlockAt($intX, $intY, $intZ);
 
-                if (!$block->canPassThrough())
+                if (!$block->canBulletPassThrough() && !$block->canPassThrough())
                     $collides[] = $block;
             }
         }
@@ -1348,7 +1348,7 @@ class Level implements ChunkManager, Metadatable{
             {
                 $block = $this->getBlockAt($intX, $intY, $intZ);
 
-                if (!$block->canPassThrough())
+                if (!$block->canBulletPassThrough() && !$block->canPassThrough())
                     $collides[] = $block;
             }
         }
@@ -1367,7 +1367,7 @@ class Level implements ChunkManager, Metadatable{
             {
                 $block = $this->getBlockAt($intX, $intY, $intZ);
 
-                if (!$block->canPassThrough())
+                if (!$block->canBulletPassThrough() && !$block->canPassThrough())
                     $collides[] = $block;
             }
         }
@@ -1387,7 +1387,7 @@ class Level implements ChunkManager, Metadatable{
             {
                 $block = $this->getBlockAt($intX, $intY, $intZ);
 
-                if (!$block->canPassThrough())
+                if (!$block->canBulletPassThrough() && !$block->canPassThrough())
                     $collides[] = $block;
             }
         }
@@ -1406,7 +1406,7 @@ class Level implements ChunkManager, Metadatable{
             {
                 $block = $this->getBlockAt($intX, $intY, $intZ);
 
-                if (!$block->canPassThrough())
+                if (!$block->canBulletPassThrough() && !$block->canPassThrough())
                     $collides[] = $block;
             }
         }
@@ -1442,7 +1442,7 @@ class Level implements ChunkManager, Metadatable{
                     $retCollides[] = $blockBB;
                 }
             }
-            $this->setBlock(new Position(Math::floorFloat($intersection->x), Math::floorFloat($intersection->y), Math::floorFloat($intersection->z)), new Block(168));
+            //$this->setBlock(new Position(Math::floorFloat($intersection->x), Math::floorFloat($intersection->y), Math::floorFloat($intersection->z)), new Block(168));
         }
 
         return $retCollides;
