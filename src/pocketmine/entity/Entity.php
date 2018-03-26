@@ -27,6 +27,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use fatutils\game\GameManager;
 use pocketmine\block\Block;
 use pocketmine\block\BlockFactory;
 use pocketmine\block\BlockIds;
@@ -1011,13 +1012,22 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 			return;
 		}
 
-		if ($amount <= 0) {
-			if ($this->isAlive()) {
-				$this->kill();
+		if ($amount <= 0)
+		{
+			if ($this->isAlive())
+			{
+			    if (!GameManager::getInstance()->m_isBattleRoyal)
+			    {
+                    $this->kill();
+                }
 			}
-		} elseif ($amount <= $this->getMaxHealth() or $amount < $this->health) {
+		}
+		elseif ($amount <= $this->getMaxHealth() or $amount < $this->health)
+        {
 			$this->health = $amount;
-		} else {
+		}
+		else
+        {
 			$this->health = $this->getMaxHealth();
 		}
 	}
