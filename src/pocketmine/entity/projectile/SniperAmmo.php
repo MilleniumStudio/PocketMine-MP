@@ -43,7 +43,7 @@ class SniperAmmo extends Projectile{
 
     public $scale = 0.5;
 
-    protected $damage = 4;
+    protected $damage = 1;
 
 	public function __construct(Level $level, CompoundTag $nbt, Entity $shootingEntity = null, bool $critical = false){
 		parent::__construct($level, $nbt, $shootingEntity);
