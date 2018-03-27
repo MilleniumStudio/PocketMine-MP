@@ -62,9 +62,9 @@ class Bow extends Tool{
 		$diff = $player->getItemUseDuration();
 		$force = 5;
 
-		$entity = Entity::createEntity("SniperAmmo", $player->getLevel(), $nbt, $player, $force == 10);
+		$entity = Entity::createEntity("SniperAmmo", $player->getLevel(), $nbt, $player, $force == 5);
 		if($entity instanceof Projectile){
-			$ev = new EntityShootBowEvent($player, $this, $entity, $force);
+			$ev = new EntityShootBowEvent($player, $this, $entity, 30);
 
 			if($force < 0.1 or $diff < 5){
 				$ev->setCancelled();
