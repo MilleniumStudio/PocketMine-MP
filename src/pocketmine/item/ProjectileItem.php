@@ -68,7 +68,6 @@ abstract class ProjectileItem extends Item{
 
     public function onClickAir(Player $player, Vector3 $directionVector) : bool
     {
-        echo("yo " . $player->yaw.  "! hey yo " . $player->headYaw . "\n");
         $nbt = Entity::createBaseNBT($player->add(0, $player->getEyeHeight() + 0.1, 0), $directionVector, $player->yaw, $player->pitch);
         //$relocation = $this->relocationByAngle($player, $player->yaw, 0.3, true, true);
 		//$nbt = Entity::createBaseNBT($player->add($relocation->x, $player->getEyeHeight() - 0.1, $relocation->z), $directionVector, $player->yaw, $player->pitch);

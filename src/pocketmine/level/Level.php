@@ -1433,8 +1433,6 @@ class Level implements ChunkManager, Metadatable{
 
         if ($intersected)
         {
-            echo("detect::collide\n");
-
             foreach ($collides as $bloock)
             {
 //                $block = $this->getBlockAt(Math::floorFloat($intersection->x), Math::floorFloat($intersection->y), Math::floorFloat($intersection->z));
