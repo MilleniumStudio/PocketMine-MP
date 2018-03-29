@@ -109,8 +109,6 @@ class SplashPotion extends Entity
                     $wallAngle = 4;
             }
 
-            var_dump($wallAngle);
-
             if ($this->metaData == 1)
                 $this->stairFunction($wallAngle, $centerPos);
 

@@ -171,20 +171,29 @@ abstract class ProjectileItem extends Item{
             if (microtime(true) < $player->getShotgunCooldown())
                 return false;
             $player->setShotgunCooldown(microtime(true) + 1,1);
-            $nbBullets = 15;
+            $nbBullets = 7;
             $isShotgun = true;
         }
 
         while ($nbBullets > 0)
         {
             $projectile = Entity::createEntity($this->getProjectileEntityType(), $player->getLevel(), $nbt, $player);
+            $projectile2 = null;
+
             $bulletDirection = $projectile->getMotion();
 
             if ($isShotgun)
-                $bulletDirection = $this->getNewBulletVector($bulletDirection, 20);
+            {
+                $projectile2 = Entity::createEntity($this->getProjectileEntityType(), $player->getLevel(), $nbt, $player);
 
-            if ($projectile !== null) {
+                $bulletDirection = $this->getNewBulletVector($bulletDirection, 20);
+                $bulletDirection2 = $this->getNewBulletVector($bulletDirection, 10);
+            }
+            if ($projectile !== null)
+            {
                 $projectile->setMotion($bulletDirection->multiply($this->getThrowForce()));
+                if ($isShotgun)
+                    $projectile2->setMotion($bulletDirection2->multiply($this->getThrowForce()));
             }
 
             $ammoLeft = $this->getAmmoLeft($player, $ItemId);
@@ -206,6 +215,24 @@ abstract class ProjectileItem extends Item{
                 }
             } else {
                 $projectile->spawnToAll();
+            }
+
+            if ($isShotgun && $projectile2 instanceof Projectile)
+            {
+                if ($projectile2 instanceof Projectile) {
+                    $player->getServer()->getPluginManager()->callEvent($projectileEv = new ProjectileLaunchEvent($projectile));
+                    if ($projectileEv->isCancelled()) {
+                        $projectile2->flagForDespawn();
+                    } else {
+                        if (isset($projectile2->scale))
+                            $projectile2->setScale($projectile2->scale);
+                        $projectile2->spawnToAll();
+                        $player->getLevel()->addSound(new LaunchSound($player), $player->getViewers());
+
+                    }
+                } else {
+                    $projectile2->spawnToAll();
+                }
             }
             $nbBullets--;
         }
