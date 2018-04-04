@@ -28,8 +28,6 @@ use pocketmine\event\Cancellable;
 use pocketmine\level\Position;
 
 class EntityTeleportEvent extends EntityEvent implements Cancellable{
-	public static $handlerList = null;
-
 	/** @var Position */
 	private $from;
 	/** @var Position */
@@ -46,14 +44,6 @@ class EntityTeleportEvent extends EntityEvent implements Cancellable{
 	 */
 	public function getFrom() : Position{
 		return $this->from;
-	}
-
-	/**
-	 * @deprecated This method has no effect or use.
-	 * @param Position $from
-	 */
-	public function setFrom(Position $from){
-		$this->from = $from;
 	}
 
 	/**

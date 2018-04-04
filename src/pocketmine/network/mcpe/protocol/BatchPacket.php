@@ -26,11 +26,11 @@ namespace pocketmine\network\mcpe\protocol;
 #include <rules/DataPacket.h>
 
 
+use pocketmine\network\mcpe\NetworkBinaryStream;
 use pocketmine\network\mcpe\NetworkSession;
 #ifndef COMPILE
 use pocketmine\utils\Binary;
 #endif
-use pocketmine\utils\BinaryStream;
 
 class BatchPacket extends DataPacket{
 	public const NETWORK_ID = 0xfe;
@@ -88,7 +88,7 @@ class BatchPacket extends DataPacket{
 	 * @return \Generator
 	 */
 	public function getPackets(){
-		$stream = new BinaryStream($this->payload);
+		$stream = new NetworkBinaryStream($this->payload);
 		while(!$stream->feof()){
 			yield $stream->getString();
 		}
@@ -108,13 +108,12 @@ class BatchPacket extends DataPacket{
 		}
 
 		foreach($this->getPackets() as $buf){
-			$pk = PacketPool::getPacketById(ord($buf{0}));
+			$pk = PacketPool::getPacket($buf);
 
 			if(!$pk->canBeBatched()){
 				throw new \InvalidArgumentException("Received invalid " . get_class($pk) . " inside BatchPacket");
 			}
 
-			$pk->setBuffer($buf, 1);
 			$session->handleDataPacket($pk);
 		}
 

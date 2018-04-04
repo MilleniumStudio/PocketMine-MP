@@ -128,7 +128,6 @@ class Boat extends Vehicle
 		return $b;
 	}
 
-
 	public function onInteract(Player $player, ItemItem $item): bool
 	{
 		if ($this->passenger != null) {
@@ -139,19 +138,19 @@ class Boat extends Vehicle
 		return true;
 	}
 
-	public function move(float $dx, float $dy, float $dz): bool
+	public function move(float $dx, float $dy, float $dz): void
 	{
 		$this->blocksAround = null;
 
 		if ($dx == 0 and $dz == 0 and $dy == 0) {
-			return true;
+			return;
 		}
 
 		if ($this->keepMovement) {
 			$this->boundingBox->offset($dx, $dy, $dz);
 			$this->setPosition($this->temporalVector->setComponents(($this->boundingBox->minX + $this->boundingBox->maxX) / 2, $this->boundingBox->minY, ($this->boundingBox->minZ + $this->boundingBox->maxZ) / 2));
 			$this->onGround = $this->isPlayer ? true : false;
-			return true;
+			return;
 		} else {
 
 			Timings::$entityMoveTimer->startTiming();
@@ -257,7 +256,7 @@ class Boat extends Vehicle
 
 			Timings::$entityMoveTimer->stopTiming();
 
-			return true;
+			return;
 		}
 	}
 }

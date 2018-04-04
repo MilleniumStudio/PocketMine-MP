@@ -26,10 +26,10 @@ declare(strict_types=1);
  */
 namespace pocketmine\command;
 
-use pocketmine\event\TextContainer;
-use pocketmine\event\TimingsHandler;
-use pocketmine\event\TranslationContainer;
+use pocketmine\lang\TextContainer;
+use pocketmine\lang\TranslationContainer;
 use pocketmine\Server;
+use pocketmine\timings\TimingsHandler;
 use pocketmine\utils\TextFormat;
 
 abstract class Command{
@@ -234,9 +234,9 @@ abstract class Command{
 	}
 
 	/**
-	 * @return string
+	 * @return string|null
 	 */
-	public function getPermissionMessage() : string{
+	public function getPermissionMessage() : ?string{
 		return $this->permissionMessage;
 	}
 
@@ -308,7 +308,7 @@ abstract class Command{
 			$colored = new TranslationContainer(TextFormat::GRAY . TextFormat::ITALIC . "%chat.type.admin", [$source->getName(), $message]);
 		}
 
-		if($sendToSource === true and !($source instanceof ConsoleCommandSender)){
+		if($sendToSource and !($source instanceof ConsoleCommandSender)){
 			$source->sendMessage($message);
 		}
 

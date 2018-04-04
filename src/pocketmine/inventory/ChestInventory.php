@@ -23,8 +23,6 @@ declare(strict_types=1);
 
 namespace pocketmine\inventory;
 
-use pocketmine\level\Level;
-use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\BlockEventPacket;
 use pocketmine\network\mcpe\protocol\LevelSoundEventPacket;
 use pocketmine\network\mcpe\protocol\types\WindowTypes;
@@ -66,27 +64,29 @@ class ChestInventory extends ContainerInventory{
 	public function onOpen(Player $who) : void{
 		parent::onOpen($who);
 
-		if(count($this->getViewers()) === 1 and ($level = $this->getHolder()->getLevel()) instanceof Level){
-			$this->broadcastBlockEventPacket($this->getHolder(), true);
-			$level->broadcastLevelSoundEvent($this->getHolder()->add(0.5, 0.5, 0.5), LevelSoundEventPacket::SOUND_CHEST_OPEN);
+		if(count($this->getViewers()) === 1 and $this->getHolder()->isValid()){
+			$this->broadcastBlockEventPacket(true);
+			$this->getHolder()->getLevel()->broadcastLevelSoundEvent($this->getHolder()->add(0.5, 0.5, 0.5), LevelSoundEventPacket::SOUND_CHEST_OPEN);
 		}
 	}
 
 	public function onClose(Player $who) : void{
-		if(count($this->getViewers()) === 1 and ($level = $this->getHolder()->getLevel()) instanceof Level){
-			$this->broadcastBlockEventPacket($this->getHolder(), false);
-			$level->broadcastLevelSoundEvent($this->getHolder()->add(0.5, 0.5, 0.5), LevelSoundEventPacket::SOUND_CHEST_CLOSED);
+		if(count($this->getViewers()) === 1 and $this->getHolder()->isValid()){
+			$this->broadcastBlockEventPacket(false);
+			$this->getHolder()->getLevel()->broadcastLevelSoundEvent($this->getHolder()->add(0.5, 0.5, 0.5), LevelSoundEventPacket::SOUND_CHEST_CLOSED);
 		}
 		parent::onClose($who);
 	}
 
-	protected function broadcastBlockEventPacket(Vector3 $vector, bool $isOpen) : void{
+	protected function broadcastBlockEventPacket(bool $isOpen) : void{
+		$holder = $this->getHolder();
+
 		$pk = new BlockEventPacket();
-		$pk->x = (int) $vector->x;
-		$pk->y = (int) $vector->y;
-		$pk->z = (int) $vector->z;
+		$pk->x = (int) $holder->x;
+		$pk->y = (int) $holder->y;
+		$pk->z = (int) $holder->z;
 		$pk->eventType = 1; //it's always 1 for a chest
 		$pk->eventData = $isOpen ? 1 : 0;
-		$this->getHolder()->getLevel()->addChunkPacket($this->getHolder()->getX() >> 4, $this->getHolder()->getZ() >> 4, $pk);
+		$holder->getLevel()->addChunkPacket($holder->getFloorX() >> 4, $holder->getFloorZ() >> 4, $pk);
 	}
 }

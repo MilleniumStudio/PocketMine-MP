@@ -24,13 +24,11 @@ declare(strict_types=1);
 namespace pocketmine\event\player;
 
 use pocketmine\event\entity\EntityDeathEvent;
-use pocketmine\event\TextContainer;
 use pocketmine\item\Item;
+use pocketmine\lang\TextContainer;
 use pocketmine\Player;
 
 class PlayerDeathEvent extends EntityDeathEvent{
-	public static $handlerList = null;
-
 	/** @var Player */
 	protected $entity;
 

@@ -23,8 +23,8 @@ declare(strict_types=1);
 
 namespace pocketmine\block;
 
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
-use pocketmine\level\Level;
 use pocketmine\Player;
 
 class Ice extends Transparent{
@@ -56,22 +56,20 @@ class Ice extends Transparent{
 	}
 
 	public function onBreak(Item $item, Player $player = null) : bool{
-		return $this->getLevel()->setBlock($this, BlockFactory::get(Block::WATER), true);
+		if(!$item->hasEnchantment(Enchantment::SILK_TOUCH)){
+			return $this->getLevel()->setBlock($this, BlockFactory::get(Block::WATER), true);
+		}
+		return parent::onBreak($item, $player);
 	}
 
 	public function ticksRandomly() : bool{
 		return true;
 	}
 
-	public function onUpdate(int $type){
-		if($type === Level::BLOCK_UPDATE_RANDOM){
-			if($this->level->getHighestAdjacentBlockLight($this->x, $this->y, $this->z) >= 12){
-				$this->level->useBreakOn($this);
-
-				return $type;
-			}
+	public function onRandomTick() : void{
+		if($this->level->getHighestAdjacentBlockLight($this->x, $this->y, $this->z) >= 12){
+			$this->level->useBreakOn($this);
 		}
-		return false;
 	}
 
 	public function getDropsForCompatibleTool(Item $item) : array{

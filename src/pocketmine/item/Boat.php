@@ -47,7 +47,7 @@ class Boat extends Item
         return 1200; //400 in PC
     }
 
-    public function onActivate(Level $level, Player $player, Block $block, Block $target, int $face, Vector3 $facePos): bool
+    public function onActivate(Player $player, Block $block, Block $target, int $face, Vector3 $facePos): bool
     {
         $nbt = new CompoundTag("", [
             new ListTag("Pos", [
@@ -67,7 +67,7 @@ class Boat extends Item
         ]);
 //                var_dump($this->meta);
 
-        $entity = Entity::createEntity(BoatEntity::NETWORK_ID, $level, $nbt);
+        $entity = Entity::createEntity(BoatEntity::NETWORK_ID, $player->getLevel(), $nbt);
 
         if ($entity instanceof Entity){
             if ($player->isSurvival()){

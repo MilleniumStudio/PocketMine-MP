@@ -23,10 +23,10 @@ declare(strict_types=1);
 
 namespace pocketmine\permission;
 
-use pocketmine\event\Timings;
 use pocketmine\plugin\Plugin;
 use pocketmine\plugin\PluginException;
 use pocketmine\Server;
+use pocketmine\timings\Timings;
 
 class PermissibleBase implements Permissible{
 	/** @var ServerOperator */
@@ -53,11 +53,6 @@ class PermissibleBase implements Permissible{
 		if($opable instanceof Permissible){
 			$this->parent = $opable;
 		}
-	}
-
-	public function __destruct(){
-		$this->parent = null;
-		$this->opable = null;
 	}
 
 	/**
