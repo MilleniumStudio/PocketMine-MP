@@ -44,6 +44,9 @@ class ShotgunAmmo extends Projectile{
 
     protected $damage = 1.5;
 
+    public $width = 0.5;
+    public $height = 0.5;
+
     public function __construct(Level $level, CompoundTag $nbt, Entity $shootingEntity = null, bool $critical = false){
         parent::__construct($level, $nbt, $shootingEntity);
         $this->setCritical($critical);
@@ -73,7 +76,7 @@ class ShotgunAmmo extends Projectile{
 
         $hasUpdate = parent::entityBaseTick($tickDiff);
 
-        if($this->onGround or $this->hadCollision){
+        if($this->onGround){
             $this->setCritical(false);
         }
 

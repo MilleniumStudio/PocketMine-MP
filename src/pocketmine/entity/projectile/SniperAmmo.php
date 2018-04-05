@@ -74,7 +74,7 @@ class SniperAmmo extends Projectile{
 
 		$hasUpdate = parent::entityBaseTick($tickDiff);
 
-		if($this->onGround or $this->hadCollision){
+		if($this->onGround){
 			$this->setCritical(false);
 		}
 

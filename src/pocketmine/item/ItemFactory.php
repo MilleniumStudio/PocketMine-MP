@@ -104,7 +104,7 @@ class ItemFactory{
 		self::registerItem(new Item(Item::FLINT, 0, "Flint"));
 		self::registerItem(new RawPorkchop());
 		self::registerItem(new CookedPorkchop());
-		self::registerItem(new Painting());
+		//self::registerItem(new Painting());
 		self::registerItem(new GoldenApple());
 		self::registerItem(new Sign());
 		self::registerItem(new ItemBlock(Block::OAK_DOOR_BLOCK, 0, Item::OAK_DOOR));
@@ -116,12 +116,12 @@ class ItemFactory{
         self::registerItem(new FishingRod());
         self::registerItem(new Clock());
         self::registerItem(new Item(Item::GLOWSTONE_DUST, 0, "Glowstone Dust"));
-        self::registerItem(new Fish());
-        self::registerItem(new CookedFish());
+        //self::registerItem(new Fish());
+        //self::registerItem(new CookedFish());
         self::registerItem(new Dye());
         self::registerItem(new Item(Item::BONE, 0, "Bone"));
         self::registerItem(new Item(Item::SUGAR, 0, "Sugar"));
-        self::registerItem(new Cake());
+        //self::registerItem(new Cake());
         self::registerItem(new Bed());
         self::registerItem(new ItemBlock(Block::REPEATER_BLOCK, 0, Item::REPEATER));
         self::registerItem(new Cookie());

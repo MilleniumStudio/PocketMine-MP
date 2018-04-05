@@ -56,8 +56,6 @@ use pocketmine\event\entity\EntityMotionEvent;
 use pocketmine\event\entity\EntityRegainHealthEvent;
 use pocketmine\event\entity\EntitySpawnEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
-use pocketmine\event\Timings;
-use pocketmine\event\TimingsHandler;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
@@ -87,6 +85,8 @@ use pocketmine\Player;
 use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\item\Item as ItemItem;
+use pocketmine\timings\Timings;
+
 use SalmonDE\StatsPE\Base;
 
 abstract class Entity extends Location implements Metadatable, EntityIds
@@ -802,7 +802,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		}elseif($owner->closed){
 			throw new \InvalidArgumentException("Supplied owning entity is garbage and cannot be used");
 		}else{
-			$this->propertyManager->setLong(self::DATA_OWNER_EID, $owner->getId());
+			$this->getDataPropertyManager()->setLong(self::DATA_OWNER_EID, $owner->getId());
 		}
 	}
 
