@@ -182,7 +182,7 @@ class PlayerInventory extends EntityInventory{
 		}
 	}
 
-	public function onSlotChange(int $index, Item $before, bool $send) : void{
+/*	public function onSlotChange(int $index, Item $before, bool $send) : void{
 		$holder = $this->getHolder();
 		if($holder instanceof Player and !$holder->spawned){
 			return;
@@ -195,7 +195,7 @@ class PlayerInventory extends EntityInventory{
 			//Do not send armor by accident here.
 			parent::onSlotChange($index, $before, $send);
 		}
-	}
+	}*/
 
 	/**
 	 * Returns the number of slots in the hotbar.
@@ -225,5 +225,4 @@ class PlayerInventory extends EntityInventory{
 	public function getHolder(){
 		return $this->holder;
 	}
-
 }
