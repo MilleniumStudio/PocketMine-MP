@@ -58,7 +58,6 @@ use pocketmine\event\entity\EntitySpawnEvent;
 use pocketmine\event\entity\EntityTeleportEvent;
 use pocketmine\event\Timings;
 use pocketmine\event\TimingsHandler;
-use pocketmine\item\EnderPearl;
 use pocketmine\level\format\Chunk;
 use pocketmine\level\Level;
 use pocketmine\level\Location;
@@ -89,9 +88,6 @@ use pocketmine\plugin\Plugin;
 use pocketmine\Server;
 use pocketmine\item\Item as ItemItem;
 use SalmonDE\StatsPE\Base;
-
-use pocketmine\timings\Timings;
-use pocketmine\timings\TimingsHandler;
 
 abstract class Entity extends Location implements Metadatable, EntityIds
 {
