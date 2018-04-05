@@ -41,7 +41,7 @@ class Bow extends Tool{
 		return 200;
 	}
 
-	public function getMaxDurability(){
+	public function getMaxDurability() : int{
 		return 385;
 	}
 
@@ -60,9 +60,11 @@ class Bow extends Tool{
 		$nbt->setShort("Fire", $player->isOnFire() ? 45 * 60 : 0);
 
 		$diff = $player->getItemUseDuration();
-		$force = 5;
+		$p = $diff / 20;
+		$force = min((($p ** 2) + $p * 2) / 3, 1) * 5;
 
 		$entity = Entity::createEntity("SniperAmmo", $player->getLevel(), $nbt, $player, $force == 5);
+
 		if($entity instanceof Projectile){
 			$ev = new EntityShootBowEvent($player, $this, $entity, 30);
 
@@ -81,6 +83,7 @@ class Bow extends Tool{
 				$entity->setMotion($entity->getMotion()->multiply($ev->getForce()));
 				if($player->isSurvival()){
 					$player->getInventory()->removeItem(ItemFactory::get(Item::ARROW, 0, 1));
+					$this->applyDamage(1);
 				}
                 LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_SHULKERBOX_CLOSED, 1, 0x10000000);
 
@@ -90,7 +93,7 @@ class Bow extends Tool{
 						$ev->getProjectile()->flagForDespawn();
 					}else{
 						$ev->getProjectile()->spawnToAll();
-						$player->level->addSound(new LaunchSound($player), $player->getViewers());
+						$player->getLevel()->broadcastLevelSoundEvent($player, LevelSoundEventPacket::SOUND_BOW);
 					}
 				}else{
 					$entity->spawnToAll();

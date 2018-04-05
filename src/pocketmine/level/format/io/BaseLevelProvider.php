@@ -42,15 +42,23 @@ abstract class BaseLevelProvider implements LevelProvider{
 		if(!file_exists($this->path)){
 			mkdir($this->path, 0777, true);
 		}
+
+		$this->loadLevelData();
+		$this->fixLevelData();
+	}
+
+	protected function loadLevelData() : void{
 		$nbt = new BigEndianNBTStream();
-		$nbt->readCompressed(file_get_contents($this->getPath() . "level.dat"));
-		$levelData = $nbt->getData()->getCompoundTag("Data");
-		if($levelData !== null){
-			$this->levelData = $levelData;
-		}else{
+		$levelData = $nbt->readCompressed(file_get_contents($this->getPath() . "level.dat"));
+
+		if(!($levelData instanceof CompoundTag) or !$levelData->hasTag("Data", CompoundTag::class)){
 			throw new LevelException("Invalid level.dat");
 		}
 
+		$this->levelData = $levelData->getCompoundTag("Data");
+	}
+
+	protected function fixLevelData() : void{
 		if(!$this->levelData->hasTag("generatorName", StringTag::class)){
 			$this->levelData->setString("generatorName", (string) Generator::getGenerator("DEFAULT"), true);
 		}
@@ -89,9 +97,9 @@ abstract class BaseLevelProvider implements LevelProvider{
 	}
 
 	public function setSpawn(Vector3 $pos){
-		$this->levelData->setInt("SpawnX", (int) $pos->x);
-		$this->levelData->setInt("SpawnY", (int) $pos->y);
-		$this->levelData->setInt("SpawnZ", (int) $pos->z);
+		$this->levelData->setInt("SpawnX", $pos->getFloorX());
+		$this->levelData->setInt("SpawnY", $pos->getFloorY());
+		$this->levelData->setInt("SpawnZ", $pos->getFloorZ());
 	}
 
 	public function doGarbageCollection(){
@@ -107,20 +115,14 @@ abstract class BaseLevelProvider implements LevelProvider{
 
 	public function saveLevelData(){
 		$nbt = new BigEndianNBTStream();
-		$nbt->setData(new CompoundTag("", [
+		$buffer = $nbt->writeCompressed(new CompoundTag("", [
 			$this->levelData
 		]));
-		$buffer = $nbt->writeCompressed();
 		file_put_contents($this->getPath() . "level.dat", $buffer);
 	}
 
-	public function loadChunk(int $chunkX, int $chunkZ, bool $create = false) : ?Chunk{
-		$chunk = $this->readChunk($chunkX, $chunkZ);
-		if($chunk === null and $create){
-			$chunk = new Chunk($chunkX, $chunkZ);
-		}
-
-		return $chunk;
+	public function loadChunk(int $chunkX, int $chunkZ) : ?Chunk{
+		return $this->readChunk($chunkX, $chunkZ);
 	}
 
 	public function saveChunk(Chunk $chunk) : void{

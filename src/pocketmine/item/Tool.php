@@ -25,6 +25,7 @@ namespace pocketmine\item;
 
 use pocketmine\block\Block;
 use pocketmine\entity\Entity;
+use pocketmine\item\enchantment\Enchantment;
 
 abstract class Tool extends Durable{
 
@@ -40,9 +41,6 @@ abstract class Tool extends Durable{
 	 * @return bool
 	 */
 	public function useOn($object){
-	    if ($this->getDamage() == 0)
-	        $this->applyDamage(1);
-
 		if($this->isUnbreakable()){
 			return true;
 		}
@@ -74,7 +72,9 @@ abstract class Tool extends Durable{
 		$efficiency = 1;
 		if(($block->getToolType() & $this->getBlockToolType()) !== 0){
 			$efficiency = $this->getBaseMiningEfficiency();
-			//TODO: check Efficiency enchantment
+			if(($enchantmentLevel = $this->getEnchantmentLevel(Enchantment::EFFICIENCY)) > 0){
+				$efficiency += ($enchantmentLevel ** 2 + 1);
+			}
 		}
 
 		return $efficiency;

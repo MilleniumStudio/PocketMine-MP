@@ -32,8 +32,6 @@ use pocketmine\Player;
  * Called when a player destroys a block somewhere in the world.
  */
 class BlockBreakEvent extends BlockEvent implements Cancellable{
-	public static $handlerList = null;
-
 	/** @var Player */
 	protected $player;
 
@@ -112,7 +110,7 @@ class BlockBreakEvent extends BlockEvent implements Cancellable{
 	/**
 	 * Variadic hack for easy array member type enforcement.
 	 *
-	 * @param Item[] ...$drops
+	 * @param Item ...$drops
 	 */
 	public function setDropsVariadic(Item ...$drops){
 		$this->blockDrops = $drops;

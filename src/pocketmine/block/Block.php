@@ -27,12 +27,12 @@ declare(strict_types=1);
 namespace pocketmine\block;
 
 use pocketmine\entity\Entity;
+use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\Level;
-use pocketmine\level\MovingObjectPosition;
 use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
+use pocketmine\math\RayTraceResult;
 use pocketmine\math\Vector3;
 use pocketmine\metadata\Metadatable;
 use pocketmine\metadata\MetadataValue;
@@ -277,6 +277,12 @@ class Block extends Position implements BlockIds, Metadatable{
 		return $base;
 	}
 
+	/**
+	 * Called when this block or a block immediately adjacent to it changes state.
+	 */
+	public function onNearbyBlockChange() : void{
+
+	}
 
 	/**
 	 * Returns whether random block updates will be done on this block.
@@ -288,14 +294,18 @@ class Block extends Position implements BlockIds, Metadatable{
 	}
 
 	/**
-	 * Fires a block update on the Block
-	 *
-	 * @param int $type
-	 *
-	 * @return bool|int
+	 * Called when this block is randomly updated due to chunk ticking.
+	 * WARNING: This will not be called if ticksRandomly() does not return true!
 	 */
-	public function onUpdate(int $type){
-		return false;
+	public function onRandomTick() : void{
+
+	}
+
+	/**
+	 * Called when this block is updated by the delayed blockupdate scheduler in the level.
+	 */
+	public function onScheduledUpdate() : void{
+
 	}
 
 	/**
@@ -316,14 +326,6 @@ class Block extends Position implements BlockIds, Metadatable{
 	 */
 	public function getHardness() : float{
 		return 10;
-	}
-
-	/**
-	 * @deprecated
-	 * @return float
-	 */
-	public function getResistance() : float{
-		return $this->getBlastResistance();
 	}
 
 	/**
@@ -437,6 +439,10 @@ class Block extends Position implements BlockIds, Metadatable{
 	 */
 	public function getDrops(Item $item) : array{
 		if($this->isCompatibleWithTool($item)){
+			if($this->isAffectedBySilkTouch() and $item->hasEnchantment(Enchantment::SILK_TOUCH)){
+				return $this->getSilkTouchDrops($item);
+			}
+
 			return $this->getDropsForCompatibleTool($item);
 		}
 
@@ -454,6 +460,29 @@ class Block extends Position implements BlockIds, Metadatable{
 		return [
 			ItemFactory::get($this->getItemId(), $this->getVariant())
 		];
+	}
+
+	/**
+	 * Returns an array of Items to be dropped when the block is broken using a compatible Silk Touch-enchanted tool.
+	 *
+	 * @param Item $item
+	 *
+	 * @return Item[]
+	 */
+	public function getSilkTouchDrops(Item $item) : array{
+		return [
+			ItemFactory::get($this->getItemId(), $this->getVariant())
+		];
+	}
+
+	/**
+	 * Returns whether Silk Touch enchanted tools will cause this block to drop as itself. Since most blocks drop
+	 * themselves anyway, this is implicitly true.
+	 *
+	 * @return bool
+	 */
+	public function isAffectedBySilkTouch() : bool{
+		return true;
 	}
 
 	/**
@@ -480,7 +509,7 @@ class Block extends Position implements BlockIds, Metadatable{
 	 *
 	 * @return Block
 	 */
-	public function getSide($side, $step = 1){
+	public function getSide(int $side, int $step = 1){
 		if($this->isValid()){
 			return $this->getLevel()->getBlock(Vector3::getSide($side, $step));
 		}
@@ -542,9 +571,7 @@ class Block extends Position implements BlockIds, Metadatable{
 	 * @return bool
 	 */
 	public function collidesWithBB(AxisAlignedBB $bb) : bool{
-		$bbs = $this->getCollisionBoxes();
-
-		foreach($bbs as $bb2){
+		foreach($this->getCollisionBoxes() as $bb2){
 			if($bb->intersectsWith($bb2)){
 				return true;
 			}
@@ -619,15 +646,15 @@ class Block extends Position implements BlockIds, Metadatable{
 	 * @param Vector3 $pos1
 	 * @param Vector3 $pos2
 	 *
-	 * @return MovingObjectPosition|null
+	 * @return RayTraceResult|null
 	 */
-	public function calculateIntercept(Vector3 $pos1, Vector3 $pos2) : ?MovingObjectPosition{
+	public function calculateIntercept(Vector3 $pos1, Vector3 $pos2) : ?RayTraceResult{
 		$bbs = $this->getCollisionBoxes();
 		if(empty($bbs)){
 			return null;
 		}
 
-		/** @var MovingObjectPosition|null $currentHit */
+		/** @var RayTraceResult|null $currentHit */
 		$currentHit = null;
 		/** @var int|float $currentDistance */
 		$currentDistance = PHP_INT_MAX;
@@ -645,40 +672,34 @@ class Block extends Position implements BlockIds, Metadatable{
 			}
 		}
 
-		if($currentHit !== null){
-			$currentHit->blockX = $this->x;
-			$currentHit->blockY = $this->y;
-			$currentHit->blockZ = $this->z;
-		}
-
 		return $currentHit;
 	}
 
 	public function setMetadata(string $metadataKey, MetadataValue $newMetadataValue){
-		if($this->getLevel() instanceof Level){
-			$this->getLevel()->getBlockMetadata()->setMetadata($this, $metadataKey, $newMetadataValue);
+		if($this->isValid()){
+			$this->level->getBlockMetadata()->setMetadata($this, $metadataKey, $newMetadataValue);
 		}
 	}
 
 	public function getMetadata(string $metadataKey){
-		if($this->getLevel() instanceof Level){
-			return $this->getLevel()->getBlockMetadata()->getMetadata($this, $metadataKey);
+		if($this->isValid()){
+			return $this->level->getBlockMetadata()->getMetadata($this, $metadataKey);
 		}
 
 		return null;
 	}
 
 	public function hasMetadata(string $metadataKey) : bool{
-		if($this->getLevel() instanceof Level){
-			return $this->getLevel()->getBlockMetadata()->hasMetadata($this, $metadataKey);
+		if($this->isValid()){
+			return $this->level->getBlockMetadata()->hasMetadata($this, $metadataKey);
 		}
 
 		return false;
 	}
 
 	public function removeMetadata(string $metadataKey, Plugin $owningPlugin){
-		if($this->getLevel() instanceof Level){
-			$this->getLevel()->getBlockMetadata()->removeMetadata($this, $metadataKey, $owningPlugin);
+		if($this->isValid()){
+			$this->level->getBlockMetadata()->removeMetadata($this, $metadataKey, $owningPlugin);
 		}
 	}
 }

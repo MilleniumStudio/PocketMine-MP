@@ -39,9 +39,9 @@ use pocketmine\Player;
 
 abstract class ProjectileItem extends Item{
 
-	abstract public function getProjectileEntityType() : string;
+    abstract public function getProjectileEntityType() : string;
 
-	abstract public function getThrowForce() : float;
+    abstract public function getThrowForce() : float;
 
     public function relocationByAngle(Entity $p_Origin, float $p_Angle, float $p_Dist, bool $p_Relative, bool $p_UseMinecraftAngle) : Position
     {
@@ -70,9 +70,9 @@ abstract class ProjectileItem extends Item{
     {
         $nbt = Entity::createBaseNBT($player->add(0, $player->getEyeHeight() + 0.1, 0), $directionVector, $player->yaw, $player->pitch);
         //$relocation = $this->relocationByAngle($player, $player->yaw, 0.3, true, true);
-		//$nbt = Entity::createBaseNBT($player->add($relocation->x, $player->getEyeHeight() - 0.1, $relocation->z), $directionVector, $player->yaw, $player->pitch);
+        //$nbt = Entity::createBaseNBT($player->add($relocation->x, $player->getEyeHeight() - 0.1, $relocation->z), $directionVector, $player->yaw, $player->pitch);
 
-		if ($this->getProjectileEntityType() == "MachineGunAmmo") //
+        if ($this->getProjectileEntityType() == "MachineGunAmmo") //
         {
             if ($this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::CHORUS_FRUIT_POPPED))
                 LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_BURP, 1, 0x10000000);
@@ -87,11 +87,11 @@ abstract class ProjectileItem extends Item{
 
         $projectile = Entity::createEntity($this->getProjectileEntityType(), $player->getLevel(), $nbt, $player);
 
-		if($projectile !== null){
-			$projectile->setMotion($projectile->getMotion()->multiply($this->getThrowForce()));
-		}
+        if($projectile !== null){
+            $projectile->setMotion($projectile->getMotion()->multiply($this->getThrowForce()));
+        }
         echo("yo proj item : " . $this->getProjectileEntityType() . "\n");
-		$this->count--;
+        $this->count--;
 
         if ($projectile instanceof SplashPotion)
         {
@@ -109,24 +109,24 @@ abstract class ProjectileItem extends Item{
                 $projectile->setScale($projectile->scale);
 
         }
-            if($projectile instanceof Projectile){
-			$player->getServer()->getPluginManager()->callEvent($projectileEv = new ProjectileLaunchEvent($projectile));
-			if($projectileEv->isCancelled()){
-				$projectile->flagForDespawn();
-			}else{
+        if($projectile instanceof Projectile){
+            $player->getServer()->getPluginManager()->callEvent($projectileEv = new ProjectileLaunchEvent($projectile));
+            if($projectileEv->isCancelled()){
+                $projectile->flagForDespawn();
+            }else{
                 if (isset($projectile->scale))
                     $projectile->setScale($projectile->scale);
-				$projectile->spawnToAll();
-				$player->getLevel()->addSound(new LaunchSound($player), $player->getViewers());
-			}
-		}else{
-			$projectile->spawnToAll();
-		}
+                $projectile->spawnToAll();
+                $player->getLevel()->addSound(new LaunchSound($player), $player->getViewers());
+            }
+        }else{
+            $projectile->spawnToAll();
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	private function getAmmoLeft(Player $player, int $id)
+    private function getAmmoLeft(Player $player, int $id)
     {
         $i = 1;
         while ($player->getInventory()->contains(ItemFactory::get($id, 0, $i++)));
@@ -156,7 +156,7 @@ abstract class ProjectileItem extends Item{
         return new Vector3($x, $y, $z);
     }
 
-	private function PUBGBulletAmmoBehavior(Player $player, Vector3 $directionVector, CompoundTag $nbt, int $ItemId) : bool
+    private function PUBGBulletAmmoBehavior(Player $player, Vector3 $directionVector, CompoundTag $nbt, int $ItemId) : bool
     {
         if (!$player->getInventory()->contains(ItemFactory::get($ItemId, 0, 1)))
         {
@@ -237,7 +237,7 @@ abstract class ProjectileItem extends Item{
             $nbBullets--;
         }
         if ($player->isSurvival())
-                $player->getInventory()->removeItem(ItemFactory::get($ItemId, 0, 1));
+            $player->getInventory()->removeItem(ItemFactory::get($ItemId, 0, 1));
         return true;
     }
 

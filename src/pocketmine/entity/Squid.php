@@ -25,7 +25,7 @@ namespace pocketmine\entity;
 
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
-use pocketmine\item\Item as ItemItem;
+use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\EntityEventPacket;
@@ -74,7 +74,7 @@ class Squid extends WaterAnimal{
 
 
 	public function entityBaseTick(int $tickDiff = 1) : bool{
-		if($this->closed !== false){
+		if($this->closed){
 			return false;
 		}
 
@@ -123,7 +123,7 @@ class Squid extends WaterAnimal{
 
 	public function getDrops() : array{
 		return [
-			ItemFactory::get(ItemItem::DYE, 0, mt_rand(1, 3))
+			ItemFactory::get(Item::DYE, 0, mt_rand(1, 3))
 		];
 	}
 }

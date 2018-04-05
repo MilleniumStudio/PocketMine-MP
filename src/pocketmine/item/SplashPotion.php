@@ -23,23 +23,27 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use pocketmine\nbt\tag\CompoundTag;
+
 class SplashPotion extends ProjectileItem{
 
-    public $metaData = 0;
-    public function __construct(int $meta = 0){
-        parent::__construct(self::SPLASH_POTION, $meta, "SplashPotion");
-        $this->metaData = $meta;
-    }
+	public function __construct(int $meta = 0){
+		parent::__construct(self::SPLASH_POTION, $meta, "Splash Potion");
+	}
 
-    public function getMaxStackSize() : int{
-        return 64;
-    }
+	public function getMaxStackSize() : int{
+		return 1;
+	}
 
-    public function getProjectileEntityType() : string{
-        return "SplashPotion";
-    }
+	public function getProjectileEntityType() : string{
+		return "ThrownPotion";
+	}
 
-    public function getThrowForce() : float{
-        return 1.5;
-    }
+	public function getThrowForce() : float{
+		return 0.5;
+	}
+
+	protected function addExtraTags(CompoundTag $tag) : void{
+		$tag->setShort("PotionId", $this->meta);
+	}
 }

@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\entity;
 
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\SetEntityLinkPacket;
 use pocketmine\network\mcpe\protocol\types\EntityLink;
 use pocketmine\event\entity\EntityVehicleEnterEvent;
@@ -38,27 +39,27 @@ abstract class Vehicle extends Interactable implements Rideable{
     const STATE_STANDING = 0;
 
     public function getRollingAmplitude() {
-        return $this->getDataProperty(Entity::DATA_HURT_TIME);
+        return $this->getDataPropertyManager()->getPropertyValue(Entiti::DATA_HURT_TIME, int);
     }
 
     public function setRollingAmplitude(int $time) {
-        $this->setDataProperty(Entity::DATA_HURT_TIME, Entity::DATA_TYPE_INT, $time);
+        $this->getDataPropertyManager()->setPropertyValue(Entity::DATA_HURT_TIME, Entity::DATA_TYPE_INT, $time);
     }
 
     public function getRollingDirection() {
-        return $this->getDataProperty(Entity::DATA_HURT_DIRECTION);
+        return $this->getDataPropertyManager()->getPropertyValue(Entity::DATA_HURT_DURATION, Entity::DATA_TYPE_INT);
     }
 
     public function setRollingDirection(int $direction) {
-        $this->setDataProperty(Entity::DATA_HURT_DIRECTION, Entity::DATA_TYPE_INT, $direction);
+        $this->getDataPropertyManager()->setPropertyValue(Entity::DATA_HURT_DIRECTION, Entity::DATA_TYPE_INT, $direction);
     }
 
     public function getDamage() {
-        return $this->getDataProperty(Entity::DATA_HEALTH); // false data name (should be DATA_DAMAGE_TAKEN)
+        return $this->getDataPropertyManager()->getPropertyValue(Entity::DATA_HEALTH, Entity::DATA_TYPE_INT); // false data name (should be DATA_DAMAGE_TAKEN)
     }
 
     public function setDamage(int $damage) {
-        $this->setDataProperty(Entity::DATA_HEALTH, Entity::DATA_TYPE_INT, $damage);
+        $this->getDataPropertyManager()->setPropertyValue(Entity::DATA_HEALTH, Entity::DATA_TYPE_INT, $damage);
     }
 
     public function getInteractButtonText():string {
@@ -101,11 +102,11 @@ abstract class Vehicle extends Interactable implements Rideable{
         $p_Rider->canCollide = false;
         $p_Rider->pitch = $this->pitch;
 
-        $p_Rider->setDataProperty(self::DATA_RIDER_SEAT_POSITION, self::DATA_TYPE_VECTOR3F, $this->seatOffset);
+        $p_Rider->getDataPropertyManager()->setVector3(self::DATA_RIDER_SEAT_POSITION, new Vector3($this->seatOffset[0], $this->seatOffset[1], $this->seatOffset[2]));
         $p_Rider->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_RIDING, true);
-        $p_Rider->setDataProperty(self::DATA_RIDER_ROTATION_LOCKED, self::DATA_TYPE_BYTE, 1);
-        $p_Rider->setDataProperty(self::DATA_RIDER_MIN_ROTATION, self::DATA_TYPE_FLOAT, -180);
-        $p_Rider->setDataProperty(self::DATA_RIDER_MAX_ROTATION, self::DATA_TYPE_FLOAT, 0);
+        $p_Rider->getDataPropertyManager()->setByte(self::DATA_RIDER_ROTATION_LOCKED, 1);
+        $p_Rider->getDataPropertyManager()->setFloat(self::DATA_RIDER_MIN_ROTATION, -180);
+        $p_Rider->getDataPropertyManager()->setFloat(self::DATA_RIDER_MAX_ROTATION, 0);
 //        $this->setDataFlag(self::DATA_FLAGS, self::DATA_FLAG_SADDLED, true);
 
         $pk = new SetEntityLinkPacket();

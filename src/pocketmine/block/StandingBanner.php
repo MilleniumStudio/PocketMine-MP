@@ -25,7 +25,6 @@ namespace pocketmine\block;
 
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
-use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
@@ -75,16 +74,10 @@ class StandingBanner extends Transparent{
 		return false;
 	}
 
-	public function onUpdate(int $type){
-		if($type === Level::BLOCK_UPDATE_NORMAL){
-			if($this->getSide(Vector3::SIDE_DOWN)->getId() === self::AIR){
-				$this->getLevel()->useBreakOn($this);
-
-				return Level::BLOCK_UPDATE_NORMAL;
-			}
+	public function onNearbyBlockChange() : void{
+		if($this->getSide(Vector3::SIDE_DOWN)->getId() === self::AIR){
+			$this->getLevel()->useBreakOn($this);
 		}
-
-		return false;
 	}
 
 	public function getToolType() : int{
@@ -99,10 +92,14 @@ class StandingBanner extends Transparent{
 		$tile = $this->level->getTile($this);
 
 		$drop = ItemFactory::get(Item::BANNER, ($tile instanceof TileBanner ? $tile->getBaseColor() : 0));
-		if($tile instanceof TileBanner and ($patterns = $tile->namedtag->getListTag(TileBanner::TAG_PATTERNS)) !== null and $patterns->getCount() > 0){
+		if($tile instanceof TileBanner and ($patterns = $tile->namedtag->getListTag(TileBanner::TAG_PATTERNS)) !== null and !$patterns->empty()){
 			$drop->setNamedTagEntry($patterns);
 		}
 
 		return [$drop];
+	}
+
+	public function isAffectedBySilkTouch() : bool{
+		return false;
 	}
 }

@@ -149,7 +149,7 @@ class PopulationTask extends AsyncTask{
 	public function onCompletion(Server $server){
 		$level = $server->getLevel($this->levelId);
 		if($level !== null){
-			if($this->state === false){
+			if(!$this->state){
 				$level->registerGenerator();
 				return;
 			}

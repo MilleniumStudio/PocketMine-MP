@@ -36,8 +36,8 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder{
 	public function __construct(Chest $left, Chest $right){
 		$this->left = $left->getRealInventory();
 		$this->right = $right->getRealInventory();
-		$items = array_merge($this->left->getContents(), $this->right->getContents());
-		BaseInventory::__construct($this, $items);
+		$items = array_merge($this->left->getContents(true), $this->right->getContents(true));
+		BaseInventory::__construct($items);
 	}
 
 	public function getName() : string{
@@ -71,13 +71,15 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder{
 		return $index < $this->left->getSize() ? $this->left->clear($index, $send) : $this->right->clear($index - $this->right->getSize(), $send);
 	}
 
-	public function getContents() : array{
-		$contents = [];
-		for($i = 0, $size = $this->getSize(); $i < $size; ++$i){
-			$contents[$i] = $this->getItem($i);
+	public function getContents(bool $includeEmpty = false) : array{
+		$result = $this->left->getContents($includeEmpty);
+		$leftSize = $this->left->getSize();
+
+		foreach($this->right->getContents($includeEmpty) as $i => $item){
+			$result[$i + $leftSize] = $item;
 		}
 
-		return $contents;
+		return $result;
 	}
 
 	/**
@@ -110,14 +112,14 @@ class DoubleChestInventory extends ChestInventory implements InventoryHolder{
 	public function onOpen(Player $who) : void{
 		parent::onOpen($who);
 
-		if(count($this->getViewers()) === 1){
-			$this->broadcastBlockEventPacket($this->right->getHolder(), true);
+		if(count($this->getViewers()) === 1 and $this->right->getHolder()->isValid()){
+			$this->right->broadcastBlockEventPacket(true);
 		}
 	}
 
 	public function onClose(Player $who) : void{
-		if(count($this->getViewers()) === 1){
-			$this->broadcastBlockEventPacket($this->right->getHolder(), false);
+		if(count($this->getViewers()) === 1 and $this->right->getHolder()->isValid()){
+			$this->right->broadcastBlockEventPacket(false);
 		}
 		parent::onClose($who);
 	}

@@ -25,20 +25,46 @@ namespace pocketmine\item;
 
 use pocketmine\item\ItemIds;
 
-class EnderPearl extends ProjectileItem{
-	public function __construct(int $meta = 0){
-		parent::__construct(ItemIds::ENDER_PEARL, $meta, "EnderPearl");
-	}
+class EnderPearl extends ProjectileItem
+{
+    public function __construct(int $meta = 0)
+    {
+        parent::__construct(ItemIds::ENDER_PEARL, $meta, "EnderPearl");
+    }
 
-	public function getMaxStackSize() : int{
-		return 1;
-	}
+    public function getMaxStackSize(): int
+    {
+        return 1;
+    }
 
-	public function getProjectileEntityType() : string{
-		return "ShotgunAmmo";
-	}
+    public function getProjectileEntityType(): string
+    {
+        return "ShotgunAmmo";
+    }
 
-	public function getThrowForce() : float{
-		return 5;
-	}
+    public function getThrowForce(): float
+    {
+        return 5;
+    }
 }
+//class EnderPearl extends ProjectileItem{
+//	public function __construct(int $meta = 0){
+//		parent::__construct(self::ENDER_PEARL, $meta, "Ender Pearl");
+//	}
+//
+//	public function getMaxStackSize() : int{
+//		return 16;
+//	}
+//
+//	public function getProjectileEntityType() : string{
+//		return "ThrownEnderpearl";
+//	}
+//
+//	public function getThrowForce() : float{
+//		return 1.5;
+//	}
+//
+//	public function getCooldownTicks() : int{
+//		return 20;
+//	}
+//}
