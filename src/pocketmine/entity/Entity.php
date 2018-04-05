@@ -1510,7 +1510,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 	{
 		if ($this->updateRidden()) {
 //			echo self::class . "> updateRiderPosition\n";
-			$this->passenger->setDataProperty(Entity::DATA_RIDER_SEAT_POSITION, Entity::DATA_TYPE_VECTOR3F, $p_SeatOffset);
+			$this->passenger->getDataPropertyManager()->setVector3(Entity::DATA_RIDER_SEAT_POSITION, new Vector3($p_SeatOffset[0], $p_SeatOffset[1], $p_SeatOffset[2]));
 		}
 	}
 

@@ -905,15 +905,6 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		return $this->inAirTicks;
 	}
 
-        public function getButtonText():string {
-            return $this->buttonText;
-        }
-
-        public function setButtonText(string $text) {
-            $this->buttonText = $text;
-            $this->setDataProperty(Entity::DATA_INTERACTIVE_TAG, self::DATA_TYPE_STRING, $this->buttonText);
-        }
-
 	/**
 	 * Returns whether the player is currently using an item (right-click and hold).
 	 * @return bool
