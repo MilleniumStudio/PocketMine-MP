@@ -59,7 +59,7 @@ class Bow extends Tool{
 
 		$diff = $player->getItemUseDuration();
 		$p = $diff / 20;
-		$force = min((($p ** 2) + $p * 2) / 3, 1) * 2;
+		$force = min((($p ** 2) + $p * 2) / 3, 1) * 5;
 
 
 		$entity = Entity::createEntity("Arrow", $player->getLevel(), $nbt, $player, $force == 2);
