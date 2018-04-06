@@ -37,6 +37,6 @@ class Snowball extends ProjectileItem{
 	}
 
 	public function getThrowForce() : float{
-		return 1.5;
+		return 5;
 	}
 }

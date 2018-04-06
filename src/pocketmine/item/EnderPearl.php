@@ -46,6 +46,10 @@ class EnderPearl extends ProjectileItem
     {
         return 5;
     }
+
+    public function getCooldownTicks() : int{
+		return 20;
+	}
 }
 //class EnderPearl extends ProjectileItem{
 //	public function __construct(int $meta = 0){

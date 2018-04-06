@@ -35,6 +35,7 @@ use pocketmine\item\Armor;
 use pocketmine\item\Consumable;
 use pocketmine\item\enchantment\Enchantment;
 use pocketmine\item\Item;
+use pocketmine\item\ItemIds;
 use pocketmine\math\Vector3;
 use pocketmine\math\VoxelRayTrace;
 use pocketmine\nbt\tag\ByteTag;
@@ -446,7 +447,7 @@ abstract class Living extends Entity implements Damageable{
 
 		$cause = $source->getCause();
 
-		if ($this->hasEffect(Effect::DAMAGE_RESISTANCE) && $cause == EntityDamageEvent::CAUSE_FALL)
+		if (($this->hasEffect(Effect::DAMAGE_RESISTANCE) && $cause == EntityDamageEvent::CAUSE_FALL) || $this->getArmorInventory()->getChestplate()->getId() == ItemIds::ELYTRA)
         {
             $source->setDamage(0);
             return;
