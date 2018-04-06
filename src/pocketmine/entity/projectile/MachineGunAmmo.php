@@ -42,8 +42,8 @@ class MachineGunAmmo extends Projectile{
     protected $gravity = 0.01;
     protected $drag = 0.01;
 
-    public $width = 0.05;
-    public $height = 0.05;
+    public $width = 0.5;
+    public $height = 0.5;
 
     public $scale = 0.5;
 

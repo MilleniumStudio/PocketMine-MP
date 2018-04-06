@@ -33,7 +33,7 @@ class Snowball extends ProjectileItem{
 	}
 
 	public function getProjectileEntityType() : string{
-		return "Snowball";
+		return "MachineGunAmmo";
 	}
 
 	public function getThrowForce() : float{

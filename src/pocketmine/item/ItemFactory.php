@@ -112,6 +112,7 @@ class ItemFactory{
 		self::registerItem(new Anvil(), true);
 
         self::registerItem(new Egg());
+        self::registerItem(new Snowball());
         self::registerItem(new Compass());
         self::registerItem(new FishingRod());
         self::registerItem(new Clock());
@@ -135,7 +136,6 @@ class ItemFactory{
         self::registerItem(new RawChicken());
         self::registerItem(new CookedChicken());
         self::registerItem(new RottenFlesh());
-        //TODO: ENDER_PEARL - which is shot gun ammo now c.f : Entity::init()
         self::registerItem(new EnderPearl());
         self::registerItem(new BlazeRod());
         self::registerItem(new Item(Item::GHAST_TEAR, 0, "Ghast Tear"));

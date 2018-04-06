@@ -33,7 +33,7 @@ class Egg extends ProjectileItem{
 	}
 
 	public function getProjectileEntityType() : string{
-		return "Egg";
+		return "Grenada";
 	}
 
 	public function getThrowForce() : float{
