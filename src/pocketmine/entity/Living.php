@@ -447,7 +447,7 @@ abstract class Living extends Entity implements Damageable{
 
 		$cause = $source->getCause();
 
-		if (($this->hasEffect(Effect::DAMAGE_RESISTANCE) && $cause == EntityDamageEvent::CAUSE_FALL) || $this->getArmorInventory()->getChestplate()->getId() == ItemIds::ELYTRA)
+		if (($this->hasEffect(Effect::DAMAGE_RESISTANCE) && $cause == EntityDamageEvent::CAUSE_FALL) || ($this->getArmorInventory()->getChestplate()->getId() == ItemIds::ELYTRA && $cause == EntityDamageEvent::CAUSE_FALL))
         {
             $source->setDamage(0);
             return;
