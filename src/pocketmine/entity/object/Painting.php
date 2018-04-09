@@ -53,6 +53,8 @@ class Painting extends Entity{
 
 	public function __construct(Level $level, CompoundTag $nbt){
 		$this->motive = $nbt->getString("Motive");
+		$this->width = 1;
+		$this->height = 1;
 		$this->blockIn = new Vector3($nbt->getInt("TileX"), $nbt->getInt("TileY"), $nbt->getInt("TileZ"));
 		if($nbt->hasTag("Direction", ByteTag::class)){
 			$this->direction = $nbt->getByte("Direction");
