@@ -76,7 +76,8 @@ class BlockFactory{
 		self::$diffusesSkyLight = new \SplFixedArray(256);
 		self::$blastResistance = new \SplFixedArray(256);
 
-		self::registerBlock(new Air());
+        self::registerBlock(new Air());
+        self::registerBlock(new NetherPortal());
 		self::registerBlock(new Stone());
 		self::registerBlock(new Grass());
 		self::registerBlock(new Dirt());

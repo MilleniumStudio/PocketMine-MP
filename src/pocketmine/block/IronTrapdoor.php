@@ -44,4 +44,9 @@ class IronTrapdoor extends Trapdoor{
 	public function getToolHarvestLevel() : int{
 		return TieredTool::TIER_WOODEN;
 	}
+
+    public function canBulletPassThrough() : bool
+    {
+        return true;
+    }
 }

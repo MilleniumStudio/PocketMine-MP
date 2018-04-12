@@ -1282,10 +1282,20 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 	protected function checkObstruction(float $x, float $y, float $z): bool
 	{
-		if (count($this->level->getCollisionCubes($this, $this->getBoundingBox(), false)) === 0) {
-			return false;
-		}
-
+	    if ($this instanceof Projectile)
+        {
+            if (count($this->level->getCollisionCubesForProjectile($this, $this->getBoundingBox(), false)) === 0)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if (count($this->level->getCollisionCubes($this, $this->getBoundingBox(), false)) === 0)
+            {
+                return false;
+            }
+        }
 		$floorX = Math::floorFloat($x);
 		$floorY = Math::floorFloat($y);
 		$floorZ = Math::floorFloat($z);
@@ -1458,11 +1468,11 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 		}
 
 		if ($this->hasMovementUpdate()) {
-//			echo "> hasMovementUpdate\n";
 			$this->tryChangeMovement();
 			if ($this instanceof Projectile)
                 $this->entityBaseTick($tickDiff);
-			$this->move($this->motionX, $this->motionY, $this->motionZ);
+
+            $this->move($this->motionX, $this->motionY, $this->motionZ);
 
 			if (abs($this->motionX) <= self::MOTION_THRESHOLD) {
 				$this->motionX = 0;
@@ -1741,8 +1751,10 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 
 		if($this->keepMovement){
 			$this->boundingBox->offset($dx, $dy, $dz);
-		}else{
-			$this->ySize *= 0.4;
+
+        }else{
+
+            $this->ySize *= 0.4;
 			/*
 			if($this->isColliding){ //With cobweb?
 				$this->isColliding = false;
@@ -1779,7 +1791,6 @@ abstract class Entity extends Location implements Metadatable, EntityIds
 				//TODO: big messy loop
 			}*/
 			assert(abs($dx) <= 20 and abs($dy) <= 20 and abs($dz) <= 20, "Movement distance is excessive: dx=$dx, dy=$dy, dz=$dz");
-
             if ($this instanceof Projectile)
             {
                 $blockbb = $this->boundingBox;

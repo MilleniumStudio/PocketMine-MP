@@ -90,7 +90,6 @@ abstract class ProjectileItem extends Item{
         if($projectile !== null){
             $projectile->setMotion($projectile->getMotion()->multiply($this->getThrowForce()));
         }
-        echo("yo proj item : " . $this->getProjectileEntityType() . "\n");
         $this->count--;
 
         if ($projectile instanceof SplashPotion)

@@ -1223,7 +1223,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
      * @param Vector3|Position $pos
      * @param bool|Spawntype $spawnType
 	 */
-	public function setSpawn(Vector3 $pos, int $spawnType = SetSpawnPositionPacket::TYPE_PLAYER_SPAWN){
+	public function setSpawn(Vector3 $pos, int $spawnType = SetSpawnPositionPacket::TYPE_WORLD_SPAWN){
 		if(!($pos instanceof Position)){
 			$level = $this->level;
 		}else{
@@ -1235,7 +1235,7 @@ class Player extends Human implements CommandSender, ChunkLoader, IPlayer{
 		$pk->x = $this->spawnPosition->getFloorX();
 		$pk->y = $this->spawnPosition->getFloorY();
 		$pk->z = $this->spawnPosition->getFloorZ();
-		$pk->spawnType = SetSpawnPositionPacket::TYPE_PLAYER_SPAWN;
+		$pk->spawnType = SetSpawnPositionPacket::TYPE_WORLD_SPAWN;
 		$pk->spawnForced = false;
 		$this->dataPacket($pk);
 	}
