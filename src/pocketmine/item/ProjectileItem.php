@@ -75,13 +75,13 @@ abstract class ProjectileItem extends Item{
         if ($this->getProjectileEntityType() == "MachineGunAmmo") //
         {
             if ($this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::CHORUS_FRUIT_POPPED))
-                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_BURP, 1, 0x10000000);
+                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_BURP);
             return true;
         }
         if ($this->getProjectileEntityType() == "ShotgunAmmo")
         {
             if ($this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::GUNPOWDER))
-                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_SHULKERBOX_OPEN, 1, 0x10000000);
+                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_SHULKERBOX_OPEN);
             return true;
         }
 
