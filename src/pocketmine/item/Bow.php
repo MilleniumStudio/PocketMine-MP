@@ -85,7 +85,7 @@ class Bow extends Tool{
 					$player->getInventory()->removeItem(ItemFactory::get(Item::ARROW, 0, 1));
 					$this->applyDamage(1);
 				}
-                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_SHULKERBOX_CLOSED, 1, 0x10000000);
+                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_SHULKERBOX_CLOSED);
 
 				if($entity instanceof Projectile){
 					$player->getServer()->getPluginManager()->callEvent($projectileEv = new ProjectileLaunchEvent($entity));
