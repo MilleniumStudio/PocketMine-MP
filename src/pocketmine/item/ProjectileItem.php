@@ -129,6 +129,8 @@ abstract class ProjectileItem extends Item{
     {
         $i = 1;
         while ($player->getInventory()->contains(ItemFactory::get($id, 0, $i++)));
+        if ($i > 100)
+            $i = 103;
         return $i;
     }
 
