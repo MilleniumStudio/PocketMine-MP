@@ -78,10 +78,18 @@ abstract class ProjectileItem extends Item{
                 LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_BURP);
             return true;
         }
+
         if ($this->getProjectileEntityType() == "ShotgunAmmo")
         {
             if ($this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::GUNPOWDER))
                 LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_SHULKERBOX_OPEN);
+            return true;
+        }
+
+        if ($this->getProjectileEntityType() == "ScareLAmmo")
+        {
+            if ($this->PUBGBulletAmmoBehavior($player, $directionVector, $nbt, ItemIds::ROTTEN_FLESH))
+                LoadBalancer::getInstance()->getServer()->getLevel(1)->broadcastLevelSoundEvent($player->getPosition(), LevelSoundEventPacket::SOUND_RANDOM_ANVIL_USE);
             return true;
         }
 
@@ -94,7 +102,6 @@ abstract class ProjectileItem extends Item{
 
         if ($projectile instanceof SplashPotion)
         {
-            echo ("it's a SplashPotion !\n");
             $projectile->setOwningEntity($player);
             $projectile->setOriginLaunchPoint($player->getPosition());
             if ($this instanceof \pocketmine\item\SplashPotion)
@@ -103,7 +110,6 @@ abstract class ProjectileItem extends Item{
 
         if ($projectile instanceof Grenada) //  item/MachineGunAmmo
         {
-            echo ("it's a grenada !\n");
             if (isset($projectile->scale))
                 $projectile->setScale($projectile->scale);
 
@@ -116,7 +122,8 @@ abstract class ProjectileItem extends Item{
                 if (isset($projectile->scale))
                     $projectile->setScale($projectile->scale);
                 $projectile->spawnToAll();
-                $player->getLevel()->addSound(new LaunchSound($player), $player->getViewers());
+                if ($this->getProjectileEntityType() != "MachineGunAmmo" && $this->getProjectileEntityType() != "ShotgunAmmo" && $this->getProjectileEntityType() != "ScareLAmmo")
+                    $player->getLevel()->addSound(new LaunchSound($player), $player->getViewers());
             }
         }else{
             $projectile->spawnToAll();
@@ -212,7 +219,6 @@ abstract class ProjectileItem extends Item{
                         $projectile->setScale($projectile->scale);
                     $projectile->spawnToAll();
                     $player->getLevel()->addSound(new LaunchSound($player), $player->getViewers());
-
                 }
             } else {
                 $projectile->spawnToAll();

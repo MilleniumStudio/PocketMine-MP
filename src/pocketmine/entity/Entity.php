@@ -43,6 +43,7 @@ use pocketmine\entity\projectile\Egg;
 use pocketmine\entity\projectile\MachineGunAmmo;
 use pocketmine\entity\projectile\Grenada;
 use pocketmine\entity\projectile\Projectile;
+use pocketmine\entity\projectile\ScareLAmmo;
 use pocketmine\entity\projectile\ShotgunAmmo;
 use pocketmine\entity\projectile\SniperAmmo;
 use pocketmine\entity\projectile\EnderPearl;
@@ -259,6 +260,7 @@ abstract class Entity extends Location implements Metadatable, EntityIds
         Entity::registerEntity(MachineGunAmmo::class, false, ['MachineGunAmmo', 'minecraft:chorus_fruit_pop']);
         Entity::registerEntity(Grenada::class, false, ['Grenada', 'Grenada']);
         Entity::registerEntity(ShotgunAmmo::class, false, ['ShotgunAmmo', 'minecraft:gunpowder']);
+        Entity::registerEntity(ScareLAmmo::class, false, ['ScareLAmmo', 'minecraft:rotten_flesh']);
         Entity::registerEntity(Egg::class, false, ['Egg', 'minecraft:egg']);
         Entity::registerEntity(EnderPearl::class, false, ['ThrownEnderpearl', 'minecraft:ender_pearl']);
         Entity::registerEntity(ExperienceBottle::class, false, ['ThrownExpBottle', 'minecraft:xp_bottle']);

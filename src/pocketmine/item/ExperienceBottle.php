@@ -29,10 +29,11 @@ class ExperienceBottle extends ProjectileItem{
 	}
 
 	public function getProjectileEntityType() : string{
-		return "ThrownExpBottle";
+		return "ScareLAmmo";
 	}
 
 	public function getThrowForce() : float{
-		return 0.7;
+		return 6;
+	    //return 0.7;
 	}
 }
