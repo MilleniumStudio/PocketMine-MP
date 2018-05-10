@@ -211,7 +211,7 @@ class Explosion{
 				}
 			}
 
-			$this->level->setBlockIdAt($block->x, $block->y, $block->z, 0);
+			$this->level->setBlock($block, BlockFactory::get(0)); // setBlockIdAt($block->x, $block->y, $block->z, 0);
 
 			$t = $this->level->getTileAt($block->x, $block->y, $block->z);
 			if($t instanceof Tile){
