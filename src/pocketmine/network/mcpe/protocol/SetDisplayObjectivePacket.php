@@ -21,29 +21,43 @@
 
 declare(strict_types=1);
 
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
 use pocketmine\network\mcpe\NetworkSession;
 
-class RiderJumpPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::RIDER_JUMP_PACKET;
+class SetDisplayObjectivePacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::SET_DISPLAY_OBJECTIVE_PACKET;
 
+	/** @var string */
+	public $displaySlot;
+	/** @var string */
+	public $objectiveName;
+	/** @var string */
+	public $displayName;
+	/** @var string */
+	public $criteriaName;
 	/** @var int */
-	public $jumpStrength; //percentage
+	public $sortOrder;
 
 	protected function decodePayload(){
-		$this->jumpStrength = $this->getVarInt();
+		$this->displaySlot = $this->getString();
+		$this->objectiveName = $this->getString();
+		$this->displayName = $this->getString();
+		$this->criteriaName = $this->getString();
+		$this->sortOrder = $this->getVarInt();
 	}
 
 	protected function encodePayload(){
-		$this->putVarInt($this->jumpStrength);
+		$this->putString($this->displaySlot);
+		$this->putString($this->objectiveName);
+		$this->putString($this->displayName);
+		$this->putString($this->criteriaName);
+		$this->putVarInt($this->sortOrder);
 	}
 
 	public function handle(NetworkSession $session) : bool{
-		return $session->handleRiderJump($this);
+		return $session->handleSetDisplayObjective($this);
 	}
 }

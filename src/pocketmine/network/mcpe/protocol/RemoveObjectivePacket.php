@@ -21,27 +21,27 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\block;
+namespace pocketmine\network\mcpe\protocol;
 
-class WoodenStairs extends Stair{
+#include <rules/DataPacket.h>
 
-	public function getHardness() : float{
-		return 2;
+use pocketmine\network\mcpe\NetworkSession;
+
+class RemoveObjectivePacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::REMOVE_OBJECTIVE_PACKET;
+
+	/** @var string */
+	public $objectiveName;
+
+	protected function decodePayload(){
+		$this->objectiveName = $this->getString();
 	}
 
-	public function getBlastResistance() : float{
-		return 15;
+	protected function encodePayload(){
+		$this->putString($this->objectiveName);
 	}
 
-	public function getToolType() : int{
-		return BlockToolType::TYPE_AXE;
-	}
-
-	public function getFlameEncouragement() : int{
-		return 5;
-	}
-
-	public function getFlammability() : int{
-		return 20;
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleRemoveObjective($this);
 	}
 }

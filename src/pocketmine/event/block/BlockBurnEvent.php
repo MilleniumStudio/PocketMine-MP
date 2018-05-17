@@ -21,26 +21,28 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\particle;
+namespace pocketmine\event\block;
 
-use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
+use pocketmine\block\Block;
+use pocketmine\event\Cancellable;
 
-class DestroyParticle extends Particle{
-	/** @var int */
-	protected $data;
+/**
+ * Called when a block is burned away by fire.
+ */
+class BlockBurnEvent extends BlockEvent implements Cancellable{
+	/** @var Block */
+	private $causingBlock;
 
-	public function __construct(Vector3 $pos, int $data){
-		parent::__construct($pos->x, $pos->y, $pos->z);
-		$this->data = $data;
+	public function __construct(Block $block, Block $causingBlock){
+		parent::__construct($block);
+		$this->causingBlock = $causingBlock;
 	}
 
-	public function encode(){
-		$pk = new LevelEventPacket;
-		$pk->evid = LevelEventPacket::EVENT_PARTICLE_DESTROY;
-		$pk->position = $this->asVector3();
-		$pk->data = $this->data;
-
-		return $pk;
+	/**
+	 * Returns the block (usually Fire) which caused the target block to be burned away.
+	 * @return Block
+	 */
+	public function getCausingBlock() : Block{
+		return $this->causingBlock;
 	}
 }
