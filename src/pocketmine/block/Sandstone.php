@@ -38,7 +38,7 @@ class Sandstone extends Solid{
 	}
 
 	public function getHardness() : float{
-		return 0.8;
+		return 1.5;
 	}
 
 	public function getName() : string{

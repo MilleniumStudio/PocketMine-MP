@@ -530,18 +530,18 @@ class Level implements ChunkManager, Metadatable{
 	 * Broadcasts a LevelSoundEvent to players in the area.
 	 *
 	 * @param Vector3 $pos
-	 * @param int $soundId
-	 * @param int $pitch
-	 * @param int $extraData
-	 * @param bool $unknown
-	 * @param bool $disableRelativeVolume If true, all players receiving this sound-event will hear the sound at full volume regardless of distance
+	 * @param int     $soundId
+	 * @param int     $pitch
+	 * @param int     $extraData
+	 * @param bool    $isBabyMob
+	 * @param bool    $disableRelativeVolume If true, all players receiving this sound-event will hear the sound at full volume regardless of distance
 	 */
-	public function broadcastLevelSoundEvent(Vector3 $pos, int $soundId, int $pitch = 1, int $extraData = -1, bool $unknown = false, bool $disableRelativeVolume = false){
+	public function broadcastLevelSoundEvent(Vector3 $pos, int $soundId, int $pitch = 1, int $extraData = -1, bool $isBabyMob = false, bool $disableRelativeVolume = false){
 		$pk = new LevelSoundEventPacket();
 		$pk->sound = $soundId;
 		$pk->pitch = $pitch;
 		$pk->extraData = $extraData;
-		$pk->unknownBool = $unknown;
+		$pk->isBabyMob = $isBabyMob;
 		$pk->disableRelativeVolume = $disableRelativeVolume;
 		$pk->position = $pos->asVector3();
 		$this->addChunkPacket($pos->getFloorX() >> 4, $pos->getFloorZ() >> 4, $pk);
@@ -877,6 +877,16 @@ class Level implements ChunkManager, Metadatable{
 		$this->sleepTicks = $ticks;
 	}
 
+	/**
+	 * @deprecated
+	 *
+	 * @param int           $x
+	 * @param int           $y
+	 * @param int           $z
+	 * @param int           $id
+	 * @param int           $data
+	 * @param Player[]|null $targets
+	 */
 	public function sendBlockExtraData(int $x, int $y, int $z, int $id, int $data, array $targets = null){
 		$pk = new LevelEventPacket;
 		$pk->evid = LevelEventPacket::EVENT_SET_DATA;
@@ -1972,11 +1982,6 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	private function destroyBlockInternal(Block $target, Item $item, ?Player $player = null, bool $createParticles = false) : void{
-		$above = $this->getBlockAt($target->x, $target->y + 1, $target->z);
-		if($above->getId() === Block::FIRE){ //TODO: this should be done in Fire's onUpdate(), not with this hack
-			$this->setBlock($above, BlockFactory::get(Block::AIR), true);
-		}
-
 		if($createParticles){
 			$this->addParticle(new DestroyBlockParticle($target->add(0.5, 0.5, 0.5), $target));
 		}
@@ -2397,6 +2402,8 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
+	 * @deprecated This functionality no longer produces any effect and will be removed in a future release
+	 *
 	 * Gets the raw block extra data
 	 *
 	 * @param int $x
@@ -2410,6 +2417,7 @@ class Level implements ChunkManager, Metadatable{
 	}
 
 	/**
+	 * @deprecated This functionality no longer produces any effect and will be removed in a future release
 	 * Sets the raw block metadata.
 	 *
 	 * @param int $x
