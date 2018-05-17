@@ -35,3 +35,6 @@ test_data/*
 
 # Doxygen
 Documentation/*
+
+tests/plugins/PocketMine-DevTools/*
+tests/plugins/PocketMine-TesterPlugin/*
