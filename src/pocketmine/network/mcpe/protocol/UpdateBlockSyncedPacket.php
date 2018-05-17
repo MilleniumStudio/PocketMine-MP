@@ -21,29 +21,33 @@
 
 declare(strict_types=1);
 
-namespace pocketmine\level\particle;
+namespace pocketmine\network\mcpe\protocol;
 
-use pocketmine\block\Block;
-use pocketmine\block\BlockFactory;
-use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\protocol\LevelEventPacket;
+#include <rules/DataPacket.h>
 
-class DestroyBlockParticle extends Particle{
+use pocketmine\network\mcpe\NetworkSession;
+
+class UpdateBlockSyncedPacket extends UpdateBlockPacket{
+	public const NETWORK_ID = ProtocolInfo::UPDATE_BLOCK_SYNCED_PACKET;
 
 	/** @var int */
-	protected $data;
+	protected $uvarint64_1 = 0;
+	/** @var int */
+	protected $uvarint64_2 = 0;
 
-	public function __construct(Vector3 $pos, Block $b){
-		parent::__construct($pos->x, $pos->y, $pos->z);
-		$this->data = BlockFactory::toStaticRuntimeId($b->getId(), $b->getDamage());
+	protected function decodePayload(){
+		parent::decodePayload();
+		$this->uvarint64_1 = $this->getUnsignedVarLong();
+		$this->uvarint64_2 = $this->getUnsignedVarLong();
 	}
 
-	public function encode(){
-		$pk = new LevelEventPacket;
-		$pk->evid = LevelEventPacket::EVENT_PARTICLE_DESTROY;
-		$pk->position = $this->asVector3();
-		$pk->data = $this->data;
+	protected function encodePayload(){
+		parent::encodePayload();
+		$this->putUnsignedVarLong($this->uvarint64_1);
+		$this->putUnsignedVarLong($this->uvarint64_2);
+	}
 
-		return $pk;
+	public function handle(NetworkSession $session) : bool{
+		return $session->handleUpdateBlockSynced($this);
 	}
 }

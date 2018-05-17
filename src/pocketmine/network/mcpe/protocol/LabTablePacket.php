@@ -21,29 +21,41 @@
 
 declare(strict_types=1);
 
-
 namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
-
 use pocketmine\network\mcpe\NetworkSession;
 
-class RiderJumpPacket extends DataPacket{
-	public const NETWORK_ID = ProtocolInfo::RIDER_JUMP_PACKET;
+class LabTablePacket extends DataPacket{
+	public const NETWORK_ID = ProtocolInfo::LAB_TABLE_PACKET;
 
 	/** @var int */
-	public $jumpStrength; //percentage
+	public $uselessByte; //0 for client -> server, 1 for server -> client. Seems useless.
+
+	/** @var int */
+	public $x;
+	/** @var int */
+	public $y;
+	/** @var int */
+	public $z;
+
+	/** @var int */
+	public $reactionType;
 
 	protected function decodePayload(){
-		$this->jumpStrength = $this->getVarInt();
+		$this->uselessByte = $this->getByte();
+		$this->getSignedBlockPosition($this->x, $this->y, $this->z);
+		$this->reactionType = $this->getByte();
 	}
 
 	protected function encodePayload(){
-		$this->putVarInt($this->jumpStrength);
+		$this->putByte($this->uselessByte);
+		$this->putSignedBlockPosition($this->x, $this->y, $this->z);
+		$this->putByte($this->reactionType);
 	}
 
 	public function handle(NetworkSession $session) : bool{
-		return $session->handleRiderJump($this);
+		return $session->handleLabTable($this);
 	}
 }
