@@ -24,6 +24,7 @@ declare(strict_types=1);
 namespace pocketmine\item;
 
 use fatcraft\loadbalancer\LoadBalancer;
+use fatutils\game\GameManager;
 use fatutils\players\PlayersManager;
 use pocketmine\entity\Entity;
 use pocketmine\entity\projectile\Grenada;
@@ -166,7 +167,7 @@ abstract class ProjectileItem extends Item{
 
     private function PUBGBulletAmmoBehavior(Player $player, Vector3 $directionVector, CompoundTag $nbt, int $ItemId) : bool
     {
-        if (!$player->getInventory()->contains(ItemFactory::get($ItemId, 0, 1)))
+        if (GameManager::getInstance()->m_isBattleRoyal && !$player->getInventory()->contains(ItemFactory::get($ItemId, 0, 1)))
         {
             $this->count = 1;
             return false;
@@ -243,7 +244,7 @@ abstract class ProjectileItem extends Item{
             }
             $nbBullets--;
         }
-        if ($player->isSurvival())
+        if (GameManager::getInstance()->m_isBattleRoyal && $player->isSurvival())
             $player->getInventory()->removeItem(ItemFactory::get($ItemId, 0, 1));
         return true;
     }

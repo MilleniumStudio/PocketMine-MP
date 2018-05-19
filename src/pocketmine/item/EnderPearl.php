@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace pocketmine\item;
 
+use fatutils\game\GameManager;
 use pocketmine\item\ItemIds;
 
 class EnderPearl extends ProjectileItem
@@ -39,12 +40,16 @@ class EnderPearl extends ProjectileItem
 
     public function getProjectileEntityType(): string
     {
+        if (!GameManager::getInstance()->m_isBattleRoyal)
+            return "ScareLAmmo";
         return "ShotgunAmmo";
     }
 
     public function getThrowForce(): float
     {
-        return 5;
+        if (!GameManager::getInstance()->m_isBattleRoyal)
+        	return 15;
+	return 5;
     }
 
     public function getCooldownTicks() : int{
