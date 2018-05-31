@@ -127,7 +127,8 @@ class ItemFactory{
 		self::registerItem(new Item(Item::SLIME_BALL, 0, "Slimeball"));
 		//TODO: CHEST_MINECART
 
-		self::registerItem(new Egg());
+		//self::registerItem(new Egg());
+		self::registerItem(new PaintballGun());
 		self::registerItem(new Compass());
 		self::registerItem(new FishingRod());
 		self::registerItem(new Clock());
