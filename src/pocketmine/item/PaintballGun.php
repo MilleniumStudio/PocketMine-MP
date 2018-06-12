@@ -46,8 +46,6 @@ class PaintballGun extends Egg
 
         if ($this->getCount() > 1)
         {
-            if (LoadBalancer::getInstance()->getServerType() == LoadBalancer::TEMPLATE_TYPE_LOBBY && LoadBalancer::getInstance()->getServerId() != 2)
-                LoadBalancer::getInstance()->balancePlayer($player, LoadBalancer::TEMPLATE_TYPE_LOBBY, 2);
             $l_fatPlayer = PlayersManager::getInstance()->getFatPlayer($player);
             $paint = $l_fatPlayer->getSlot(ShopItem::SLOT_PAINTBALL);
 

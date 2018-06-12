@@ -123,69 +123,13 @@ class Paintball extends Egg{
 
             switch ($this->key)
             {
-                case "paintball.white":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 0;
-                    break;
-                case "paintball.orange":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 1;
-                    break;
-                case "paintball.magenta":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 2;
-                    break;
-                case "paintball.lightBlue":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 3;
-                    break;
                 case "paintball.yellow":
                     $l_blockID = BlockIds::CONCRETE;
                     $l_blockMeta = 4;
                     break;
-                case "paintball.lime":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 5;
-                    break;
-                case "paintball.pink":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 6;
-                    break;
-                case "paintball.grey":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 7;
-                    break;
-                case "paintball.lightGrey":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 8;
-                    break;
-                case "paintball.cyan":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 9;
-                    break;
-                case "paintball.purple":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 10;
-                    break;
-                case "paintball.blue":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 11;
-                    break;
-                case "paintball.brown":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 12;
-                    break;
-                case "paintball.green":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 13;
-                    break;
                 case "paintball.red":
                     $l_blockID = BlockIds::CONCRETE;
                     $l_blockMeta = 14;
-                    break;
-                case "paintball.black":
-                    $l_blockID = BlockIds::CONCRETE;
-                    $l_blockMeta = 15;
                     break;
             }
             $l_block = BlockFactory::get($l_blockID, $l_blockMeta);
